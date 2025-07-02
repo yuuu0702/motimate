@@ -10,10 +10,18 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _signInAnonymously(); // Automatically try to sign in
+  }
 
   void _signInAnonymously() async {
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
     try {
       await FirebaseAuth.instance.signInAnonymously();
@@ -23,13 +31,13 @@ class _AuthScreenState extends State<AuthScreen> {
       if (e.code == 'operation-not-allowed') {
         message = '匿名認証がFirebaseプロジェクトで有効になっていません。Firebaseコンソールで有効にしてください。';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      setState(() {
+        _errorMessage = message;
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('エラーが発生しました: $e')),
-      );
+      setState(() {
+        _errorMessage = 'エラーが発生しました: $e';
+      });
     }
     setState(() {
       _isLoading = false;
@@ -51,18 +59,28 @@ class _AuthScreenState extends State<AuthScreen> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _signInAnonymously,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    ),
-                    child: const Text(
-                      '匿名でログイン',
-                      style: TextStyle(fontSize: 18),
-                    ),
+            if (_isLoading)
+              const CircularProgressIndicator()
+            else if (_errorMessage != null)
+              Column(
+                children: [
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
                   ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _signInAnonymously,
+                    child: const Text('再試行'),
+                  ),
+                ],
+              )
+            else
+              const Text(
+                'ログイン中...',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
             const SizedBox(height: 10),
             const Text(
               '(アカウント登録なしで利用できます)',

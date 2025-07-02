@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "825852190492",
+    "project_id": "motimate-eca55",
+    "storage_bucket": "motimate-eca55.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825852190492:android:85371c5a803fe74e28a4d9",
+        "android_client_info": {
+          "package_name": "com.example.motimate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD64iC7vhW5BZSP4QjDwuSyVJx276SI7Rw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825852190492:android:537482bb19d8331c28a4d9",
+        "android_client_info": {
+          "package_name": "com.nabestudio.motimate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD64iC7vhW5BZSP4QjDwuSyVJx276SI7Rw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

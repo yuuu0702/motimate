@@ -67,7 +67,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
               min: 1.0,
               max: 5.0,
               divisions: 4,
-              label: _motivationLevel.round().toString(),
+              label: _getEmojiForMotivation(_motivationLevel.round()),
               onChanged: (double value) {
                 setState(() {
                   _motivationLevel = value;
@@ -77,11 +77,11 @@ class _MotivationScreenState extends State<MotivationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const [
-                Text('1'),
-                Text('2'),
-                Text('3'),
-                Text('4'),
-                Text('5'),
+                Text('😩', style: TextStyle(fontSize: 24)),
+                Text('🙁', style: TextStyle(fontSize: 24)),
+                Text('😐', style: TextStyle(fontSize: 24)),
+                Text('😊', style: TextStyle(fontSize: 24)),
+                Text('🤩', style: TextStyle(fontSize: 24)),
               ],
             ),
             const SizedBox(height: 20),
@@ -108,5 +108,22 @@ class _MotivationScreenState extends State<MotivationScreen> {
         ),
       ),
     );
+  }
+
+  String _getEmojiForMotivation(int level) {
+    switch (level) {
+      case 1:
+        return '😩';
+      case 2:
+        return '🙁';
+      case 3:
+        return '😐';
+      case 4:
+        return '😊';
+      case 5:
+        return '🤩';
+      default:
+        return '';
+    }
   }
 }

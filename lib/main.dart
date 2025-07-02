@@ -16,23 +16,22 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // FCM設定
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // 通知権限のリクエスト
-  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
+  NotificationSettings settings = await FirebaseMessaging.instance
+      .requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
 
   print('User granted permission: ${settings.authorizationStatus}');
 
@@ -61,7 +60,7 @@ void main() async {
       ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
         SnackBar(
           content: Text(
-            message.notification!.title ?? '' + ': ' + message.notification!.body ?? '',
+            message.notification!.title ?? ': ${message.notification!.body}',
           ),
         ),
       );
@@ -82,7 +81,7 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey, // Add navigatorKey
       title: 'Motimate',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
       home: StreamBuilder<User?>(
@@ -101,4 +100,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
