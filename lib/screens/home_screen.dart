@@ -10,12 +10,23 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<DateTime?> _nextPlayDates = [null, null]; // New state variable for two dates
+  List<DateTime?> _nextPlayDates = [null, null];
+  double _currentMotivation = 3.0;
+  bool _isUpdatingMotivation = false;
+
+  final List<Map<String, dynamic>> motivationLevels = [
+    {'level': 1, 'emoji': '😴', 'label': 'お疲れ気味...', 'color': [0xFF9CA3AF, 0xFF6B7280]},
+    {'level': 2, 'emoji': '😐', 'label': 'あまり気分が...', 'color': [0xFF60A5FA, 0xFF3B82F6]},
+    {'level': 3, 'emoji': '🙂', 'label': '普通かな', 'color': [0xFFFBBF24, 0xFFF59E0B]},
+    {'level': 4, 'emoji': '😊', 'label': 'やる気あり！', 'color': [0xFFFB923C, 0xFFEA580C]},
+    {'level': 5, 'emoji': '🔥', 'label': '超やる気！！', 'color': [0xFFF87171, 0xFFEF4444]},
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadNextPlayDate(); // Call new method
+    _loadNextPlayDate();
+    _loadCurrentMotivation();
   }
 
 
@@ -36,6 +47,73 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         });
       }
+    }
+  }
+
+  Future<void> _loadCurrentMotivation() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    if (userDoc.exists) {
+      final data = userDoc.data();
+      if (data != null && data.containsKey('latestMotivationLevel')) {
+        setState(() {
+          _currentMotivation = (data['latestMotivationLevel'] as num).toDouble();
+        });
+      }
+    }
+  }
+
+  Future<void> _updateMotivation(double newLevel) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    setState(() {
+      _isUpdatingMotivation = true;
+    });
+
+    try {
+      // Save motivation record
+      await FirebaseFirestore.instance.collection('motivations').add({
+        'userId': user.uid,
+        'level': newLevel.round(),
+        'timestamp': Timestamp.now(),
+      });
+
+      // Update user's latest motivation
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'latestMotivationLevel': newLevel.round(),
+        'latestMotivationTimestamp': Timestamp.now(),
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _currentMotivation = newLevel;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('やる気レベル ${newLevel.round()} に更新しました！'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('更新に失敗しました: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isUpdatingMotivation = false;
+      });
     }
   }
 
@@ -219,6 +297,154 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Personal Motivation Slider Section
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.mood,
+                              color: Color(0xFF667eea),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            '今日のやる気レベル',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Current motivation display
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(motivationLevels[_currentMotivation.round() - 1]['color'][0]),
+                              Color(motivationLevels[_currentMotivation.round() - 1]['color'][1]),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              motivationLevels[_currentMotivation.round() - 1]['emoji'],
+                              style: const TextStyle(fontSize: 40),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    motivationLevels[_currentMotivation.round() - 1]['label'],
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    'レベル ${_currentMotivation.round()}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white.withValues(alpha: 0.8),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (_isUpdatingMotivation)
+                              const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Motivation slider
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: motivationLevels.map((level) {
+                              final isSelected = level['level'] == _currentMotivation.round();
+                              return Text(
+                                level['emoji'],
+                                style: TextStyle(
+                                  fontSize: isSelected ? 24 : 18,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 12),
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: Color(motivationLevels[_currentMotivation.round() - 1]['color'][0]),
+                              inactiveTrackColor: const Color(0xFFE2E8F0),
+                              thumbColor: Color(motivationLevels[_currentMotivation.round() - 1]['color'][1]),
+                              overlayColor: Color(motivationLevels[_currentMotivation.round() - 1]['color'][0]).withValues(alpha: 0.2),
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+                              trackHeight: 6,
+                            ),
+                            child: Slider(
+                              value: _currentMotivation,
+                              min: 1,
+                              max: 5,
+                              divisions: 4,
+                              onChanged: _isUpdatingMotivation ? null : (value) {
+                                setState(() {
+                                  _currentMotivation = value;
+                                });
+                              },
+                              onChangeEnd: (value) {
+                                if (!_isUpdatingMotivation) {
+                                  _updateMotivation(value);
+                                }
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
