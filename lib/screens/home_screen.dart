@@ -375,7 +375,10 @@ class _HomeScreenState extends State<HomeScreen> {
             foregroundColor: const Color(0xFF1E293B),
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
+              titlePadding: const EdgeInsetsDirectional.only(
+                start: 16,
+                bottom: 16,
+              ),
               title: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -637,7 +640,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 12),
                           const Text(
-                            '今日のやる気レベル',
+                            'バスケのモチベ',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

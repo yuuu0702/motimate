@@ -171,7 +171,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('空き状況を更新しました (${selectedDates.length}日)')),
+          SnackBar(content: Text('空き状況を更新しました (${selectedDates.length}日選択中)')),
         );
       }
 
@@ -187,6 +187,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ).showSnackBar(SnackBar(content: Text('更新に失敗しました: $e')));
       }
     }
+  }
+
+  void _goToPreviousMonth() {
+    setState(() {
+      currentDate = DateTime(currentDate.year, currentDate.month - 1, 1);
+    });
+    _loadScheduleData();
+  }
+
+  void _goToNextMonth() {
+    setState(() {
+      currentDate = DateTime(currentDate.year, currentDate.month + 1, 1);
+    });
+    _loadScheduleData();
   }
 
   @override
@@ -214,16 +228,22 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               // Header
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(width: 16),
-                    const Text(
-                      'スケジュール',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
-                      ),
+                    // スケジュール タイトル
+                    Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        const Text(
+                          'スケジュール',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1F2937),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -246,19 +266,40 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           child: Column(
                             children: [
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Icon(
-                                    Icons.calendar_today,
-                                    color: Colors.blue,
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.calendar_today,
+                                        color: Colors.blue,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        currentMonthText,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1F2937),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    currentMonthText,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937),
-                                    ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.arrow_back_ios, size: 20),
+                                        onPressed: currentDate.month == DateTime.now().month && currentDate.year == DateTime.now().year
+                                            ? null
+                                            : _goToPreviousMonth,
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                                        onPressed: currentDate.month == DateTime.now().month && currentDate.year == DateTime.now().year
+                                            ? _goToNextMonth
+                                            : null,
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

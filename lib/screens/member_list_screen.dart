@@ -169,7 +169,7 @@ class MemberListScreen extends StatelessWidget {
                                             ),
                                           ),
                                           child: Text(
-                                            'Lv.${userData['latestMotivationLevel']}',
+                                            'モチベ:${userData['latestMotivationLevel']}',
                                             style: const TextStyle(
                                               color: Color(0xFF10B981),
                                               fontWeight: FontWeight.bold,
