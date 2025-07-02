@@ -81,6 +81,7 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey, // Add navigatorKey
       title: 'Motimate',
       theme: ThemeData(
+        fontFamily: 'MPLUSRounded1c', // Added custom font
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
