@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:motimate/screens/home_screen.dart';
 import 'package:motimate/screens/member_list_screen.dart';
+import 'package:motimate/screens/motivation_screen.dart'; // Add this import
 import 'package:motimate/screens/schedule_screen.dart';
 
 class App extends StatefulWidget {
@@ -47,6 +48,18 @@ class _AppState extends State<App> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MotivationScreen(),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, // Optional: position the FAB
     );
   }
 }
