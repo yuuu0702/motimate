@@ -83,7 +83,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   String getDateKey(DateTime date) {
-    return '${date.year}-${date.month.toString().padStart(2, '0')}-${date.day.toString().padStart(2, '0')}';
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   Map<String, dynamic>? getDateInfo(DateTime date) {
@@ -108,9 +108,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       
       await batch.commit();
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('空き状況を更新しました (${selectedDates.length}日)')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('空き状況を更新しました (${selectedDates.length}日)')),
+        );
+      }
       
       setState(() {
         selectedDates.clear();
@@ -118,9 +120,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       
       _loadScheduleData();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('更新に失敗しました: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('更新に失敗しました: $e')),
+        );
+      }
     }
   }
 
@@ -156,7 +160,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.8),
+                        backgroundColor: Colors.white.withValues(alpha: 0.8),
                         shape: const CircleBorder(),
                       ),
                     ),
@@ -342,7 +346,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                     .toList()
                                     ..sort((a, b) => b.value['available'].compareTo(a.value['available']))
                                     ..take(3)
-                                    ..map((entry) {
+                                    .map((entry) {
                                       final date = DateTime.parse(entry.key);
                                       final info = entry.value;
                                       final dayName = daysOfWeek[date.weekday % 7];
@@ -382,7 +386,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                                 vertical: 4,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: Colors.green.withOpacity(0.1),
+                                                color: Colors.green.withValues(alpha: 0.1),
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
                                               child: Text(

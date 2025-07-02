@@ -54,13 +54,17 @@ class _HomeScreenState extends State<HomeScreen> {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'nextPlayDates': _nextPlayDates.map((d) => d != null ? Timestamp.fromDate(d) : null).toList(),
       }, SetOptions(merge: true));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('次にバスケをやりたい日程 ${index + 1} を ${date.month}/${date.day} に設定しました！')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('次にバスケをやりたい日程 ${index + 1} を ${date.month}/${date.day} に設定しました！')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('日程の更新に失敗しました: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('日程の更新に失敗しました: $e')),
+        );
+      }
     }
   }
 
@@ -83,30 +87,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _buildDateSelectionTile(int index) {
-    return ListTile(
-      title: Text(
-        _nextPlayDates[index] == null
-            ? '日程 ${index + 1}: 未設定'
-            : '日程 ${index + 1}: ${_nextPlayDates[index]!.month}/${_nextPlayDates[index]!.day}',
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.calendar_today),
-        onPressed: () async {
-          final DateTime? picked = await showDatePicker(
-            context: context,
-            initialDate: _nextPlayDates[index] ?? DateTime.now(),
-            firstDate: DateTime.now(),
-            lastDate: DateTime(DateTime.now().year + 1),
-          );
-          if (picked != null && picked != _nextPlayDates[index]) {
-            _updateNextPlayDate(picked, index);
-          }
-        },
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -50,11 +50,13 @@ class _MotivationScreenState extends State<MotivationScreen> {
       });
       
       // Auto-navigate back after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          Navigator.pop(context);
-        }
-      });
+      if (mounted) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        });
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('モチベーションの登録に失敗しました: $e')),
@@ -153,7 +155,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.8),
+                        backgroundColor: Colors.white.withValues(alpha: 0.8),
                         shape: const CircleBorder(),
                       ),
                     ),
@@ -310,7 +312,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: Color(colors[1]).withOpacity(0.3),
+                        color: Color(colors[1]).withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -340,7 +342,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     color: isSelected 
-                        ? Colors.white.withOpacity(0.8)
+                        ? Colors.white.withValues(alpha: 0.8)
                         : const Color(0xFF6B7280),
                   ),
                 ),

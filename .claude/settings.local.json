@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(flutterfire:*)"
+      "Bash(flutterfire:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
