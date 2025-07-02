@@ -366,21 +366,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            actions: [
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: IconButton(
-                  icon: const Icon(Icons.logout_rounded),
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                  },
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white.withValues(alpha: 0.9),
-                    foregroundColor: const Color(0xFF667eea),
-                  ),
-                ),
-              ),
-            ],
           ),
           SliverPadding(
             padding: const EdgeInsets.all(20),

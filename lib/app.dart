@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:motimate/screens/home_screen.dart';
 import 'package:motimate/screens/member_list_screen.dart';
 import 'package:motimate/screens/schedule_screen.dart';
-import 'package:motimate/screens/proposal_screen.dart';
+import 'package:motimate/screens/user_settings_screen.dart';
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -18,7 +18,7 @@ class _AppState extends State<App> {
     const HomeScreen(),
     const ScheduleScreen(),
     const MemberListScreen(),
-    const ProposalScreen(), // Add ProposalScreen
+    const UserSettingsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -69,8 +69,8 @@ class _AppState extends State<App> {
               label: 'メンバー',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.lightbulb_outline_rounded),
-              label: '提案',
+              icon: Icon(Icons.settings_rounded),
+              label: '設定',
             ),
           ],
           currentIndex: _selectedIndex,

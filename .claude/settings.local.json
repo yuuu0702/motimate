@@ -3,7 +3,8 @@
     "allow": [
       "Bash(flutterfire:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebFetch(domain:www.ui-pocket.com)"
     ],
     "deny": []
   }
