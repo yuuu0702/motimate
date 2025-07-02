@@ -342,9 +342,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                ...scheduleData.entries
+                                ...(scheduleData.entries
                                     .toList()
-                                    ..sort((a, b) => b.value['available'].compareTo(a.value['available']))
+                                    ..sort((a, b) => b.value['available'].compareTo(a.value['available'])))
                                     .take(3)
                                     .map((entry) {
                                       final date = DateTime.parse(entry.key);
