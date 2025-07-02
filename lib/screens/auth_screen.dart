@@ -104,27 +104,68 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
+      
+      // 既存のサインインをクリア
+      await googleSignIn.signOut();
+      
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
         setState(() {
           _isLoading = false;
+          _errorMessage = 'Googleログインがキャンセルされました';
         });
         return;
       }
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
+          
+      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
+        setState(() {
+          _errorMessage = 'Google認証トークンの取得に失敗しました';
+        });
+        return;
+      }
+
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      String message = 'Googleログインに失敗しました';
+      switch (e.code) {
+        case 'account-exists-with-different-credential':
+          message = 'このメールアドレスは既に他の方法で登録されています';
+          break;
+        case 'invalid-credential':
+          message = '認証情報が無効です';
+          break;
+        case 'operation-not-allowed':
+          message = 'Googleログインが有効になっていません';
+          break;
+        case 'user-disabled':
+          message = 'このアカウントは無効化されています';
+          break;
+        case 'user-not-found':
+          message = 'ユーザーが見つかりません';
+          break;
+        case 'wrong-password':
+          message = 'パスワードが間違っています';
+          break;
+        default:
+          message = 'Googleログインエラー: ${e.code}';
+      }
+      setState(() {
+        _errorMessage = message;
+      });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Googleログインに失敗しました: $e';
+        _errorMessage = 'Googleログインに失敗しました: ${e.toString()}';
       });
+      print('Google Sign-In Error: $e');
     }
 
     setState(() {

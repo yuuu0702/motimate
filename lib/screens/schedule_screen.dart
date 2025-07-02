@@ -38,12 +38,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         final docData = doc.data();
         final members = docData['members'] as List? ?? [];
 
-        data[doc.id] = {'available': members.length, 'members': members};
+        // 参加者が1人以上いる場合のみデータに追加
+        if (members.isNotEmpty) {
+          data[doc.id] = {'available': members.length, 'members': members};
 
-        // Check if current user is in the members list
-        if (user != null && members.contains(user.uid)) {
-          final date = DateTime.parse(doc.id);
-          myDates.add(date);
+          // Check if current user is in the members list
+          if (user != null && members.contains(user.uid)) {
+            final date = DateTime.parse(doc.id);
+            myDates.add(date);
+          }
         }
       }
 
@@ -109,9 +112,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           .collection('schedules')
           .doc(dateKey);
 
-      await docRef.update({
-        'members': FieldValue.arrayRemove([user.uid]),
-      });
+      // 現在のドキュメントを取得
+      final doc = await docRef.get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final members = List<String>.from(data['members'] ?? []);
+        
+        // ユーザーをリストから削除
+        members.remove(user.uid);
+        
+        if (members.isEmpty) {
+          // 参加者が0人になった場合はドキュメントを削除
+          await docRef.delete();
+        } else {
+          // 参加者がまだいる場合は更新
+          await docRef.update({
+            'members': members,
+          });
+        }
+      }
 
       setState(() {
         myRegisteredDates.remove(date);
@@ -446,7 +465,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                                           // Others' availability count
                                           if (dateInfo != null &&
-                                              !isMyRegistered)
+                                              !isMyRegistered &&
+                                              dateInfo['available'] > 0)
                                             Positioned(
                                               top: 2,
                                               right: 2,
@@ -484,7 +504,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       const SizedBox(height: 24),
 
                       // Popular Dates Card
-                      if (scheduleData.isNotEmpty)
+                      if (scheduleData.isNotEmpty && 
+                          scheduleData.values.any((data) => data['available'] > 0))
                         Card(
                           elevation: 8,
                           shape: RoundedRectangleBorder(
@@ -509,7 +530,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                ...(scheduleData.entries.toList()..sort(
+                                ...(scheduleData.entries
+                                    .where((entry) => entry.value['available'] > 0)
+                                    .toList()..sort(
                                       (a, b) => b.value['available'].compareTo(
                                         a.value['available'],
                                       ),

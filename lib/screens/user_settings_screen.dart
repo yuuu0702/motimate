@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:motimate/services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class UserSettingsScreen extends StatefulWidget {
   const UserSettingsScreen({super.key});
@@ -18,12 +20,14 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isDarkMode = false;
+  bool _notificationsEnabled = false;
   Map<String, dynamic>? _userData;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadNotificationStatus();
   }
 
   @override
@@ -61,6 +65,102 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadNotificationStatus() async {
+    try {
+      final isEnabled = await NotificationService.isNotificationEnabled();
+      setState(() {
+        _notificationsEnabled = isEnabled;
+      });
+    } catch (e) {
+      setState(() {
+        _notificationsEnabled = false;
+      });
+    }
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    if (value) {
+      // 通知を有効にする
+      final granted = await NotificationService.requestNotificationPermission();
+      setState(() {
+        _notificationsEnabled = granted;
+      });
+      
+      if (granted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('通知が有効になりました'),
+              backgroundColor: Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('通知の許可が拒否されました'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } else {
+      // 通知を無効にする（設定画面に案内）
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text(
+              '通知設定',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            content: const Text(
+              '通知を無効にするには、端末の設定画面から変更してください。',
+              style: TextStyle(
+                color: Color(0xFF374151),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'キャンセル',
+                  style: TextStyle(color: Color(0xFF6B7280)),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await NotificationService.openSettings();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF667eea),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  '設定を開く',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -401,6 +501,92 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                           _isDarkMode = value;
                                         });
                                       },
+                                      activeColor: const Color(0xFF667eea),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Notification Settings
+                      Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.notifications,
+                                    color: Color(0xFF667eea),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    '通知設定',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1F2937),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF9FAFB),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      _notificationsEnabled 
+                                          ? Icons.notifications_active 
+                                          : Icons.notifications_off,
+                                      color: const Color(0xFF667eea),
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _notificationsEnabled ? 'プッシュ通知が有効' : 'プッシュ通知が無効',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF374151),
+                                            ),
+                                          ),
+                                          Text(
+                                            _notificationsEnabled 
+                                                ? '練習日決定などの重要な通知を受け取ります' 
+                                                : '通知を受け取りません',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Color(0xFF6B7280),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: _notificationsEnabled,
+                                      onChanged: _toggleNotifications,
                                       activeColor: const Color(0xFF667eea),
                                     ),
                                   ],

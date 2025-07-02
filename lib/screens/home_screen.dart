@@ -1288,7 +1288,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 12),
               const Text(
-                'バスケの日程が決定されました！',
+                '日程が決定されました！',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

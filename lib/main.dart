@@ -23,31 +23,13 @@ void main() async {
   // FCM設定
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // 通知権限のリクエスト
-  NotificationSettings settings = await FirebaseMessaging.instance
-      .requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
-
-  print('User granted permission: ${settings.authorizationStatus}');
-
-  // デバイストークンの取得とFirestoreへの保存
+  // ユーザーログイン状態の監視（通知許可は設定画面で個別に管理）
   FirebaseAuth.instance.authStateChanges().listen((User? user) async {
     if (user != null) {
-      String? token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'fcmToken': token,
-          'lastLogin': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-        print('FCM Token: $token');
-      }
+      // ログイン時刻のみ記録（FCMトークンは通知許可時に保存）
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'lastLogin': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
     }
   });
 
