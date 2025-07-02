@@ -59,6 +59,11 @@ class _AuthScreenState extends State<AuthScreen> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
+            Image.asset(
+              'assets/images/welcome_illustration.png',
+              height: 200, // Adjust height as needed
+            ),
+            const SizedBox(height: 30),
             if (_isLoading)
               const CircularProgressIndicator()
             else if (_errorMessage != null)
