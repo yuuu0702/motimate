@@ -205,7 +205,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'みんなのやる気を見える化',
+                      'バスケサークルアプリ',
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'みんなのやる気、スケジュールを見える化',
                       style: TextStyle(color: Color(0xFF64748B), fontSize: 16),
                     ),
                   ],
