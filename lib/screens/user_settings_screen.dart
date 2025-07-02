@@ -185,24 +185,18 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
+              // Header (追加)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.sports_basketball_outlined,
-                      color: Colors.grey[600],
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'motimate',
+                    const SizedBox(width: 16),
+                    const Text(
+                      '設定',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[600],
-                        letterSpacing: 0.2,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
                       ),
                     ),
                   ],
@@ -536,7 +530,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                        // 白に設定
+                        colors: [Color(0xFF667eea), Color(0xFF667eea)],
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
@@ -568,6 +563,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

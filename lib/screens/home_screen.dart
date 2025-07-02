@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Function(int) onNavigate;
+
+  const HomeScreen({super.key, required this.onNavigate});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -373,12 +375,24 @@ class _HomeScreenState extends State<HomeScreen> {
             foregroundColor: const Color(0xFF1E293B),
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'motimate',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
+              titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 16),
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.sports_basketball_outlined,
+                    color: const Color(0xFF1E293B),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'motimate',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
               ),
               background: Container(
                 decoration: const BoxDecoration(
@@ -496,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    Navigator.pushNamed(context, '/schedule');
+                                    widget.onNavigate(1);
                                   },
                                   icon: const Icon(Icons.add_rounded, size: 20),
                                   label: const Text(
@@ -551,7 +565,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    Navigator.pushNamed(context, '/schedule');
+                                    widget.onNavigate(1);
                                   },
                                   icon: const Icon(Icons.add_rounded, size: 20),
                                   label: const Text(

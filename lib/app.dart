@@ -14,12 +14,18 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   int _selectedIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const ScheduleScreen(),
-    const MemberListScreen(),
-    const UserSettingsScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(onNavigate: _onItemTapped),
+      const ScheduleScreen(),
+      const MemberListScreen(),
+      const UserSettingsScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {

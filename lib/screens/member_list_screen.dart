@@ -24,14 +24,6 @@ class MemberListScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.8),
-                        shape: const CircleBorder(),
-                      ),
-                    ),
                     const SizedBox(width: 16),
                     const Text(
                       'メンバー一覧',
@@ -44,18 +36,22 @@ class MemberListScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Content
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('users').snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
                     if (snapshot.hasError) {
-                      return Center(child: Text('データの取得エラー: ${snapshot.error}'));
+                      return Center(
+                        child: Text('データの取得エラー: ${snapshot.error}'),
+                      );
                     }
 
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -100,9 +96,14 @@ class MemberListScreen extends StatelessWidget {
                                         height: 48,
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
-                                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                            colors: [
+                                              Color(0xFF667eea),
+                                              Color(0xFF764ba2),
+                                            ],
                                           ),
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.person,
@@ -113,10 +114,13 @@ class MemberListScreen extends StatelessWidget {
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              userData['displayName'] ?? userData['username'] ?? 'Unknown User',
+                                              userData['displayName'] ??
+                                                  userData['username'] ??
+                                                  'Unknown User',
                                               style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
@@ -124,10 +128,22 @@ class MemberListScreen extends StatelessWidget {
                                               ),
                                             ),
                                             Text(
-                                              userData['department']?.isNotEmpty == true || userData['group']?.isNotEmpty == true
-                                                  ? [userData['department'], userData['group']]
-                                                      .where((s) => s?.isNotEmpty == true)
-                                                      .join(' / ')
+                                              userData['department']
+                                                              ?.isNotEmpty ==
+                                                          true ||
+                                                      userData['group']
+                                                              ?.isNotEmpty ==
+                                                          true
+                                                  ? [
+                                                          userData['department'],
+                                                          userData['group'],
+                                                        ]
+                                                        .where(
+                                                          (s) =>
+                                                              s?.isNotEmpty ==
+                                                              true,
+                                                        )
+                                                        .join(' / ')
                                                   : 'メンバー',
                                               style: const TextStyle(
                                                 fontSize: 14,
@@ -137,15 +153,20 @@ class MemberListScreen extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      if (userData['latestMotivationLevel'] != null)
+                                      if (userData['latestMotivationLevel'] !=
+                                          null)
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
                                             vertical: 6,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(20),
+                                            color: const Color(
+                                              0xFF10B981,
+                                            ).withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                           ),
                                           child: Text(
                                             'Lv.${userData['latestMotivationLevel']}',
@@ -158,9 +179,9 @@ class MemberListScreen extends StatelessWidget {
                                         ),
                                     ],
                                   ),
-                                  
+
                                   const SizedBox(height: 20),
-                                  
+
                                   // Motivation section
                                   Container(
                                     padding: const EdgeInsets.all(16),
@@ -169,7 +190,8 @@ class MemberListScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
@@ -191,7 +213,8 @@ class MemberListScreen extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
-                                          userData['latestMotivationLevel'] != null
+                                          userData['latestMotivationLevel'] !=
+                                                  null
                                               ? '${userData['latestMotivationLevel']}/5'
                                               : '未登録',
                                           style: const TextStyle(
@@ -199,7 +222,8 @@ class MemberListScreen extends StatelessWidget {
                                             fontSize: 14,
                                           ),
                                         ),
-                                        if (userData['latestMotivationTimestamp'] != null)
+                                        if (userData['latestMotivationTimestamp'] !=
+                                            null)
                                           Text(
                                             '最終更新: ${_formatTimestamp(userData['latestMotivationTimestamp'] as Timestamp)}',
                                             style: const TextStyle(
@@ -210,9 +234,9 @@ class MemberListScreen extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  
+
                                   const SizedBox(height: 16),
-                                  
+
                                   // Bio section (if available)
                                   if (userData['bio']?.isNotEmpty == true)
                                     Container(
@@ -222,7 +246,8 @@ class MemberListScreen extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [

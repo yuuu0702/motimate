@@ -30,26 +30,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       final snapshot = await FirebaseFirestore.instance
           .collection('schedules')
           .get();
-      
+
       Map<String, Map<String, dynamic>> data = {};
       Set<DateTime> myDates = {};
-      
+
       for (var doc in snapshot.docs) {
         final docData = doc.data();
         final members = docData['members'] as List? ?? [];
-        
-        data[doc.id] = {
-          'available': members.length,
-          'members': members,
-        };
-        
+
+        data[doc.id] = {'available': members.length, 'members': members};
+
         // Check if current user is in the members list
         if (user != null && members.contains(user.uid)) {
           final date = DateTime.parse(doc.id);
           myDates.add(date);
         }
       }
-      
+
       setState(() {
         scheduleData = data;
         myRegisteredDates = myDates;
@@ -90,11 +87,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       // If already registered, remove from registration
       if (myRegisteredDates.contains(date)) {
         _removeFromSchedule(date);
-      } 
+      }
       // If currently selected for addition, unselect
       else if (selectedDates.contains(date)) {
         selectedDates.remove(date);
-      } 
+      }
       // Otherwise, select for addition
       else {
         selectedDates.add(date);
@@ -108,16 +105,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
     try {
       final dateKey = getDateKey(date);
-      final docRef = FirebaseFirestore.instance.collection('schedules').doc(dateKey);
-      
+      final docRef = FirebaseFirestore.instance
+          .collection('schedules')
+          .doc(dateKey);
+
       await docRef.update({
         'members': FieldValue.arrayRemove([user.uid]),
       });
-      
+
       setState(() {
         myRegisteredDates.remove(date);
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -127,7 +126,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
         );
       }
-      
+
       _loadScheduleData();
     } catch (e) {
       if (mounted) {
@@ -156,34 +155,36 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
     try {
       final batch = FirebaseFirestore.instance.batch();
-      
+
       for (DateTime date in selectedDates) {
         final dateKey = getDateKey(date);
-        final docRef = FirebaseFirestore.instance.collection('schedules').doc(dateKey);
-        
+        final docRef = FirebaseFirestore.instance
+            .collection('schedules')
+            .doc(dateKey);
+
         batch.set(docRef, {
           'members': FieldValue.arrayUnion([user.uid]),
         }, SetOptions(merge: true));
       }
-      
+
       await batch.commit();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('空き状況を更新しました (${selectedDates.length}日)')),
         );
       }
-      
+
       setState(() {
         selectedDates.clear();
       });
-      
+
       _loadScheduleData();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('更新に失敗しました: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('更新に失敗しました: $e')));
       }
     }
   }
@@ -191,9 +192,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final days = getDaysInMonth();
@@ -217,14 +216,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back),
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.8),
-                        shape: const CircleBorder(),
-                      ),
-                    ),
                     const SizedBox(width: 16),
                     const Text(
                       'スケジュール',
@@ -256,7 +247,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.calendar_today, color: Colors.blue),
+                                  const Icon(
+                                    Icons.calendar_today,
+                                    color: Colors.blue,
+                                  ),
                                   const SizedBox(width: 8),
                                   Text(
                                     currentMonthText,
@@ -292,29 +286,29 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                     null,
                                   ),
                                   const SizedBox(width: 16),
-                                  _buildLegendItem(
-                                    Colors.orange,
-                                    '他の人',
-                                    null,
-                                  ),
+                                  _buildLegendItem(Colors.orange, '他の人', null),
                                 ],
                               ),
                               const SizedBox(height: 24),
 
                               // Days of week header
                               Row(
-                                children: daysOfWeek.map((day) => Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      day,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF6B7280),
+                                children: daysOfWeek
+                                    .map(
+                                      (day) => Expanded(
+                                        child: Center(
+                                          child: Text(
+                                            day,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF6B7280),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                )).toList(),
+                                    )
+                                    .toList(),
                               ),
                               const SizedBox(height: 8),
 
@@ -322,12 +316,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               GridView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 7,
-                                  childAspectRatio: 1,
-                                  crossAxisSpacing: 4,
-                                  mainAxisSpacing: 4,
-                                ),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 7,
+                                      childAspectRatio: 1,
+                                      crossAxisSpacing: 4,
+                                      mainAxisSpacing: 4,
+                                    ),
                                 itemCount: days.length,
                                 itemBuilder: (context, index) {
                                   final day = days[index];
@@ -335,8 +330,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                     return const SizedBox();
                                   }
 
-                                  final isSelected = selectedDates.contains(day);
-                                  final isMyRegistered = myRegisteredDates.contains(day);
+                                  final isSelected = selectedDates.contains(
+                                    day,
+                                  );
+                                  final isMyRegistered = myRegisteredDates
+                                      .contains(day);
                                   final dateInfo = getDateInfo(day);
 
                                   // Determine the visual state
@@ -357,7 +355,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   } else if (isSelected) {
                                     // Currently selected for new registration - blue gradient
                                     gradient = const LinearGradient(
-                                      colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                      colors: [
+                                        Color(0xFF667eea),
+                                        Color(0xFF764ba2),
+                                      ],
                                     );
                                     textColor = Colors.white;
                                   } else {
@@ -372,12 +373,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                         borderRadius: BorderRadius.circular(12),
                                         gradient: gradient,
                                         color: backgroundColor,
-                                        border: isMyRegistered ? null : Border.all(
-                                          color: isSelected 
-                                              ? Colors.transparent
-                                              : const Color(0xFFE2E8F0),
-                                          width: 1,
-                                        ),
+                                        border: isMyRegistered
+                                            ? null
+                                            : Border.all(
+                                                color: isSelected
+                                                    ? Colors.transparent
+                                                    : const Color(0xFFE2E8F0),
+                                                width: 1,
+                                              ),
                                       ),
                                       child: Stack(
                                         children: [
@@ -391,7 +394,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               ),
                                             ),
                                           ),
-                                          
+
                                           // My registration checkmark
                                           if (isMyRegistered)
                                             Positioned(
@@ -399,9 +402,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               right: 2,
                                               child: statusIcon!,
                                             ),
-                                          
+
                                           // Others' availability count
-                                          if (dateInfo != null && !isMyRegistered)
+                                          if (dateInfo != null &&
+                                              !isMyRegistered)
                                             Positioned(
                                               top: 2,
                                               right: 2,
@@ -418,7 +422,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                                     style: const TextStyle(
                                                       color: Colors.white,
                                                       fontSize: 10,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                 ),
@@ -463,21 +468,28 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                ...(scheduleData.entries
-                                    .toList()
-                                    ..sort((a, b) => b.value['available'].compareTo(a.value['available'])))
+                                ...(scheduleData.entries.toList()..sort(
+                                      (a, b) => b.value['available'].compareTo(
+                                        a.value['available'],
+                                      ),
+                                    ))
                                     .take(3)
                                     .map((entry) {
                                       final date = DateTime.parse(entry.key);
                                       final info = entry.value;
-                                      final dayName = daysOfWeek[date.weekday % 7];
+                                      final dayName =
+                                          daysOfWeek[date.weekday % 7];
 
                                       return Container(
-                                        margin: const EdgeInsets.symmetric(vertical: 6),
+                                        margin: const EdgeInsets.symmetric(
+                                          vertical: 6,
+                                        ),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFF9FAFB),
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                         ),
                                         child: Row(
                                           children: [
@@ -502,13 +514,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                             ),
                                             const SizedBox(width: 12),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: Colors.green.withValues(alpha: 0.1),
-                                                borderRadius: BorderRadius.circular(12),
+                                                color: Colors.green.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
                                               ),
                                               child: Text(
                                                 '${info['available']}人参加可能',
@@ -574,25 +590,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-          child: icon != null
-              ? Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 8,
-                )
-              : null,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          child: icon != null ? Icon(icon, color: Colors.white, size: 8) : null,
         ),
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF6B7280),
-          ),
+          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
         ),
       ],
     );
