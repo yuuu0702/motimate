@@ -722,6 +722,20 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                       ),
 
                       const SizedBox(height: 40),
+
+                      // Copyright
+                      Center(
+                        child: Text(
+                          '© 2025 WATANABE YUDAI',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: const Color(0xFF94A3B8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

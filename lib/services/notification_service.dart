@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:motimate/models/notification_model.dart';
 
 class NotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -87,5 +88,79 @@ class NotificationService {
   /// 設定画面を開くためのヘルパー関数
   static Future<void> openSettings() async {
     await _messaging.requestPermission();
+  }
+
+  /// 通知を作成してFirestoreに保存
+  static Future<void> createNotification({
+    required String userId,
+    required String title,
+    required String body,
+    required String type,
+    Map<String, dynamic>? data,
+    String? imageUrl,
+  }) async {
+    try {
+      final notification = NotificationModel(
+        id: '', // Firestoreで自動生成
+        title: title,
+        body: body,
+        type: type,
+        data: data,
+        createdAt: DateTime.now(),
+        isRead: false,
+        imageUrl: imageUrl,
+      );
+
+      await _firestore.collection('notifications').add({
+        'userId': userId,
+        ...notification.toFirestore(),
+      });
+    } catch (e) {
+      print('Failed to create notification: $e');
+    }
+  }
+
+  /// 練習日決定通知を作成
+  static Future<void> createPracticeDecisionNotification({
+    required String userId,
+    required DateTime practiceDate,
+    required String deciderName,
+  }) async {
+    final dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    final dayName = dayNames[practiceDate.weekday % 7];
+    
+    await createNotification(
+      userId: userId,
+      title: '🏀 練習日が決定されました！',
+      body: '${practiceDate.month}/${practiceDate.day}(${dayName})に練習が決定されました。参加/見送りを選択してください。',
+      type: 'practice_decision',
+      data: {
+        'practiceDate': practiceDate.toIso8601String(),
+        'deciderName': deciderName,
+      },
+    );
+  }
+
+  /// スケジュール更新通知を作成
+  static Future<void> createScheduleUpdateNotification({
+    required String userId,
+    required String message,
+  }) async {
+    await createNotification(
+      userId: userId,
+      title: '📅 スケジュール更新',
+      body: message,
+      type: 'schedule_update',
+    );
+  }
+
+  /// 未読通知数を取得
+  static Stream<int> getUnreadNotificationCount(String userId) {
+    return _firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .where('isRead', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
   }
 }

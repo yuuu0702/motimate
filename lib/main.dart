@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:motimate/screens/auth_screen.dart';
 import 'package:motimate/screens/schedule_screen.dart';
 import 'package:motimate/screens/user_registration_screen.dart';
+import 'package:motimate/screens/notifications_screen.dart';
+import 'package:motimate/screens/feedback_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -196,6 +198,8 @@ class MyAppState extends State<MyApp> {
         '/schedule': (context) => const ScheduleScreen(),
         '/registration': (context) => const UserRegistrationScreen(),
         '/home': (context) => const App(),
+        '/notifications': (context) => const NotificationsScreen(),
+        '/feedback': (context) => const FeedbackScreen(),
       },
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),

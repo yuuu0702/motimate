@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:motimate/services/notification_service.dart';
+import 'package:motimate/screens/notifications_screen.dart';
+import 'package:motimate/screens/feedback_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int) onNavigate;
@@ -221,6 +224,26 @@ class _HomeScreenState extends State<HomeScreen> {
         'responses': {}, // Will store member responses
       });
 
+      // Get current user's display name for notifications
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final userData = userDoc.data() as Map<String, dynamic>?;
+      final deciderName = userData?['displayName'] ?? userData?['username'] ?? '誰か';
+
+      // Create notifications for all available members (except the decider)
+      final availableMembers = List<String>.from(dateInfo['members']);
+      for (final memberId in availableMembers) {
+        if (memberId != user.uid) {
+          await NotificationService.createPracticeDecisionNotification(
+            userId: memberId,
+            practiceDate: date,
+            deciderName: deciderName,
+          );
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -380,21 +403,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 16,
               ),
               title: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.sports_basketball_outlined,
-                    color: Theme.of(context).appBarTheme.foregroundColor,
-                    size: 20,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.sports_basketball_outlined,
+                        color: Theme.of(context).appBarTheme.foregroundColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'motimate',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).appBarTheme.foregroundColor,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'motimate',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).appBarTheme.foregroundColor,
-                    ),
-                  ),
+                  const Spacer(),
+                  _buildNotificationBell(),
                 ],
               ),
               background: Container(
@@ -413,6 +442,9 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                // フィードバック告知バナー
+                _buildFeedbackBanner(),
+                const SizedBox(height: 16),
                 // 人気の日程セクション
                 Container(
                   margin: const EdgeInsets.only(bottom: 24),
@@ -1474,6 +1506,119 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationBell() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const SizedBox.shrink();
+
+    return StreamBuilder<int>(
+      stream: NotificationService.getUnreadNotificationCount(user.uid),
+      builder: (context, snapshot) {
+        final unreadCount = snapshot.data ?? 0;
+        
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const NotificationsScreen(),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            child: Stack(
+              children: [
+                Icon(
+                  Icons.notifications_outlined,
+                  color: Theme.of(context).appBarTheme.foregroundColor,
+                  size: 24,
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white, width: 1),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      child: Text(
+                        unreadCount > 99 ? '99+' : unreadCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFeedbackBanner() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const FeedbackScreen(),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.feedback_outlined,
+              color: Color(0xFF667eea),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'フィードバックをお聞かせください 💭',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Color(0xFF9CA3AF),
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }
