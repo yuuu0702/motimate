@@ -10,6 +10,46 @@ class ProposalScreen extends StatefulWidget {
 }
 
 class _ProposalScreenState extends State<ProposalScreen> {
+  void _voteForDate(DateTime date) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ログインしていません。投票できません。')),
+      );
+      return;
+    }
+
+    try {
+      // Check if the user has already voted for this date
+      final existingVote = await FirebaseFirestore.instance
+          .collection('votes')
+          .where('userId', isEqualTo: user.uid)
+          .where('date', isEqualTo: Timestamp.fromDate(date))
+          .get();
+
+      if (existingVote.docs.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('この日程にはすでに投票済みです。')),
+        );
+        return;
+      }
+
+      await FirebaseFirestore.instance.collection('votes').add({
+        'userId': user.uid,
+        'date': Timestamp.fromDate(date),
+        'timestamp': Timestamp.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${date.month}/${date.day} に投票しました！')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('投票に失敗しました: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,31 +135,50 @@ class _ProposalScreenState extends State<ProposalScreen> {
                 return const Center(child: Text('提案できる日程がありません。'));
               }
 
-              return ListView.builder(
-                itemCount: sortedProposals.length,
-                itemBuilder: (context, index) {
-                  final entry = sortedProposals[index];
-                  final date = entry.key;
-                  final score = entry.value;
+              return StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('votes').snapshots(),
+                builder: (context, voteSnapshot) {
+                  if (voteSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (voteSnapshot.hasError) {
+                    return Center(child: Text('投票データの取得エラー: ${voteSnapshot.error}'));
+                  }
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: ListTile(
-                      title: Text(
-                        '${date.month}/${date.day} (スコア: ${score.toStringAsFixed(2)})',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        '空き人数: ${userAvailability.keys.where((userId) => userAvailability[userId]?[date] == true).length}'
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          // TODO: 投票ロジックを実装
-                          print('${date.month}/${date.day} に投票');
-                        },
-                        child: const Text('投票'),
-                      ),
-                    ),
+                  final Map<DateTime, int> votesCount = {};
+                  for (var doc in voteSnapshot.data!.docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final date = (data['date'] as Timestamp).toDate();
+                    // Normalize date to remove time component for accurate counting
+                    final normalizedDate = DateTime(date.year, date.month, date.day);
+                    votesCount[normalizedDate] = (votesCount[normalizedDate] ?? 0) + 1;
+                  }
+
+                  return ListView.builder(
+                    itemCount: sortedProposals.length,
+                    itemBuilder: (context, index) {
+                      final entry = sortedProposals[index];
+                      final date = entry.key;
+                      final score = entry.value;
+                      final currentVotes = votesCount[date] ?? 0;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        child: ListTile(
+                          title: Text(
+                            '${date.month}/${date.day} (スコア: ${score.toStringAsFixed(2)})',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '空き人数: ${userAvailability.keys.where((userId) => userAvailability[userId]?[date] == true).length}人, 投票数: $currentVotes人'
+                          ),
+                          trailing: ElevatedButton(
+                            onPressed: () => _voteForDate(date),
+                            child: const Text('投票'),
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               );
