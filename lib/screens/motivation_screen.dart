@@ -62,12 +62,25 @@ class _MotivationScreenState extends State<MotivationScreen> {
               'バスケに行きたい度',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 20),
+            Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: Text(
+                  _getEmojiForMotivation(_motivationLevel.round()),
+                  key: ValueKey<int>(_motivationLevel.round()), // Key for AnimatedSwitcher
+                  style: const TextStyle(fontSize: 80), // Larger emoji
+                ),
+              ),
+            ),
             Slider(
               value: _motivationLevel,
               min: 1.0,
               max: 5.0,
               divisions: 4,
-              label: _getEmojiForMotivation(_motivationLevel.round()),
               onChanged: (double value) {
                 setState(() {
                   _motivationLevel = value;
@@ -77,11 +90,11 @@ class _MotivationScreenState extends State<MotivationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: const [
-                Text('😩', style: TextStyle(fontSize: 24)),
-                Text('🙁', style: TextStyle(fontSize: 24)),
-                Text('😐', style: TextStyle(fontSize: 24)),
-                Text('😊', style: TextStyle(fontSize: 24)),
-                Text('🤩', style: TextStyle(fontSize: 24)),
+                Text('1'),
+                Text('2'),
+                Text('3'),
+                Text('4'),
+                Text('5'),
               ],
             ),
             const SizedBox(height: 20),
