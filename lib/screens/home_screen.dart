@@ -1193,7 +1193,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${date.month}月${date.day}日(${dayName})にバスケを決定しますか？',
+                '${date.month}月${date.day}日(${dayName})に日程を決定しますか？',
                 style: const TextStyle(fontSize: 16, color: Color(0xFF374151)),
               ),
               const SizedBox(height: 12),
