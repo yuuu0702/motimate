@@ -10,8 +10,17 @@ class MotivationScreen extends StatefulWidget {
 }
 
 class _MotivationScreenState extends State<MotivationScreen> {
-  double _motivationLevel = 3.0; // Default motivation level
+  double _motivationLevel = 3.0;
   final TextEditingController _commentController = TextEditingController();
+  bool _isSubmitted = false;
+  
+  final List<Map<String, dynamic>> motivationOptions = [
+    {'level': 1, 'emoji': '😴', 'label': '今日はちょっと...', 'color': [0xFF9CA3AF, 0xFF6B7280]},
+    {'level': 2, 'emoji': '😐', 'label': 'あまり気分が...', 'color': [0xFF60A5FA, 0xFF3B82F6]},
+    {'level': 3, 'emoji': '🙂', 'label': '普通かな', 'color': [0xFFFBBF24, 0xFFF59E0B]},
+    {'level': 4, 'emoji': '😊', 'label': 'やる気あり！', 'color': [0xFFFB923C, 0xFFEA580C]},
+    {'level': 5, 'emoji': '🔥', 'label': '超やる気！！', 'color': [0xFFF87171, 0xFFEF4444]},
+  ];
 
   @override
   void dispose() {
@@ -36,10 +45,16 @@ class _MotivationScreenState extends State<MotivationScreen> {
         'timestamp': Timestamp.now(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('モチベーションを登録しました！')),
-      );
-      Navigator.pop(context); // Go back to the previous screen
+      setState(() {
+        _isSubmitted = true;
+      });
+      
+      // Auto-navigate back after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('モチベーションの登録に失敗しました: $e')),
@@ -49,94 +64,291 @@ class _MotivationScreenState extends State<MotivationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('モチベーション登録'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'バスケに行きたい度',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    if (_isSubmitted) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFECFDF5), Color(0xFFDCFCE7)],
             ),
-            const SizedBox(height: 20),
-            Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: Text(
-                  _getEmojiForMotivation(_motivationLevel.round()),
-                  key: ValueKey<int>(_motivationLevel.round()), // Key for AnimatedSwitcher
-                  style: const TextStyle(fontSize: 80), // Larger emoji
+          ),
+          child: Center(
+            child: Card(
+              margin: const EdgeInsets.all(16),
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      '✅',
+                      style: TextStyle(fontSize: 64),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      '登録完了！',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '今日のやる気を記録しました',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                      child: const Text('ホームに戻る'),
+                    ),
+                  ],
                 ),
               ),
             ),
-            Slider(
-              value: _motivationLevel,
-              min: 1.0,
-              max: 5.0,
-              divisions: 4,
-              onChanged: (double value) {
-                setState(() {
-                  _motivationLevel = value;
-                });
-              },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const [
-                Text('1'),
-                Text('2'),
-                Text('3'),
-                Text('4'),
-                Text('5'),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'コメント (任意)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            TextField(
-              controller: _commentController,
-              decoration: const InputDecoration(
-                hintText: '今日の気分や意気込みをどうぞ',
-                border: OutlineInputBorder(),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFECFDF5), Color(0xFFDCFCE7)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.8),
+                        shape: const CircleBorder(),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Text(
+                      '今日のやる気は？',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: _submitMotivation,
-                child: const Text('モチベーションを登録'),
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      // Motivation Selection Card
+                      Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              const Text(
+                                '気分を選んでね！',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              ...motivationOptions.map((option) => _buildMotivationOption(option)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Comment Section
+                      Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '一言コメント（任意）',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: _commentController,
+                                decoration: InputDecoration(
+                                  hintText: '今日の気分や理由があれば...',
+                                  filled: true,
+                                  fillColor: const Color(0xFFF9FAFB),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  contentPadding: const EdgeInsets.all(16),
+                                ),
+                                maxLines: 3,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Submit Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _submitMotivation,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.send, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'やる気を登録する',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  String _getEmojiForMotivation(int level) {
-    switch (level) {
-      case 1:
-        return '😩';
-      case 2:
-        return '🙁';
-      case 3:
-        return '😐';
-      case 4:
-        return '😊';
-      case 5:
-        return '🤩';
-      default:
-        return '';
-    }
+  Widget _buildMotivationOption(Map<String, dynamic> option) {
+    final isSelected = (_motivationLevel.round() == option['level']);
+    final colors = option['color'] as List<int>;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _motivationLevel = option['level'].toDouble();
+            });
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [Color(colors[0]), Color(colors[1])],
+                    )
+                  : null,
+              color: isSelected ? null : const Color(0xFFF9FAFB),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Color(colors[1]).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
+            ),
+            transform: Matrix4.identity()..scale(isSelected ? 1.02 : 1.0),
+            child: Row(
+              children: [
+                Text(
+                  option['emoji'],
+                  style: const TextStyle(fontSize: 32),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    option['label'],
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.white : const Color(0xFF1F2937),
+                    ),
+                  ),
+                ),
+                Text(
+                  'Lv.${option['level']}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isSelected 
+                        ? Colors.white.withOpacity(0.8)
+                        : const Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
