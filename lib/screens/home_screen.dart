@@ -57,6 +57,7 @@ class HomeScreen extends StatelessWidget {
                 Card(
                   elevation: 4,
                   margin: const EdgeInsets.only(bottom: 20),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)), // Added
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
@@ -91,6 +92,7 @@ class HomeScreen extends StatelessWidget {
                       final motivation = top3Motivations[index].data() as Map<String, dynamic>;
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)), // Added
                         child: ListTile(
                           leading: CircleAvatar(
                             child: Text(motivation['level'].toString()),

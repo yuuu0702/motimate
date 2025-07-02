@@ -75,6 +75,7 @@ class MemberListScreen extends StatelessWidget {
 
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)), // Added
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(

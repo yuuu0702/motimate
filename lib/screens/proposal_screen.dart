@@ -164,6 +164,7 @@ class _ProposalScreenState extends State<ProposalScreen> {
 
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)), // Added
                         child: ListTile(
                           title: Text(
                             '${date.month}/${date.day} (スコア: ${score.toStringAsFixed(2)})',
