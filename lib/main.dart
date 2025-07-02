@@ -82,9 +82,53 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey, // Add navigatorKey
       title: 'Motimate',
       theme: ThemeData(
-        fontFamily: 'MPLUSRounded1c', // Added custom font
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        fontFamily: 'MPLUSRounded1c',
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF667eea),
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xFF1E293B),
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontFamily: 'MPLUSRounded1c',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+        cardTheme: CardTheme(
+          color: Colors.white,
+          elevation: 8,
+          shadowColor: Colors.black.withValues(alpha: 0.1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Color(0xFF667eea),
+          unselectedItemColor: Color(0xFF64748B),
+          elevation: 8,
+          type: BottomNavigationBarType.fixed,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF667eea),
+          foregroundColor: Colors.white,
+          elevation: 8,
+        ),
       ),
       routes: {
         '/schedule': (context) => const ScheduleScreen(),
