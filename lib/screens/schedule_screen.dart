@@ -11,6 +11,7 @@ class ScheduleScreen extends StatefulWidget {
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
   Set<DateTime> selectedDates = {};
+  Set<DateTime> myRegisteredDates = {};
   DateTime currentDate = DateTime.now();
   Map<String, Map<String, dynamic>> scheduleData = {};
   bool isLoading = true;
@@ -25,21 +26,33 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   Future<void> _loadScheduleData() async {
     try {
+      final user = FirebaseAuth.instance.currentUser;
       final snapshot = await FirebaseFirestore.instance
           .collection('schedules')
           .get();
       
       Map<String, Map<String, dynamic>> data = {};
+      Set<DateTime> myDates = {};
+      
       for (var doc in snapshot.docs) {
         final docData = doc.data();
+        final members = docData['members'] as List? ?? [];
+        
         data[doc.id] = {
-          'available': (docData['members'] as List?)?.length ?? 0,
-          'members': docData['members'] ?? [],
+          'available': members.length,
+          'members': members,
         };
+        
+        // Check if current user is in the members list
+        if (user != null && members.contains(user.uid)) {
+          final date = DateTime.parse(doc.id);
+          myDates.add(date);
+        }
       }
       
       setState(() {
         scheduleData = data;
+        myRegisteredDates = myDates;
         isLoading = false;
       });
     } catch (e) {
@@ -74,12 +87,59 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   void toggleDate(DateTime date) {
     setState(() {
-      if (selectedDates.contains(date)) {
+      // If already registered, remove from registration
+      if (myRegisteredDates.contains(date)) {
+        _removeFromSchedule(date);
+      } 
+      // If currently selected for addition, unselect
+      else if (selectedDates.contains(date)) {
         selectedDates.remove(date);
-      } else {
+      } 
+      // Otherwise, select for addition
+      else {
         selectedDates.add(date);
       }
     });
+  }
+
+  Future<void> _removeFromSchedule(DateTime date) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final dateKey = getDateKey(date);
+      final docRef = FirebaseFirestore.instance.collection('schedules').doc(dateKey);
+      
+      await docRef.update({
+        'members': FieldValue.arrayRemove([user.uid]),
+      });
+      
+      setState(() {
+        myRegisteredDates.remove(date);
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${date.month}/${date.day}の予定を削除しました'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      
+      _loadScheduleData();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('削除に失敗しました: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   String getDateKey(DateTime date) {
@@ -210,11 +270,34 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               ),
                               const SizedBox(height: 8),
                               const Text(
-                                '空いている日をタップしてね',
+                                '日付をタップして選択/解除できます',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFF6B7280),
                                 ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  // Legend
+                                  _buildLegendItem(
+                                    Colors.green,
+                                    '登録済み',
+                                    Icons.check_circle,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _buildLegendItem(
+                                    const Color(0xFF667eea),
+                                    '選択中',
+                                    null,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  _buildLegendItem(
+                                    Colors.orange,
+                                    '他の人',
+                                    null,
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 24),
 
@@ -253,19 +336,48 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   }
 
                                   final isSelected = selectedDates.contains(day);
+                                  final isMyRegistered = myRegisteredDates.contains(day);
                                   final dateInfo = getDateInfo(day);
+
+                                  // Determine the visual state
+                                  Color? backgroundColor;
+                                  Gradient? gradient;
+                                  Color textColor = const Color(0xFF1F2937);
+                                  Widget? statusIcon;
+
+                                  if (isMyRegistered) {
+                                    // Already registered by me - green with checkmark
+                                    backgroundColor = const Color(0xFF10B981);
+                                    textColor = Colors.white;
+                                    statusIcon = const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.white,
+                                      size: 16,
+                                    );
+                                  } else if (isSelected) {
+                                    // Currently selected for new registration - blue gradient
+                                    gradient = const LinearGradient(
+                                      colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                    );
+                                    textColor = Colors.white;
+                                  } else {
+                                    // Default state
+                                    backgroundColor = Colors.transparent;
+                                  }
 
                                   return GestureDetector(
                                     onTap: () => toggleDate(day),
                                     child: Container(
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(12),
-                                        gradient: isSelected
-                                            ? const LinearGradient(
-                                                colors: [Colors.blue, Colors.purple],
-                                              )
-                                            : null,
-                                        color: isSelected ? null : Colors.transparent,
+                                        gradient: gradient,
+                                        color: backgroundColor,
+                                        border: isMyRegistered ? null : Border.all(
+                                          color: isSelected 
+                                              ? Colors.transparent
+                                              : const Color(0xFFE2E8F0),
+                                          width: 1,
+                                        ),
                                       ),
                                       child: Stack(
                                         children: [
@@ -274,14 +386,22 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               '${day.day}',
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                                color: isSelected
-                                                    ? Colors.white
-                                                    : const Color(0xFF1F2937),
+                                                fontWeight: FontWeight.w600,
+                                                color: textColor,
                                               ),
                                             ),
                                           ),
-                                          if (dateInfo != null)
+                                          
+                                          // My registration checkmark
+                                          if (isMyRegistered)
+                                            Positioned(
+                                              top: 2,
+                                              right: 2,
+                                              child: statusIcon!,
+                                            ),
+                                          
+                                          // Others' availability count
+                                          if (dateInfo != null && !isMyRegistered)
                                             Positioned(
                                               top: 2,
                                               right: 2,
@@ -444,6 +564,37 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendItem(Color color, String label, IconData? icon) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+          child: icon != null
+              ? Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 8,
+                )
+              : null,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF6B7280),
+          ),
+        ),
+      ],
     );
   }
 }

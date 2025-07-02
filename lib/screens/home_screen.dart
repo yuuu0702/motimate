@@ -13,6 +13,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<DateTime?> _nextPlayDates = [null, null];
   double _currentMotivation = 3.0;
   bool _isUpdatingMotivation = false;
+  List<Map<String, dynamic>> _popularDates = [];
+  bool _isLoadingSchedule = true;
+  List<Map<String, dynamic>> _pendingPractices = [];
+  bool _isLoadingPractices = true;
 
   final List<Map<String, dynamic>> motivationLevels = [
     {'level': 1, 'emoji': '😴', 'label': 'お疲れ気味...', 'color': [0xFF9CA3AF, 0xFF6B7280]},
@@ -22,11 +26,15 @@ class _HomeScreenState extends State<HomeScreen> {
     {'level': 5, 'emoji': '🔥', 'label': '超やる気！！', 'color': [0xFFF87171, 0xFFEF4444]},
   ];
 
+  final List<String> daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+
   @override
   void initState() {
     super.initState();
     _loadNextPlayDate();
     _loadCurrentMotivation();
+    _loadPopularDates();
+    _loadPendingPractices();
   }
 
 
@@ -74,14 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      // Save motivation record
-      await FirebaseFirestore.instance.collection('motivations').add({
-        'userId': user.uid,
-        'level': newLevel.round(),
-        'timestamp': Timestamp.now(),
-      });
-
-      // Update user's latest motivation
+      // Update user's motivation info only
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'latestMotivationLevel': newLevel.round(),
         'latestMotivationTimestamp': Timestamp.now(),
@@ -114,6 +115,194 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isUpdatingMotivation = false;
       });
+    }
+  }
+
+  Future<void> _loadPopularDates() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('schedules')
+          .get();
+      
+      List<Map<String, dynamic>> dates = [];
+      final now = DateTime.now();
+      
+      for (var doc in snapshot.docs) {
+        final docData = doc.data();
+        final members = docData['members'] as List? ?? [];
+        
+        // Only include future dates with at least 1 member
+        try {
+          final date = DateTime.parse(doc.id);
+          if (date.isAfter(now) && members.isNotEmpty) {
+            final dayName = daysOfWeek[date.weekday % 7];
+            dates.add({
+              'date': date,
+              'dateKey': doc.id,
+              'dayName': dayName,
+              'memberCount': members.length,
+              'members': members,
+            });
+          }
+        } catch (e) {
+          // Skip invalid date formats
+          continue;
+        }
+      }
+      
+      // Sort by member count (descending) and then by date (ascending)
+      dates.sort((a, b) {
+        int memberComparison = b['memberCount'].compareTo(a['memberCount']);
+        if (memberComparison != 0) return memberComparison;
+        return a['date'].compareTo(b['date']);
+      });
+      
+      setState(() {
+        _popularDates = dates.take(3).toList();
+        _isLoadingSchedule = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingSchedule = false;
+      });
+    }
+  }
+
+  Future<void> _decidePracticeDate(Map<String, dynamic> dateInfo) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final date = dateInfo['date'] as DateTime;
+      
+      // Create practice decision document
+      await FirebaseFirestore.instance.collection('practice_decisions').add({
+        'decidedBy': user.uid,
+        'decidedAt': Timestamp.now(),
+        'practiceDate': Timestamp.fromDate(date),
+        'dateKey': dateInfo['dateKey'],
+        'availableMembers': dateInfo['members'],
+        'status': 'pending', // pending, confirmed, cancelled
+        'responses': {}, // Will store member responses
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${date.month}/${date.day}(${dateInfo['dayName']})に練習日を決定しました！'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      // Refresh data
+      _loadPopularDates();
+      _loadPendingPractices();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('決定に失敗しました: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadPendingPractices() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() {
+        _isLoadingPractices = false;
+      });
+      return;
+    }
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('practice_decisions')
+          .where('status', isEqualTo: 'pending')
+          .get();
+      
+      List<Map<String, dynamic>> practices = [];
+      final now = DateTime.now();
+      
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final practiceDate = (data['practiceDate'] as Timestamp).toDate();
+        
+        // Only include future practices where user was available
+        if (practiceDate.isAfter(now) && 
+            (data['availableMembers'] as List).contains(user.uid)) {
+          
+          final dayName = daysOfWeek[practiceDate.weekday % 7];
+          final responses = data['responses'] as Map<String, dynamic>? ?? {};
+          final userResponse = responses[user.uid];
+          
+          practices.add({
+            'docId': doc.id,
+            'date': practiceDate,
+            'dayName': dayName,
+            'decidedBy': data['decidedBy'],
+            'availableMembers': data['availableMembers'],
+            'responses': responses,
+            'userResponse': userResponse,
+            'decidedAt': data['decidedAt'],
+          });
+        }
+      }
+      
+      // Sort by practice date
+      practices.sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
+      
+      setState(() {
+        _pendingPractices = practices;
+        _isLoadingPractices = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingPractices = false;
+      });
+    }
+  }
+
+  Future<void> _respondToPractice(String docId, String response) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('practice_decisions')
+          .doc(docId)
+          .update({
+        'responses.${user.uid}': response,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response == 'join' ? '参加で回答しました！' : '見送りで回答しました'),
+            backgroundColor: response == 'join' ? const Color(0xFF10B981) : Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      // Refresh data
+      _loadPendingPractices();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('回答に失敗しました: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -244,63 +433,141 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          children: [
-                            const Icon(
-                              Icons.event,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              _getNextPracticeText(),
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                      // Popular dates section
+                      if (_isLoadingSchedule)
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Colors.white),
+                          ),
+                        )
+                      else if (_popularDates.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.trending_up,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    '人気の日程',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              ..._popularDates.map((dateInfo) => _buildPopularDateItem(dateInfo)),
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, '/schedule');
+                                  },
+                                  icon: const Icon(Icons.add_rounded, size: 20),
+                                  label: const Text(
+                                    '新しい日程を追加',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF667eea),
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(
+                                Icons.event,
                                 color: Colors.white,
+                                size: 32,
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/schedule');
-                                },
-                                icon: const Icon(Icons.add_rounded, size: 20),
-                                label: const Text(
-                                  '日程を決める',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFF667eea),
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'まだ日程候補がありません',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, '/schedule');
+                                  },
+                                  icon: const Icon(Icons.add_rounded, size: 20),
+                                  label: const Text(
+                                    '日程を決める',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF667eea),
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
+
+                // Pending Practice Decisions Section
+                if (!_isLoadingPractices && _pendingPractices.isNotEmpty)
+                  ..._pendingPractices.map((practice) => _buildPendingPracticeCard(practice)),
 
                 // Personal Motivation Slider Section
                 Container(
@@ -720,6 +987,422 @@ class _HomeScreenState extends State<HomeScreen> {
               ]),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPopularDateItem(Map<String, dynamic> dateInfo) {
+    final date = dateInfo['date'] as DateTime;
+    final dayName = dateInfo['dayName'] as String;
+    final memberCount = dateInfo['memberCount'] as int;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Column(
+            children: [
+              Text(
+                '${date.day}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                '($dayName)',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${date.month}月${date.day}日',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  '$memberCount人が参加可能',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => _showDecisionDialog(dateInfo),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF667eea),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              minimumSize: const Size(0, 0),
+            ),
+            child: const Text(
+              '決定',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDecisionDialog(Map<String, dynamic> dateInfo) {
+    final date = dateInfo['date'] as DateTime;
+    final dayName = dateInfo['dayName'] as String;
+    final memberCount = dateInfo['memberCount'] as int;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            '練習日程の決定',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${date.month}月${date.day}日(${dayName})に練習を決定しますか？',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF374151),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.people,
+                          color: Color(0xFF667eea),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$memberCount人が参加可能',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '決定すると、参加可能なメンバーに通知が送信され、参加/見送りの回答を求めます。',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'キャンセル',
+                style: TextStyle(color: Color(0xFF6B7280)),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _decidePracticeDate(dateInfo);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF667eea),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                '決定する',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPendingPracticeCard(Map<String, dynamic> practice) {
+    final date = practice['date'] as DateTime;
+    final dayName = practice['dayName'] as String;
+    final userResponse = practice['userResponse'] as String?;
+    final responses = practice['responses'] as Map<String, dynamic>;
+    
+    // Count responses
+    int joinCount = 0;
+    int skipCount = 0;
+    responses.forEach((key, value) {
+      if (value == 'join') joinCount++;
+      if (value == 'skip') skipCount++;
+    });
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: userResponse == null ? const Color(0xFFFB923C) : Colors.transparent,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFB923C).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.notification_important,
+                  color: Color(0xFFFB923C),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                '練習日程が決定されました！',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Practice date info
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      '${date.day}',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      '($dayName)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${date.month}月${date.day}日',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '参加: ${joinCount}人 / 見送り: ${skipCount}人',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Response section
+          if (userResponse == null) ...[
+            const Text(
+              'あなたの参加状況を教えてください',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _respondToPractice(practice['docId'], 'join'),
+                    icon: const Icon(Icons.check_circle_outline, size: 20),
+                    label: const Text(
+                      '参加する',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _respondToPractice(practice['docId'], 'skip'),
+                    icon: const Icon(Icons.cancel_outlined, size: 20),
+                    label: const Text(
+                      '見送り',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: userResponse == 'join' 
+                    ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                    : Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    userResponse == 'join' ? Icons.check_circle : Icons.cancel,
+                    color: userResponse == 'join' ? const Color(0xFF10B981) : Colors.orange,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userResponse == 'join' ? '参加で回答済み' : '見送りで回答済み',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: userResponse == 'join' ? const Color(0xFF10B981) : Colors.orange,
+                          ),
+                        ),
+                        const Text(
+                          '回答を変更したい場合は、再度ボタンを押してください',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _respondToPractice(
+                      practice['docId'], 
+                      userResponse == 'join' ? 'skip' : 'join'
+                    ),
+                    child: Text(
+                      userResponse == 'join' ? '見送りに変更' : '参加に変更',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -48,308 +48,219 @@ class MemberListScreen extends StatelessWidget {
               // Content
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('motivations').snapshots(),
-        builder: (context, motivationSnapshot) {
-          if (motivationSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+                  stream: FirebaseFirestore.instance.collection('users').snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-          if (motivationSnapshot.hasError) {
-            return Center(child: Text('モチベーションデータの取得エラー: ${motivationSnapshot.error}'));
-          }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('データの取得エラー: ${snapshot.error}'));
+                    }
 
-          final Map<String, dynamic> latestMotivations = {};
-          for (var doc in motivationSnapshot.data!.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            final userId = data['userId'];
-            final timestamp = (data['timestamp'] as Timestamp).toDate();
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('まだメンバー情報がありません。'));
+                    }
 
-            if (!latestMotivations.containsKey(userId) ||
-                timestamp.isAfter((latestMotivations[userId]['timestamp'] as Timestamp).toDate())) {
-              latestMotivations[userId] = data;
-            }
-          }
+                    // Filter users who have completed profile setup
+                    final users = snapshot.data!.docs.where((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return data['profileSetup'] == true;
+                    }).toList();
 
-          return StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('availability').snapshots(),
-            builder: (context, availabilitySnapshot) {
-              if (availabilitySnapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+                    if (users.isEmpty) {
+                      return const Center(child: Text('まだメンバー情報がありません。'));
+                    }
 
-              if (availabilitySnapshot.hasError) {
-                return Center(child: Text('空き状況データの取得エラー: ${availabilitySnapshot.error}'));
-              }
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: users.length,
+                      itemBuilder: (context, index) {
+                        final userDoc = users[index];
+                        final userData = userDoc.data() as Map<String, dynamic>;
+                        final userId = userDoc.id;
 
-              final Map<String, Map<DateTime, bool>> userAvailability = {};
-              for (var doc in availabilitySnapshot.data!.docs) {
-                final data = doc.data() as Map<String, dynamic>;
-                final userId = data['userId'];
-                final date = (data['date'] as Timestamp).toDate();
-                final isAvailable = data['isAvailable'];
-
-                if (!userAvailability.containsKey(userId)) {
-                  userAvailability[userId] = {};
-                }
-                userAvailability[userId]![date] = isAvailable;
-              }
-
-              // Combine data and display
-              final allUserIds = <String>{};
-              allUserIds.addAll(latestMotivations.keys);
-              allUserIds.addAll(userAvailability.keys);
-
-              if (allUserIds.isEmpty) {
-                return const Center(child: Text('まだメンバー情報がありません。'));
-              }
-
-              return ListView.builder(
-                itemCount: allUserIds.length,
-                itemBuilder: (context, index) {
-                  final userId = allUserIds.elementAt(index);
-                  final motivation = latestMotivations[userId];
-                  final availability = userAvailability[userId];
-
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: Card(
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // User header
-                            Row(
-                              children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: const Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: Card(
+                            elevation: 8,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // User header
+                                  Row(
                                     children: [
-                                      FutureBuilder<DocumentSnapshot>(
-                                        future: FirebaseFirestore.instance
-                                            .collection('users')
-                                            .doc(userId)
-                                            .get(),
-                                        builder: (context, userSnapshot) {
-                                          if (userSnapshot.hasData) {
-                                            final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
-                                            return Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  userData?['displayName'] ?? '${userId.substring(0, 8)}...',
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color(0xFF1F2937),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  userData?['department']?.isNotEmpty == true || userData?['group']?.isNotEmpty == true
-                                                      ? [userData?['department'], userData?['group']]
-                                                          .where((s) => s?.isNotEmpty == true)
-                                                          .join(' / ')
-                                                      : 'メンバー',
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Color(0xFF6B7280),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          }
-                                          return Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${userId.substring(0, 8)}...',
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF1F2937),
-                                                ),
+                                      Container(
+                                        width: 48,
+                                        height: 48,
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                          ),
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: const Icon(
+                                          Icons.person,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              userData['displayName'] ?? userData['username'] ?? 'Unknown User',
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF1F2937),
                                               ),
+                                            ),
+                                            Text(
+                                              userData['department']?.isNotEmpty == true || userData['group']?.isNotEmpty == true
+                                                  ? [userData['department'], userData['group']]
+                                                      .where((s) => s?.isNotEmpty == true)
+                                                      .join(' / ')
+                                                  : 'メンバー',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF6B7280),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (userData['latestMotivationLevel'] != null)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Text(
+                                            'Lv.${userData['latestMotivationLevel']}',
+                                            style: const TextStyle(
+                                              color: Color(0xFF10B981),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  
+                                  const SizedBox(height: 20),
+                                  
+                                  // Motivation section
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF9FAFB),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.sentiment_satisfied,
+                                              color: Color(0xFF667eea),
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              'モチベーション',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF374151),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          userData['latestMotivationLevel'] != null
+                                              ? '${userData['latestMotivationLevel']}/5'
+                                              : '未登録',
+                                          style: const TextStyle(
+                                            color: Color(0xFF6B7280),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        if (userData['latestMotivationTimestamp'] != null)
+                                          Text(
+                                            '最終更新: ${_formatTimestamp(userData['latestMotivationTimestamp'] as Timestamp)}',
+                                            style: const TextStyle(
+                                              color: Color(0xFF9CA3AF),
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  const SizedBox(height: 16),
+                                  
+                                  // Bio section (if available)
+                                  if (userData['bio']?.isNotEmpty == true)
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF9FAFB),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.chat_bubble_outline,
+                                                color: Color(0xFF667eea),
+                                                size: 20,
+                                              ),
+                                              const SizedBox(width: 8),
                                               const Text(
-                                                'メンバー',
+                                                '自己紹介',
                                                 style: TextStyle(
                                                   fontSize: 14,
-                                                  color: Color(0xFF6B7280),
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF374151),
                                                 ),
                                               ),
                                             ],
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (motivation != null)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      'Lv.${motivation['level']}',
-                                      style: const TextStyle(
-                                        color: Color(0xFF10B981),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            
-                            const SizedBox(height: 20),
-                            
-                            // Motivation section
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF9FAFB),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.sentiment_satisfied,
-                                        color: Color(0xFF667eea),
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      const Text(
-                                        'モチベーション',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF374151),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    motivation != null
-                                        ? '${motivation['level']}/5 ${motivation['comment']?.isNotEmpty == true ? '- ${motivation['comment']}' : ''}'
-                                        : '未登録',
-                                    style: const TextStyle(
-                                      color: Color(0xFF6B7280),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 16),
-                            
-                            // Availability section
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF9FAFB),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_today,
-                                        color: Color(0xFF667eea),
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      const Text(
-                                        '空き状況',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: Color(0xFF374151),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  if (availability != null && availability.isNotEmpty)
-                                    Wrap(
-                                      spacing: 8,
-                                      runSpacing: 4,
-                                      children: availability.entries.map((entry) {
-                                        final date = entry.key;
-                                        final isAvailable = entry.value;
-                                        return Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: isAvailable
-                                                ? Colors.green.withValues(alpha: 0.1)
-                                                : Colors.red.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            '${date.month}/${date.day}',
-                                            style: TextStyle(
-                                              color: isAvailable ? Colors.green : Colors.red,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            userData['bio'],
+                                            style: const TextStyle(
+                                              color: Color(0xFF6B7280),
+                                              fontSize: 14,
                                             ),
                                           ),
-                                        );
-                                      }).toList(),
-                                    )
-                                  else
-                                    const Text(
-                                      '未登録',
-                                      style: TextStyle(
-                                        color: Color(0xFF6B7280),
-                                        fontSize: 14,
+                                        ],
                                       ),
                                     ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -357,5 +268,21 @@ class MemberListScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatTimestamp(Timestamp timestamp) {
+    final date = timestamp.toDate();
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      return '今日 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } else if (difference.inDays == 1) {
+      return '昨日';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}日前';
+    } else {
+      return '${date.month}/${date.day}';
+    }
   }
 }
