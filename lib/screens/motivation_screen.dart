@@ -58,9 +58,11 @@ class _MotivationScreenState extends State<MotivationScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('モチベーションの登録に失敗しました: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('モチベーションの登録に失敗しました: $e')),
+        );
+      }
     }
   }
 

@@ -345,7 +345,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 ...scheduleData.entries
                                     .toList()
                                     ..sort((a, b) => b.value['available'].compareTo(a.value['available']))
-                                    ..take(3)
+                                    .take(3)
                                     .map((entry) {
                                       final date = DateTime.parse(entry.key);
                                       final info = entry.value;

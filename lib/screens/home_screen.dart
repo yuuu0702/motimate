@@ -41,32 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-  Future<void> _updateNextPlayDate(DateTime date, int index) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    // Update the local list first
-    setState(() {
-      _nextPlayDates[index] = date;
-    });
-
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'nextPlayDates': _nextPlayDates.map((d) => d != null ? Timestamp.fromDate(d) : null).toList(),
-      }, SetOptions(merge: true));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('次にバスケをやりたい日程 ${index + 1} を ${date.month}/${date.day} に設定しました！')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('日程の更新に失敗しました: $e')),
-        );
-      }
-    }
-  }
 
 
   String _getNextPracticeText() {

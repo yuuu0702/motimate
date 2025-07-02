@@ -98,7 +98,7 @@ class MemberListScreen extends StatelessWidget {
                               return Text(
                                 '  ${date.month}/${date.day}: ${isAvailable ? '空き' : '不可'}',
                               );
-                            }).toList()
+                            })
                           else
                             const Text('  未登録'),
                         ],
