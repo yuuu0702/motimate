@@ -101,7 +101,7 @@ class MyApp extends StatelessWidget {
             color: Color(0xFF1E293B),
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Colors.white,
           elevation: 8,
           shadowColor: Colors.black.withValues(alpha: 0.1),
@@ -130,9 +130,7 @@ class MyApp extends StatelessWidget {
           elevation: 8,
         ),
       ),
-      routes: {
-        '/schedule': (context) => const ScheduleScreen(),
-      },
+      routes: {'/schedule': (context) => const ScheduleScreen()},
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
