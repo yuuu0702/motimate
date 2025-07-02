@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:motimate/services/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:motimate/main.dart';
 
 class UserSettingsScreen extends StatefulWidget {
   const UserSettingsScreen({super.key});
@@ -28,6 +29,14 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     super.initState();
     _loadUserData();
     _loadNotificationStatus();
+    _loadThemePreference();
+  }
+
+  void _loadThemePreference() {
+    // ダークテーマは準備中のため、常にライトテーマ
+    setState(() {
+      _isDarkMode = false;
+    });
   }
 
   @override
@@ -467,8 +476,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                 child: Row(
                                   children: [
                                     Icon(
-                                      _isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                                      color: const Color(0xFF667eea),
+                                      Icons.construction,
+                                      color: Colors.orange.withOpacity(0.7),
                                       size: 24,
                                     ),
                                     const SizedBox(width: 16),
@@ -477,31 +486,42 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            _isDarkMode ? 'ダークテーマ' : 'ライトテーマ',
-                                            style: const TextStyle(
+                                            'ダークテーマ',
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF374151),
+                                              color: Colors.grey[600],
                                             ),
                                           ),
                                           Text(
-                                            _isDarkMode ? '暗い背景で表示します' : '明るい背景で表示します',
-                                            style: const TextStyle(
+                                            '🚧 準備中です',
+                                            style: TextStyle(
                                               fontSize: 14,
-                                              color: Color(0xFF6B7280),
+                                              color: Colors.orange[600],
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Switch(
-                                      value: _isDarkMode,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _isDarkMode = value;
-                                        });
-                                      },
-                                      activeColor: const Color(0xFF667eea),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.orange.withOpacity(0.3),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Coming Soon',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.orange[700],
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),

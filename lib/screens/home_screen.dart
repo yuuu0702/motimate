@@ -384,15 +384,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Icon(
                     Icons.sports_basketball_outlined,
-                    color: const Color(0xFF1E293B),
+                    color: Theme.of(context).appBarTheme.foregroundColor,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'motimate',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
+                      color: Theme.of(context).appBarTheme.foregroundColor,
                     ),
                   ),
                 ],

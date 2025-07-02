@@ -97,6 +97,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
         'group': _groupController.text.trim(),
         'bio': _bioController.text.trim(),
         'profileSetup': true,
+        'isDarkMode': false, // デフォルトはライトテーマ
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));

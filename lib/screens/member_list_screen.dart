@@ -153,30 +153,6 @@ class MemberListScreen extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      if (userData['latestMotivationLevel'] !=
-                                          null)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(
-                                              0xFF10B981,
-                                            ).withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'モチベ:${userData['latestMotivationLevel']}',
-                                            style: const TextStyle(
-                                              color: Color(0xFF10B981),
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
                                     ],
                                   ),
 
