@@ -19,11 +19,36 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoadingPractices = true;
 
   final List<Map<String, dynamic>> motivationLevels = [
-    {'level': 1, 'emoji': '😴', 'label': 'お疲れ気味...', 'color': [0xFF9CA3AF, 0xFF6B7280]},
-    {'level': 2, 'emoji': '😐', 'label': 'あまり気分が...', 'color': [0xFF60A5FA, 0xFF3B82F6]},
-    {'level': 3, 'emoji': '🙂', 'label': '普通かな', 'color': [0xFFFBBF24, 0xFFF59E0B]},
-    {'level': 4, 'emoji': '😊', 'label': 'やる気あり！', 'color': [0xFFFB923C, 0xFFEA580C]},
-    {'level': 5, 'emoji': '🔥', 'label': '超やる気！！', 'color': [0xFFF87171, 0xFFEF4444]},
+    {
+      'level': 1,
+      'emoji': '😴',
+      'label': 'お疲れ気味...',
+      'color': [0xFF9CA3AF, 0xFF6B7280],
+    },
+    {
+      'level': 2,
+      'emoji': '😐',
+      'label': 'あまり気分が...',
+      'color': [0xFF60A5FA, 0xFF3B82F6],
+    },
+    {
+      'level': 3,
+      'emoji': '🙂',
+      'label': '普通かな',
+      'color': [0xFFFBBF24, 0xFFF59E0B],
+    },
+    {
+      'level': 4,
+      'emoji': '😊',
+      'label': 'やる気あり！',
+      'color': [0xFFFB923C, 0xFFEA580C],
+    },
+    {
+      'level': 5,
+      'emoji': '🔥',
+      'label': '超やる気！！',
+      'color': [0xFFF87171, 0xFFEF4444],
+    },
   ];
 
   final List<String> daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
@@ -37,18 +62,22 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadPendingPractices();
   }
 
-
   Future<void> _loadNextPlayDate() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
     if (userDoc.exists) {
       final data = userDoc.data();
       if (data != null && data.containsKey('nextPlayDates')) {
         final List<dynamic> dates = data['nextPlayDates'];
         setState(() {
-          _nextPlayDates = dates.map((timestamp) => (timestamp as Timestamp).toDate()).toList();
+          _nextPlayDates = dates
+              .map((timestamp) => (timestamp as Timestamp).toDate())
+              .toList();
           // Ensure there are always two elements
           while (_nextPlayDates.length < 2) {
             _nextPlayDates.add(null);
@@ -62,12 +91,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
     if (userDoc.exists) {
       final data = userDoc.data();
       if (data != null && data.containsKey('latestMotivationLevel')) {
         setState(() {
-          _currentMotivation = (data['latestMotivationLevel'] as num).toDouble();
+          _currentMotivation = (data['latestMotivationLevel'] as num)
+              .toDouble();
         });
       }
     }
@@ -123,14 +156,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final snapshot = await FirebaseFirestore.instance
           .collection('schedules')
           .get();
-      
+
       List<Map<String, dynamic>> dates = [];
       final now = DateTime.now();
-      
+
       for (var doc in snapshot.docs) {
         final docData = doc.data();
         final members = docData['members'] as List? ?? [];
-        
+
         // Only include future dates with at least 1 member
         try {
           final date = DateTime.parse(doc.id);
@@ -149,14 +182,14 @@ class _HomeScreenState extends State<HomeScreen> {
           continue;
         }
       }
-      
+
       // Sort by member count (descending) and then by date (ascending)
       dates.sort((a, b) {
         int memberComparison = b['memberCount'].compareTo(a['memberCount']);
         if (memberComparison != 0) return memberComparison;
         return a['date'].compareTo(b['date']);
       });
-      
+
       setState(() {
         _popularDates = dates.take(3).toList();
         _isLoadingSchedule = false;
@@ -174,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final date = dateInfo['date'] as DateTime;
-      
+
       // Create practice decision document
       await FirebaseFirestore.instance.collection('practice_decisions').add({
         'decidedBy': user.uid,
@@ -189,7 +222,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${date.month}/${date.day}(${dateInfo['dayName']})に練習日を決定しました！'),
+            content: Text(
+              '${date.month}/${date.day}(${dateInfo['dayName']})に練習日を決定しました！',
+            ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
           ),
@@ -226,22 +261,21 @@ class _HomeScreenState extends State<HomeScreen> {
           .collection('practice_decisions')
           .where('status', isEqualTo: 'pending')
           .get();
-      
+
       List<Map<String, dynamic>> practices = [];
       final now = DateTime.now();
-      
+
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final practiceDate = (data['practiceDate'] as Timestamp).toDate();
-        
+
         // Only include future practices where user was available
-        if (practiceDate.isAfter(now) && 
+        if (practiceDate.isAfter(now) &&
             (data['availableMembers'] as List).contains(user.uid)) {
-          
           final dayName = daysOfWeek[practiceDate.weekday % 7];
           final responses = data['responses'] as Map<String, dynamic>? ?? {};
           final userResponse = responses[user.uid];
-          
+
           practices.add({
             'docId': doc.id,
             'date': practiceDate,
@@ -254,10 +288,12 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         }
       }
-      
+
       // Sort by practice date
-      practices.sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
-      
+      practices.sort(
+        (a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime),
+      );
+
       setState(() {
         _pendingPractices = practices;
         _isLoadingPractices = false;
@@ -277,15 +313,15 @@ class _HomeScreenState extends State<HomeScreen> {
       await FirebaseFirestore.instance
           .collection('practice_decisions')
           .doc(docId)
-          .update({
-        'responses.${user.uid}': response,
-      });
+          .update({'responses.${user.uid}': response});
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(response == 'join' ? '参加で回答しました！' : '見送りで回答しました'),
-            backgroundColor: response == 'join' ? const Color(0xFF10B981) : Colors.orange,
+            backgroundColor: response == 'join'
+                ? const Color(0xFF10B981)
+                : Colors.orange,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -306,10 +342,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
-
-
   String _getNextPracticeText() {
     // 最も近い日程を取得
     DateTime? nextDate;
@@ -320,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     }
-    
+
     if (nextDate == null) {
       return '未定';
     } else {
@@ -328,14 +360,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 120,
+            expandedHeight: 48,
             floating: false,
             pinned: true,
             backgroundColor: Colors.white,
@@ -354,14 +385,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.sports_basketball,
-                    size: 40,
-                    color: Colors.white,
+
+                    colors: [],
                   ),
                 ),
               ),
@@ -408,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 12),
                           const Text(
-                            '次回の練習',
+                            '次回のバスケ',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -427,7 +452,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Center(
-                            child: CircularProgressIndicator(color: Colors.white),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
                           ),
                         )
                       else if (_popularDates.isNotEmpty)
@@ -458,7 +485,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              ..._popularDates.map((dateInfo) => _buildPopularDateItem(dateInfo)),
+                              ..._popularDates
+                                  .take(2)
+                                  .map(
+                                    (dateInfo) =>
+                                        _buildPopularDateItem(dateInfo),
+                                  ),
                               const SizedBox(height: 16),
                               Container(
                                 width: double.infinity,
@@ -552,7 +584,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 // Pending Practice Decisions Section
                 if (!_isLoadingPractices && _pendingPractices.isNotEmpty)
-                  ..._pendingPractices.map((practice) => _buildPendingPracticeCard(practice)),
+                  ..._pendingPractices.map(
+                    (practice) => _buildPendingPracticeCard(practice),
+                  ),
 
                 // Personal Motivation Slider Section
                 Container(
@@ -576,7 +610,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFF667eea,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -597,15 +633,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Current motivation display
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Color(motivationLevels[_currentMotivation.round() - 1]['color'][0]),
-                              Color(motivationLevels[_currentMotivation.round() - 1]['color'][1]),
+                              Color(
+                                motivationLevels[_currentMotivation.round() -
+                                    1]['color'][0],
+                              ),
+                              Color(
+                                motivationLevels[_currentMotivation.round() -
+                                    1]['color'][1],
+                              ),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(16),
@@ -613,7 +655,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           children: [
                             Text(
-                              motivationLevels[_currentMotivation.round() - 1]['emoji'],
+                              motivationLevels[_currentMotivation.round() -
+                                  1]['emoji'],
                               style: const TextStyle(fontSize: 40),
                             ),
                             const SizedBox(width: 16),
@@ -622,7 +665,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    motivationLevels[_currentMotivation.round() - 1]['label'],
+                                    motivationLevels[_currentMotivation
+                                            .round() -
+                                        1]['label'],
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -633,7 +678,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     'レベル ${_currentMotivation.round()}',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Colors.white.withValues(alpha: 0.8),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -651,16 +698,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Motivation slider
                       Column(
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: motivationLevels.map((level) {
-                              final isSelected = level['level'] == _currentMotivation.round();
+                              final isSelected =
+                                  level['level'] == _currentMotivation.round();
                               return Text(
                                 level['emoji'],
                                 style: TextStyle(
@@ -672,11 +720,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 12),
                           SliderTheme(
                             data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: Color(motivationLevels[_currentMotivation.round() - 1]['color'][0]),
+                              activeTrackColor: Color(
+                                motivationLevels[_currentMotivation.round() -
+                                    1]['color'][0],
+                              ),
                               inactiveTrackColor: const Color(0xFFE2E8F0),
-                              thumbColor: Color(motivationLevels[_currentMotivation.round() - 1]['color'][1]),
-                              overlayColor: Color(motivationLevels[_currentMotivation.round() - 1]['color'][0]).withValues(alpha: 0.2),
-                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
+                              thumbColor: Color(
+                                motivationLevels[_currentMotivation.round() -
+                                    1]['color'][1],
+                              ),
+                              overlayColor: Color(
+                                motivationLevels[_currentMotivation.round() -
+                                    1]['color'][0],
+                              ).withValues(alpha: 0.2),
+                              thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 12,
+                              ),
                               trackHeight: 6,
                             ),
                             child: Slider(
@@ -684,11 +743,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               min: 1,
                               max: 5,
                               divisions: 4,
-                              onChanged: _isUpdatingMotivation ? null : (value) {
-                                setState(() {
-                                  _currentMotivation = value;
-                                });
-                              },
+                              onChanged: _isUpdatingMotivation
+                                  ? null
+                                  : (value) {
+                                      setState(() {
+                                        _currentMotivation = value;
+                                      });
+                                    },
                               onChangeEnd: (value) {
                                 if (!_isUpdatingMotivation) {
                                   _updateMotivation(value);
@@ -702,273 +763,310 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-            // チーム全体のモチベーションとTOP3表示セクション
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('users').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                // チーム全体のモチベーションとTOP3表示セクション
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('エラー: ${snapshot.error}'));
-                }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('エラー: ${snapshot.error}'));
+                    }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('まだモチベーションが登録されていません。'));
-                }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('まだモチベーションが登録されていません。'));
+                    }
 
-                final List<Map<String, dynamic>> allMotivations = [];
-                for (var doc in snapshot.data!.docs) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  if (data.containsKey('latestMotivationLevel') && data.containsKey('latestMotivationTimestamp')) {
-                    allMotivations.add({
-                      'userId': doc.id,
-                      'displayName': data['displayName'] ?? data['username'] ?? 'Unknown',
-                      'username': data['username'] ?? '',
-                      'department': data['department'] ?? '',
-                      'group': data['group'] ?? '',
-                      'level': data['latestMotivationLevel'],
-                      'comment': data['latestMotivationComment'] ?? '',
-                      'timestamp': data['latestMotivationTimestamp'],
+                    final List<Map<String, dynamic>> allMotivations = [];
+                    for (var doc in snapshot.data!.docs) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      if (data.containsKey('latestMotivationLevel') &&
+                          data.containsKey('latestMotivationTimestamp')) {
+                        allMotivations.add({
+                          'userId': doc.id,
+                          'displayName':
+                              data['displayName'] ??
+                              data['username'] ??
+                              'Unknown',
+                          'username': data['username'] ?? '',
+                          'department': data['department'] ?? '',
+                          'group': data['group'] ?? '',
+                          'level': data['latestMotivationLevel'],
+                          'comment': data['latestMotivationComment'] ?? '',
+                          'timestamp': data['latestMotivationTimestamp'],
+                        });
+                      }
+                    }
+
+                    if (allMotivations.isEmpty) {
+                      return const Center(child: Text('まだモチベーションが登録されていません。'));
+                    }
+
+                    // Calculate average motivation
+                    double totalMotivation = 0;
+                    for (var m in allMotivations) {
+                      totalMotivation += m['level'];
+                    }
+                    final averageMotivation =
+                        totalMotivation / allMotivations.length;
+
+                    // Get top 3 motivations (sorted by level, then by timestamp)
+                    allMotivations.sort((a, b) {
+                      int levelComparison = b['level'].compareTo(a['level']);
+                      if (levelComparison != 0) return levelComparison;
+                      return (b['timestamp'] as Timestamp).compareTo(
+                        a['timestamp'] as Timestamp,
+                      );
                     });
-                  }
-                }
+                    final top3Motivations = allMotivations.take(3).toList();
 
-                if (allMotivations.isEmpty) {
-                  return const Center(child: Text('まだモチベーションが登録されていません。'));
-                }
-
-                // Calculate average motivation
-                double totalMotivation = 0;
-                for (var m in allMotivations) {
-                  totalMotivation += m['level'];
-                }
-                final averageMotivation = totalMotivation / allMotivations.length;
-
-                // Get top 3 motivations (sorted by level, then by timestamp)
-                allMotivations.sort((a, b) {
-                  int levelComparison = b['level'].compareTo(a['level']);
-                  if (levelComparison != 0) return levelComparison;
-                  return (b['timestamp'] as Timestamp).compareTo(a['timestamp'] as Timestamp);
-                });
-                final top3Motivations = allMotivations.take(3).toList();
-
-                return Column(
-                  children: [
-                    // チーム平均モチベーション
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF667eea).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.trending_up_rounded,
-                                  color: Color(0xFF667eea),
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              const Text(
-                                'チーム平均やる気',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF64748B),
-                                ),
+                    return Column(
+                      children: [
+                        // チーム平均モチベーション
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
+                          child: Column(
                             children: [
-                              Text(
-                                averageMotivation.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontSize: 48,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF667eea),
-                                ),
-                              ),
-                              const Text(
-                                ' / 5.0',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Color(0xFF94A3B8),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // TOP3 セクション
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFB923C).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.emoji_events_rounded,
-                                  color: Color(0xFFFB923C),
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              const Text(
-                                'やる気ランキング TOP3',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1E293B),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          ...top3Motivations.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final motivation = entry.value;
-                            final rankColors = [
-                              const Color(0xFFFFD700), // Gold
-                              const Color(0xFFC0C0C0), // Silver 
-                              const Color(0xFFCD7F32), // Bronze
-                            ];
-                            
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: rankColors[index].withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
+                              Row(
                                 children: [
                                   Container(
-                                    width: 32,
-                                    height: 32,
+                                    padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: rankColors[index],
-                                      shape: BoxShape.circle,
+                                      color: const Color(
+                                        0xFF667eea,
+                                      ).withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Center(
-                                      child: Text(
-                                        '${index + 1}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
+                                    child: const Icon(
+                                      Icons.trending_up_rounded,
+                                      color: Color(0xFF667eea),
+                                      size: 20,
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          motivation['displayName'] ?? 'Unknown User',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF1E293B),
-                                          ),
-                                        ),
-                                        if (motivation['department']?.isNotEmpty == true || motivation['group']?.isNotEmpty == true)
-                                          Text(
-                                            [motivation['department'], motivation['group']]
-                                                .where((s) => s?.isNotEmpty == true)
-                                                .join(' / '),
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xFF94A3B8),
-                                            ),
-                                          ),
-                                        if (motivation['comment'] != null && motivation['comment'].isNotEmpty)
-                                          Text(
-                                            motivation['comment'],
-                                            style: const TextStyle(
-                                              color: Color(0xFF64748B),
-                                              fontSize: 12,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF667eea).withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      '${motivation['level']}',
-                                      style: const TextStyle(
-                                        color: Color(0xFF667eea),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'チーム平均やる気',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF64748B),
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-                          }).toList(),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    averageMotivation.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF667eea),
+                                    ),
+                                  ),
+                                  const Text(
+                                    ' / 5.0',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      color: Color(0xFF94A3B8),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // TOP3 セクション
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 15,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFFFB923C,
+                                      ).withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.emoji_events_rounded,
+                                      color: Color(0xFFFB923C),
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'やる気ランキング TOP3',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              ...top3Motivations.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final motivation = entry.value;
+                                final rankColors = [
+                                  const Color(0xFFFFD700), // Gold
+                                  const Color(0xFFC0C0C0), // Silver
+                                  const Color(0xFFCD7F32), // Bronze
+                                ];
+
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: rankColors[index].withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: rankColors[index],
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${index + 1}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              motivation['displayName'] ??
+                                                  'Unknown User',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF1E293B),
+                                              ),
+                                            ),
+                                            if (motivation['department']
+                                                        ?.isNotEmpty ==
+                                                    true ||
+                                                motivation['group']
+                                                        ?.isNotEmpty ==
+                                                    true)
+                                              Text(
+                                                [
+                                                      motivation['department'],
+                                                      motivation['group'],
+                                                    ]
+                                                    .where(
+                                                      (s) =>
+                                                          s?.isNotEmpty == true,
+                                                    )
+                                                    .join(' / '),
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  color: Color(0xFF94A3B8),
+                                                ),
+                                              ),
+                                            if (motivation['comment'] != null &&
+                                                motivation['comment']
+                                                    .isNotEmpty)
+                                              Text(
+                                                motivation['comment'],
+                                                style: const TextStyle(
+                                                  color: Color(0xFF64748B),
+                                                  fontSize: 12,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF667eea,
+                                          ).withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${motivation['level']}',
+                                          style: const TextStyle(
+                                            color: Color(0xFF667eea),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ]),
             ),
           ),
@@ -1046,10 +1144,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: const Text(
               '決定',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -1070,7 +1165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(20),
           ),
           title: const Text(
-            '練習日程の決定',
+            '日程の決定',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: Color(0xFF1F2937),
@@ -1081,11 +1176,8 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${date.month}月${date.day}日(${dayName})に練習を決定しますか？',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF374151),
-                ),
+                '${date.month}月${date.day}日(${dayName})にバスケを決定しますか？',
+                style: const TextStyle(fontSize: 16, color: Color(0xFF374151)),
               ),
               const SizedBox(height: 12),
               Container(
@@ -1117,10 +1209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 8),
                     const Text(
                       '決定すると、参加可能なメンバーに通知が送信され、参加/見送りの回答を求めます。',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF6B7280),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                     ),
                   ],
                 ),
@@ -1163,7 +1252,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final dayName = practice['dayName'] as String;
     final userResponse = practice['userResponse'] as String?;
     final responses = practice['responses'] as Map<String, dynamic>;
-    
+
     // Count responses
     int joinCount = 0;
     int skipCount = 0;
@@ -1179,7 +1268,9 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: userResponse == null ? const Color(0xFFFB923C) : Colors.transparent,
+          color: userResponse == null
+              ? const Color(0xFFFB923C)
+              : Colors.transparent,
           width: 2,
         ),
         boxShadow: [
@@ -1219,7 +1310,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          
+
           // Practice date info
           Container(
             padding: const EdgeInsets.all(16),
@@ -1277,9 +1368,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Response section
           if (userResponse == null) ...[
             const Text(
@@ -1295,7 +1386,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _respondToPractice(practice['docId'], 'join'),
+                    onPressed: () =>
+                        _respondToPractice(practice['docId'], 'join'),
                     icon: const Icon(Icons.check_circle_outline, size: 20),
                     label: const Text(
                       '参加する',
@@ -1314,7 +1406,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _respondToPractice(practice['docId'], 'skip'),
+                    onPressed: () =>
+                        _respondToPractice(practice['docId'], 'skip'),
                     icon: const Icon(Icons.cancel_outlined, size: 20),
                     label: const Text(
                       '見送り',
@@ -1336,7 +1429,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: userResponse == 'join' 
+                color: userResponse == 'join'
                     ? const Color(0xFF10B981).withValues(alpha: 0.1)
                     : Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
@@ -1345,7 +1438,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Icon(
                     userResponse == 'join' ? Icons.check_circle : Icons.cancel,
-                    color: userResponse == 'join' ? const Color(0xFF10B981) : Colors.orange,
+                    color: userResponse == 'join'
+                        ? const Color(0xFF10B981)
+                        : Colors.orange,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -1358,7 +1453,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: userResponse == 'join' ? const Color(0xFF10B981) : Colors.orange,
+                            color: userResponse == 'join'
+                                ? const Color(0xFF10B981)
+                                : Colors.orange,
                           ),
                         ),
                         const Text(
@@ -1373,8 +1470,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   TextButton(
                     onPressed: () => _respondToPractice(
-                      practice['docId'], 
-                      userResponse == 'join' ? 'skip' : 'join'
+                      practice['docId'],
+                      userResponse == 'join' ? 'skip' : 'join',
                     ),
                     child: Text(
                       userResponse == 'join' ? '見送りに変更' : '参加に変更',
