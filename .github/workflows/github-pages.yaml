@@ -116,7 +116,7 @@ jobs:
           }
           EOF
       
-      - run: flutter build web --base-href /${{ steps.version.outputs.repository }}/ --web-renderer html
+      - run: flutter build web --base-href /${{ steps.version.outputs.repository }}/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
