@@ -4,7 +4,8 @@
       "Bash(flutterfire:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "WebFetch(domain:www.ui-pocket.com)"
+      "WebFetch(domain:www.ui-pocket.com)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }
