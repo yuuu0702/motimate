@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:motimate/screens/home_screen.dart';
 import 'package:motimate/screens/member_list_screen.dart';
-import 'package:motimate/screens/motivation_screen.dart'; // Add this import
+import 'package:motimate/screens/motivation_screen.dart';
 import 'package:motimate/screens/schedule_screen.dart';
+import 'package:motimate/screens/proposal_screen.dart'; // Add this import
 
 class App extends StatefulWidget {
   const App({super.key});
@@ -18,6 +19,7 @@ class _AppState extends State<App> {
     const HomeScreen(),
     const ScheduleScreen(),
     const MemberListScreen(),
+    const ProposalScreen(), // Add ProposalScreen
   ];
 
   void _onItemTapped(int index) {
@@ -31,6 +33,7 @@ class _AppState extends State<App> {
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed, // Added for more than 3 items
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -43,6 +46,10 @@ class _AppState extends State<App> {
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'メンバー',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.lightbulb_outline), // Icon for proposal
+            label: '提案',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -59,7 +66,7 @@ class _AppState extends State<App> {
         },
         child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, // Optional: position the FAB
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
