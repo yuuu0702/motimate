@@ -28,7 +28,95 @@ jobs:
           cache: true
       - run: flutter --version
       - run: flutter pub get
-      - run: flutter build web --base-href /${{ steps.version.outputs.repository }}/
+      
+      # Create dummy Firebase options for web build
+      - name: Create Firebase options
+        run: |
+          mkdir -p lib
+          cat > lib/firebase_options.dart << 'EOF'
+          // Auto-generated file for web deployment
+          import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+          import 'package:flutter/foundation.dart'
+              show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+          class DefaultFirebaseOptions {
+            static FirebaseOptions get currentPlatform {
+              if (kIsWeb) {
+                return web;
+              }
+              switch (defaultTargetPlatform) {
+                case TargetPlatform.android:
+                  return android;
+                case TargetPlatform.iOS:
+                  return ios;
+                case TargetPlatform.macOS:
+                  return macos;
+                case TargetPlatform.windows:
+                  return windows;
+                case TargetPlatform.linux:
+                  throw UnsupportedError(
+                    'DefaultFirebaseOptions have not been configured for linux - '
+                    'you can reconfigure this by running the FlutterFire CLI again.',
+                  );
+                default:
+                  throw UnsupportedError(
+                    'DefaultFirebaseOptions are not supported for this platform.',
+                  );
+              }
+            }
+
+            static const FirebaseOptions web = FirebaseOptions(
+              apiKey: 'demo-api-key',
+              appId: 'demo-app-id',
+              messagingSenderId: 'demo-sender-id',
+              projectId: 'demo-project',
+              authDomain: 'demo-project.firebaseapp.com',
+              storageBucket: 'demo-project.appspot.com',
+            );
+
+            static const FirebaseOptions android = FirebaseOptions(
+              apiKey: 'demo-api-key',
+              appId: 'demo-app-id',
+              messagingSenderId: 'demo-sender-id',
+              projectId: 'demo-project',
+              authDomain: 'demo-project.firebaseapp.com',
+              storageBucket: 'demo-project.appspot.com',
+            );
+
+            static const FirebaseOptions ios = FirebaseOptions(
+              apiKey: 'demo-api-key',
+              appId: 'demo-app-id',
+              messagingSenderId: 'demo-sender-id',
+              projectId: 'demo-project',
+              authDomain: 'demo-project.firebaseapp.com',
+              storageBucket: 'demo-project.appspot.com',
+              iosClientId: 'demo-client-id',
+              iosBundleId: 'com.example.motimate',
+            );
+
+            static const FirebaseOptions macos = FirebaseOptions(
+              apiKey: 'demo-api-key',
+              appId: 'demo-app-id',
+              messagingSenderId: 'demo-sender-id',
+              projectId: 'demo-project',
+              authDomain: 'demo-project.firebaseapp.com',
+              storageBucket: 'demo-project.appspot.com',
+              iosClientId: 'demo-client-id',
+              iosBundleId: 'com.example.motimate',
+            );
+
+            static const FirebaseOptions windows = FirebaseOptions(
+              apiKey: 'demo-api-key',
+              appId: 'demo-app-id',
+              messagingSenderId: 'demo-sender-id',
+              projectId: 'demo-project',
+              authDomain: 'demo-project.firebaseapp.com',
+              storageBucket: 'demo-project.appspot.com',
+            );
+          }
+          EOF
+      
+      - run: flutter build web --base-href /${{ steps.version.outputs.repository }}/ --web-renderer html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
