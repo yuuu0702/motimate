@@ -413,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // 次回の練習セクション
+                // 人気の日程セクション
                 Container(
                   margin: const EdgeInsets.only(bottom: 24),
                   padding: const EdgeInsets.all(24),
@@ -443,14 +443,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
-                              Icons.calendar_today,
+                              Icons.trending_up,
                               color: Colors.white,
-                              size: 20,
+                              size: 24,
                             ),
                           ),
                           const SizedBox(width: 12),
                           const Text(
-                            '次回のバスケ',
+                            '人気の日程',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -460,7 +460,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      // Popular dates section
                       if (_isLoadingSchedule)
                         Container(
                           padding: const EdgeInsets.all(20),
@@ -475,70 +474,43 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         )
                       else if (_popularDates.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.trending_up,
-                                    color: Colors.white,
-                                    size: 24,
+                        Column(
+                          children: [
+                            ..._popularDates
+                                .take(2)
+                                .map(
+                                  (dateInfo) => _buildPopularDateItem(dateInfo),
+                                ),
+                            const SizedBox(height: 16),
+                            Container(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  widget.onNavigate(1);
+                                },
+                                icon: const Icon(Icons.add_rounded, size: 20),
+                                label: const Text(
+                                  '新しい日程を追加',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    '人気の日程',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF667eea),
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 16,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              ..._popularDates
-                                  .take(2)
-                                  .map(
-                                    (dateInfo) =>
-                                        _buildPopularDateItem(dateInfo),
-                                  ),
-                              const SizedBox(height: 16),
-                              Container(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    widget.onNavigate(1);
-                                  },
-                                  icon: const Icon(Icons.add_rounded, size: 20),
-                                  label: const Text(
-                                    '新しい日程を追加',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF667eea),
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         )
                       else
                         Container(
@@ -598,7 +570,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-
                 // Pending Practice Decisions Section
                 if (!_isLoadingPractices && _pendingPractices.isNotEmpty)
                   ..._pendingPractices.map(
@@ -1317,7 +1288,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 12),
               const Text(
-                '練習日程が決定されました！',
+                'バスケの日程が決定されました！',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
