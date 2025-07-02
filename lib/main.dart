@@ -4,6 +4,7 @@ import 'package:motimate/app.dart';
 import 'package:motimate/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:motimate/screens/auth_screen.dart';
+import 'package:motimate/screens/schedule_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -85,6 +86,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
+      routes: {
+        '/schedule': (context) => const ScheduleScreen(),
+      },
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {

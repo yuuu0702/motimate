@@ -65,6 +65,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+  String _getNextPracticeText() {
+    // 最も近い日程を取得
+    DateTime? nextDate;
+    for (var date in _nextPlayDates) {
+      if (date != null) {
+        if (nextDate == null || date.isBefore(nextDate)) {
+          nextDate = date;
+        }
+      }
+    }
+    
+    if (nextDate == null) {
+      return '未定';
+    } else {
+      return '${nextDate.month}/${nextDate.day}';
+    }
+  }
+
   Widget _buildDateSelectionTile(int index) {
     return ListTile(
       title: Text(
@@ -109,8 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // 次のバスケ日程選択セクション
+            // 次回の練習セクション (一番上に移動)
             Card(
               elevation: 4,
               margin: const EdgeInsets.only(bottom: 20),
@@ -121,12 +138,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '次にバスケをやりたい日程',
+                      '次回の練習',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 10),
-                    _buildDateSelectionTile(0),
-                    _buildDateSelectionTile(1),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: Column(
+                        children: [
+                          const Text(
+                            '📅',
+                            style: TextStyle(fontSize: 32),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _getNextPracticeText(),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/schedule');
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text('日程を決める'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
