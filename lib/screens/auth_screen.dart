@@ -43,7 +43,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
 
   Future<void> _signInWithEmailPassword() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -63,7 +63,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       }
     } on FirebaseAuthException catch (e) {
       String message = _isLoginMode ? 'ログインに失敗しました。' : 'アカウント作成に失敗しました。';
-      
+
       switch (e.code) {
         case 'user-not-found':
           message = 'メールアドレスが見つかりません。';
@@ -81,7 +81,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
           message = 'メールアドレスの形式が正しくありません。';
           break;
       }
-      
+
       setState(() {
         _errorMessage = message;
       });
@@ -105,7 +105,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      
+
       if (googleUser == null) {
         setState(() {
           _isLoading = false;
@@ -113,7 +113,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -136,7 +137,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     try {
       await FirebaseAuth.instance.signInAnonymously();
     } on FirebaseAuthException catch (e) {
@@ -152,7 +153,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
         _errorMessage = 'エラーが発生しました: $e';
       });
     }
-    
+
     setState(() {
       _isLoading = false;
     });
@@ -171,7 +172,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 60),
-                
+
                 // Logo and Title
                 Column(
                   children: [
@@ -205,16 +206,13 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                     const SizedBox(height: 8),
                     const Text(
                       'みんなのやる気を見える化',
-                      style: TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 16),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 60),
-                
+
                 // Form
                 Form(
                   key: _formKey,
@@ -241,7 +239,10 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           decoration: const InputDecoration(
                             hintText: 'メールアドレス',
                             hintStyle: TextStyle(color: Color(0xFF94A3B8)),
-                            prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF94A3B8)),
+                            prefixIcon: Icon(
+                              Icons.email_outlined,
+                              color: Color(0xFF94A3B8),
+                            ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.all(16),
                           ),
@@ -249,16 +250,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                             if (value == null || value.isEmpty) {
                               return 'メールアドレスを入力してください';
                             }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                            if (!RegExp(
+                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                            ).hasMatch(value)) {
                               return 'メールアドレスの形式が正しくありません';
                             }
                             return null;
                           },
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Password Field
                       Container(
                         decoration: BoxDecoration(
@@ -279,11 +282,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           style: const TextStyle(color: Color(0xFF1E293B)),
                           decoration: InputDecoration(
                             hintText: 'パスワード',
-                            hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF94A3B8)),
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Color(0xFF94A3B8),
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: const Color(0xFF94A3B8),
                               ),
                               onPressed: () {
@@ -306,9 +316,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           },
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Login/Register Button
                       Container(
                         height: 56,
@@ -319,7 +329,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ElevatedButton(
-                          onPressed: _isLoading ? null : _signInWithEmailPassword,
+                          onPressed: _isLoading
+                              ? null
+                              : _signInWithEmailPassword,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -346,9 +358,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                 ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Toggle Login/Register
                       Center(
                         child: TextButton(
@@ -360,7 +372,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           },
                           child: RichText(
                             text: TextSpan(
-                              text: _isLoginMode ? 'アカウントをお持ちでない方は ' : 'すでにアカウントをお持ちの方は ',
+                              text: _isLoginMode
+                                  ? 'アカウントをお持ちでない方は '
+                                  : 'すでにアカウントをお持ちの方は ',
                               style: const TextStyle(color: Color(0xFF64748B)),
                               children: [
                                 TextSpan(
@@ -375,9 +389,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Divider
                       Row(
                         children: [
@@ -392,9 +406,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           Expanded(child: Divider(color: Colors.grey[300])),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Google Sign In Button
                       Container(
                         height: 56,
@@ -435,40 +449,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Anonymous Login Button
-                      Container(
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _signInAnonymously,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: const Color(0xFF64748B),
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'ゲストとして続行',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Error Message
                       if (_errorMessage != null)
                         Container(
@@ -476,7 +459,9 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           decoration: BoxDecoration(
                             color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: Colors.red.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Text(
                             _errorMessage!,
@@ -487,7 +472,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                             textAlign: TextAlign.center,
                           ),
                         ),
-                      
+
                       const SizedBox(height: 40),
                     ],
                   ),
