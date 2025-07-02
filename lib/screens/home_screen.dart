@@ -246,6 +246,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (data.containsKey('latestMotivationLevel') && data.containsKey('latestMotivationTimestamp')) {
                     allMotivations.add({
                       'userId': doc.id,
+                      'displayName': data['displayName'] ?? data['username'] ?? 'Unknown',
+                      'username': data['username'] ?? '',
+                      'department': data['department'] ?? '',
+                      'group': data['group'] ?? '',
                       'level': data['latestMotivationLevel'],
                       'comment': data['latestMotivationComment'] ?? '',
                       'timestamp': data['latestMotivationTimestamp'],
@@ -432,12 +436,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'ユーザー ${motivation['userId']?.substring(0, 8) ?? '不明'}...',
+                                          motivation['displayName'] ?? 'Unknown User',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF1E293B),
                                           ),
                                         ),
+                                        if (motivation['department']?.isNotEmpty == true || motivation['group']?.isNotEmpty == true)
+                                          Text(
+                                            [motivation['department'], motivation['group']]
+                                                .where((s) => s?.isNotEmpty == true)
+                                                .join(' / '),
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Color(0xFF94A3B8),
+                                            ),
+                                          ),
                                         if (motivation['comment'] != null && motivation['comment'].isNotEmpty)
                                           Text(
                                             motivation['comment'],

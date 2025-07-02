@@ -5,6 +5,7 @@ import 'package:motimate/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:motimate/screens/auth_screen.dart';
 import 'package:motimate/screens/schedule_screen.dart';
+import 'package:motimate/screens/user_registration_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -130,7 +131,11 @@ class MyApp extends StatelessWidget {
           elevation: 8,
         ),
       ),
-      routes: {'/schedule': (context) => const ScheduleScreen()},
+      routes: {
+        '/schedule': (context) => const ScheduleScreen(),
+        '/registration': (context) => const UserRegistrationScreen(),
+        '/home': (context) => const App(),
+      },
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
@@ -138,7 +143,34 @@ class MyApp extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasData) {
-            return const App(); // User is logged in
+            // User is logged in, check if profile is set up
+            return FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(snapshot.data!.uid)
+                  .get(),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    backgroundColor: Color(0xFFF8FAFC),
+                    body: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                
+                if (userSnapshot.hasError) {
+                  return const AuthScreen();
+                }
+                
+                final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
+                final hasProfileSetup = userData?['profileSetup'] == true;
+                
+                if (hasProfileSetup) {
+                  return const App(); // Profile is set up, go to app
+                } else {
+                  return const UserRegistrationScreen(); // Profile needs setup
+                }
+              },
+            );
           } else {
             return const AuthScreen(); // User is not logged in
           }

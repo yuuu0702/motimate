@@ -140,12 +140,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final currentMonthText = '${currentDate.year}年${currentDate.month}月';
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFDCFCE7), Color(0xFFE0E7FF)],
+            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(

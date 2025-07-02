@@ -70,12 +70,13 @@ class _MotivationScreenState extends State<MotivationScreen> {
   Widget build(BuildContext context) {
     if (_isSubmitted) {
       return Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFECFDF5), Color(0xFFDCFCE7)],
+              colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
             ),
           ),
           child: Center(
@@ -137,12 +138,13 @@ class _MotivationScreenState extends State<MotivationScreen> {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFECFDF5), Color(0xFFDCFCE7)],
+            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
