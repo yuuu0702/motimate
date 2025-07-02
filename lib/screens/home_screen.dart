@@ -10,32 +10,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  double _currentMotivationLevel = 3.0;
-  final TextEditingController _commentController = TextEditingController();
   List<DateTime?> _nextPlayDates = [null, null]; // New state variable for two dates
 
   @override
   void initState() {
     super.initState();
-    _loadUserMotivationAndComment();
     _loadNextPlayDate(); // Call new method
   }
 
-  Future<void> _loadUserMotivationAndComment() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-    if (userDoc.exists) {
-      final data = userDoc.data();
-      if (data != null) {
-        setState(() {
-          _currentMotivationLevel = (data['latestMotivationLevel'] as int?)?.toDouble() ?? 3.0;
-          _commentController.text = data['latestMotivationComment'] as String? ?? '';
-        });
-      }
-    }
-  }
 
   Future<void> _loadNextPlayDate() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -57,44 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _updateMotivationLevel(double newLevel) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
 
-    setState(() {
-      _currentMotivationLevel = newLevel;
-    });
-
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'latestMotivationLevel': newLevel.round(),
-        'latestMotivationTimestamp': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('モチベーションの更新に失敗しました: $e')),
-      );
-    }
-  }
-
-  Future<void> _updateComment() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'latestMotivationComment': _commentController.text,
-        'latestMotivationTimestamp': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('コメントを更新しました！')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('コメントの更新に失敗しました: $e')),
-      );
-    }
-  }
 
   Future<void> _updateNextPlayDate(DateTime date, int index) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -119,22 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  String _getEmojiForMotivation(int level) {
-    switch (level) {
-      case 1:
-        return '😩';
-      case 2:
-        return '🙁';
-      case 3:
-        return '😐';
-      case 4:
-        return '😊';
-      case 5:
-        return '🤩';
-      default:
-        return '';
-    }
-  }
 
   Widget _buildDateSelectionTile(int index) {
     return ListTile(
@@ -180,79 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // モチベーション入力セクション
-            Card(
-              elevation: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '今日のバスケに行きたい度',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return ScaleTransition(scale: animation, child: child);
-                        },
-                        child: Text(
-                          _getEmojiForMotivation(_currentMotivationLevel.round()),
-                          key: ValueKey<int>(_currentMotivationLevel.round()),
-                          style: const TextStyle(fontSize: 80),
-                        ),
-                      ),
-                    ),
-                    Slider(
-                      value: _currentMotivationLevel,
-                      min: 1.0,
-                      max: 5.0,
-                      divisions: 4,
-                      onChanged: (double value) {
-                        _updateMotivationLevel(value);
-                      },
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: const [
-                        Text('1'),
-                        Text('2'),
-                        Text('3'),
-                        Text('4'),
-                        Text('5'),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'コメント (任意)',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    TextField(
-                      controller: _commentController,
-                      decoration: const InputDecoration(
-                        hintText: '今日の気分や意気込みをどうぞ',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3,
-                      onSubmitted: (_) => _updateComment(), // Enterキーで更新
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                        onPressed: _updateComment,
-                        child: const Text('コメントを更新'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
             // 次のバスケ日程選択セクション
             Card(
