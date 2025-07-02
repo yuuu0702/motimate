@@ -12,7 +12,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double _currentMotivationLevel = 3.0;
   final TextEditingController _commentController = TextEditingController();
-  DateTime? _nextPlayDate; // New state variable
+  List<DateTime?> _nextPlayDates = [null, null]; // New state variable for two dates
 
   @override
   void initState() {
@@ -44,9 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
     if (userDoc.exists) {
       final data = userDoc.data();
-      if (data != null && data.containsKey('nextPlayDate')) {
+      if (data != null && data.containsKey('nextPlayDates')) {
+        final List<dynamic> dates = data['nextPlayDates'];
         setState(() {
-          _nextPlayDate = (data['nextPlayDate'] as Timestamp).toDate();
+          _nextPlayDates = dates.map((timestamp) => (timestamp as Timestamp).toDate()).toList();
+          // Ensure there are always two elements
+          while (_nextPlayDates.length < 2) {
+            _nextPlayDates.add(null);
+          }
         });
       }
     }
@@ -91,16 +96,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _updateNextPlayDate(DateTime date) async {
+  Future<void> _updateNextPlayDate(DateTime date, int index) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    // Update the local list first
+    setState(() {
+      _nextPlayDates[index] = date;
+    });
+
     try {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'nextPlayDate': Timestamp.fromDate(date),
+        'nextPlayDates': _nextPlayDates.map((d) => d != null ? Timestamp.fromDate(d) : null).toList(),
       }, SetOptions(merge: true));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('次にバスケをやりたい日程を ${date.month}/${date.day} に設定しました！')),
+        SnackBar(content: Text('次にバスケをやりたい日程 ${index + 1} を ${date.month}/${date.day} に設定しました！')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -124,6 +134,31 @@ class _HomeScreenState extends State<HomeScreen> {
       default:
         return '';
     }
+  }
+
+  Widget _buildDateSelectionTile(int index) {
+    return ListTile(
+      title: Text(
+        _nextPlayDates[index] == null
+            ? '日程 ${index + 1}: 未設定'
+            : '日程 ${index + 1}: ${_nextPlayDates[index]!.month}/${_nextPlayDates[index]!.day}',
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.calendar_today),
+        onPressed: () async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: _nextPlayDates[index] ?? DateTime.now(),
+            firstDate: DateTime.now(),
+            lastDate: DateTime(DateTime.now().year + 1),
+          );
+          if (picked != null && picked != _nextPlayDates[index]) {
+            _updateNextPlayDate(picked, index);
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -234,76 +269,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    ListTile(
-                      title: Text(
-                        _nextPlayDate == null
-                            ? '未設定'
-                            : '${_nextPlayDate!.month}/${_nextPlayDate!.day}',
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () async {
-                          final DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: _nextPlayDate ?? DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(DateTime.now().year + 1),
-                          );
-                          if (picked != null && picked != _nextPlayDate) {
-                            setState(() {
-                              _nextPlayDate = picked;
-                            });
-                            _updateNextPlayDate(picked);
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // 次のバスケ日程選択セクション
-            Card(
-              elevation: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '次にバスケをやりたい日程',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    ListTile(
-                      title: Text(
-                        _nextPlayDate == null
-                            ? '未設定'
-                            : '${_nextPlayDate!.month}/${_nextPlayDate!.day}',
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () async {
-                          final DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: _nextPlayDate ?? DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(DateTime.now().year + 1),
-                          );
-                          if (picked != null && picked != _nextPlayDate) {
-                            setState(() {
-                              _nextPlayDate = picked;
-                            });
-                            _updateNextPlayDate(picked);
-                          }
-                        },
-                      ),
-                    ),
+                    _buildDateSelectionTile(0),
+                    _buildDateSelectionTile(1),
                   ],
                 ),
               ),
