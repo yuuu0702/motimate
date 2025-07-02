@@ -209,11 +209,11 @@ class MyAppState extends State<MyApp> {
           }
           if (snapshot.hasData) {
             // User is logged in, check if profile is set up
-            return FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
+            return StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
                   .collection('users')
                   .doc(snapshot.data!.uid)
-                  .get(),
+                  .snapshots(),
               builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
                   return const Scaffold(
