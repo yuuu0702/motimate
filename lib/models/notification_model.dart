@@ -1,26 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class NotificationModel {
-  final String id;
-  final String title;
-  final String body;
-  final String type; // 'practice_decision', 'schedule_update', 'general'
-  final Map<String, dynamic>? data;
-  final DateTime createdAt;
-  final bool isRead;
-  final String? imageUrl;
+part 'notification_model.freezed.dart';
+part 'notification_model.g.dart';
 
-  NotificationModel({
-    required this.id,
-    required this.title,
-    required this.body,
-    required this.type,
-    this.data,
-    required this.createdAt,
-    this.isRead = false,
-    this.imageUrl,
-  });
+@freezed
+class NotificationModel with _$NotificationModel {
+  const factory NotificationModel({
+    required String id,
+    required String title,
+    required String body,
+    required String type, // 'practice_decision', 'schedule_update', 'general'
+    Map<String, dynamic>? data,
+    required DateTime createdAt,
+    @Default(false) bool isRead,
+    String? imageUrl,
+  }) = _NotificationModel;
+
+  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
+      _$NotificationModelFromJson(json);
 
   factory NotificationModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -35,7 +34,9 @@ class NotificationModel {
       imageUrl: data['imageUrl'],
     );
   }
+}
 
+extension NotificationModelX on NotificationModel {
   Map<String, dynamic> toFirestore() {
     return {
       'title': title,
@@ -46,28 +47,6 @@ class NotificationModel {
       'isRead': isRead,
       'imageUrl': imageUrl,
     };
-  }
-
-  NotificationModel copyWith({
-    String? id,
-    String? title,
-    String? body,
-    String? type,
-    Map<String, dynamic>? data,
-    DateTime? createdAt,
-    bool? isRead,
-    String? imageUrl,
-  }) {
-    return NotificationModel(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      body: body ?? this.body,
-      type: type ?? this.type,
-      data: data ?? this.data,
-      createdAt: createdAt ?? this.createdAt,
-      isRead: isRead ?? this.isRead,
-      imageUrl: imageUrl ?? this.imageUrl,
-    );
   }
 
   String get timeAgo {

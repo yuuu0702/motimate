@@ -10,7 +10,8 @@
       "Bash(keytool:*)",
       "Bash(java:*)",
       "Bash(git filter-branch:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(flutter pub:*)"
     ],
     "deny": []
   }

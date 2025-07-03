@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motimate/app.dart';
 import 'package:motimate/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +11,7 @@ import 'package:motimate/screens/notifications_screen.dart';
 import 'package:motimate/screens/feedback_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:motimate/providers/providers.dart';
 
 // バックグラウンドメッセージハンドラ
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -53,22 +55,22 @@ void main() async {
     }
   });
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   static MyAppState? of(BuildContext context) => 
       context.findAncestorStateOfType<MyAppState>();
 
   @override
-  State<MyApp> createState() => MyAppState();
+  ConsumerState<MyApp> createState() => MyAppState();
 }
 
-class MyAppState extends State<MyApp> {
+class MyAppState extends ConsumerState<MyApp> {
   bool _isDarkMode = false;
 
   @override
@@ -201,44 +203,51 @@ class MyAppState extends State<MyApp> {
         '/notifications': (context) => const NotificationsScreen(),
         '/feedback': (context) => const FeedbackScreen(),
       },
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasData) {
-            // User is logged in, check if profile is set up
-            return StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(snapshot.data!.uid)
-                  .snapshots(),
-              builder: (context, userSnapshot) {
-                if (userSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Scaffold(
-                    backgroundColor: Color(0xFFF8FAFC),
-                    body: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                
-                if (userSnapshot.hasError) {
-                  return const AuthScreen();
-                }
-                
-                final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
-                final hasProfileSetup = userData?['profileSetup'] == true;
-                
-                if (hasProfileSetup) {
-                  return const App(); // Profile is set up, go to app
-                } else {
-                  return const UserRegistrationScreen(); // Profile needs setup
-                }
-              },
-            );
-          } else {
-            return const AuthScreen(); // User is not logged in
-          }
+      home: Consumer(
+        builder: (context, ref, child) {
+          final authState = ref.watch(authStateProvider);
+          
+          return authState.when(
+            loading: () => const Scaffold(
+              backgroundColor: Color(0xFFF8FAFC),
+              body: Center(child: CircularProgressIndicator()),
+            ),
+            error: (error, stackTrace) => const AuthScreen(),
+            data: (user) {
+              if (user == null) {
+                return const AuthScreen();
+              }
+              
+              // User is logged in, check if profile is set up
+              return StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .snapshots(),
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                      backgroundColor: Color(0xFFF8FAFC),
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  
+                  if (userSnapshot.hasError) {
+                    return const AuthScreen();
+                  }
+                  
+                  final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
+                  final hasProfileSetup = userData?['profileSetup'] == true;
+                  
+                  if (hasProfileSetup) {
+                    return const App(); // Profile is set up, go to app
+                  } else {
+                    return const UserRegistrationScreen(); // Profile needs setup
+                  }
+                },
+              );
+            },
+          );
         },
       ),
     );
