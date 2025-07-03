@@ -7,7 +7,9 @@
       "WebFetch(domain:www.ui-pocket.com)",
       "Bash(git rm:*)",
       "Bash(./gradlew:*)",
-      "Bash(keytool:*)"
+      "Bash(keytool:*)",
+      "Bash(java:*)",
+      "Bash(git filter-branch:*)"
     ],
     "deny": []
   }
