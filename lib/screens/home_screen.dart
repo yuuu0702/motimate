@@ -162,6 +162,17 @@ class _HomeScreenState extends State<HomeScreen> {
           .collection('schedules')
           .get();
 
+      // Get all practice decisions to check if dates are already decided
+      final decisionsSnapshot = await FirebaseFirestore.instance
+          .collection('practice_decisions')
+          .get();
+
+      Set<String> decidedDateKeys = {};
+      for (var decisionDoc in decisionsSnapshot.docs) {
+        final decisionData = decisionDoc.data();
+        decidedDateKeys.add(decisionData['dateKey'] as String);
+      }
+
       List<Map<String, dynamic>> dates = [];
       final now = DateTime.now();
 
@@ -174,12 +185,15 @@ class _HomeScreenState extends State<HomeScreen> {
           final date = DateTime.parse(doc.id);
           if (date.isAfter(now) && members.isNotEmpty) {
             final dayName = daysOfWeek[date.weekday % 7];
+            final isDecided = decidedDateKeys.contains(doc.id);
+            
             dates.add({
               'date': date,
               'dateKey': doc.id,
               'dayName': dayName,
               'memberCount': members.length,
               'members': members,
+              'isDecided': isDecided,
             });
           }
         } catch (e) {
@@ -248,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${date.month}/${date.day}(${dateInfo['dayName']})に練習日を決定しました！',
+              '${date.month}/${date.day}(${dateInfo['dayName']})に日程を決定しました！',
             ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
@@ -1099,13 +1113,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final date = dateInfo['date'] as DateTime;
     final dayName = dateInfo['dayName'] as String;
     final memberCount = dateInfo['memberCount'] as int;
+    final isDecided = dateInfo['isDecided'] as bool? ?? false;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: isDecided 
+            ? Colors.green.withValues(alpha: 0.2)
+            : Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
+        border: isDecided 
+            ? Border.all(color: Colors.green.withValues(alpha: 0.4), width: 1)
+            : null,
       ),
       child: Row(
         children: [
@@ -1113,17 +1133,19 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 '${date.day}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: isDecided ? Colors.green[100] : Colors.white,
                 ),
               ),
               Text(
                 '($dayName)',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: isDecided 
+                      ? Colors.green[100]?.withValues(alpha: 0.8)
+                      : Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -1133,40 +1155,74 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${date.month}月${date.day}日',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      '${date.month}月${date.day}日',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isDecided ? Colors.green[100] : Colors.white,
+                      ),
+                    ),
+                    if (isDecided) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.green[100],
+                        size: 16,
+                      ),
+                    ],
+                  ],
                 ),
                 Text(
-                  '$memberCount人が参加可能',
+                  isDecided 
+                      ? 'この日に決定！'
+                      : '$memberCount人が参加可能',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: isDecided 
+                        ? Colors.green[100]?.withValues(alpha: 0.9)
+                        : Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: () => _showDecisionDialog(dateInfo),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF667eea),
+          if (isDecided)
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
               ),
-              minimumSize: const Size(0, 0),
+              child: Text(
+                '決定済み',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[100],
+                ),
+              ),
+            )
+          else
+            ElevatedButton(
+              onPressed: () => _showDecisionDialog(dateInfo),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF667eea),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                minimumSize: const Size(0, 0),
+              ),
+              child: const Text(
+                '決定',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ),
-            child: const Text(
-              '決定',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ),
         ],
       ),
     );

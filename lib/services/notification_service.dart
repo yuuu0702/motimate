@@ -21,14 +21,14 @@ class NotificationService {
       );
 
       print('Notification permission: ${settings.authorizationStatus}');
-      
+
       // 許可が得られた場合はFCMトークンを保存
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
         await _saveFCMToken();
         return true;
       }
-      
+
       return false;
     } catch (e) {
       print('Error requesting notification permission: $e');
@@ -39,7 +39,8 @@ class NotificationService {
   /// 現在の通知許可状態を確認
   static Future<AuthorizationStatus> getNotificationStatus() async {
     try {
-      NotificationSettings settings = await _messaging.getNotificationSettings();
+      NotificationSettings settings = await _messaging
+          .getNotificationSettings();
       return settings.authorizationStatus;
     } catch (e) {
       print('Error getting notification status: $e');
@@ -82,7 +83,7 @@ class NotificationService {
   static Future<bool> isNotificationEnabled() async {
     final status = await getNotificationStatus();
     return status == AuthorizationStatus.authorized ||
-           status == AuthorizationStatus.provisional;
+        status == AuthorizationStatus.provisional;
   }
 
   /// 設定画面を開くためのヘルパー関数
@@ -128,11 +129,12 @@ class NotificationService {
   }) async {
     final dayNames = ['日', '月', '火', '水', '木', '金', '土'];
     final dayName = dayNames[practiceDate.weekday % 7];
-    
+
     await createNotification(
       userId: userId,
-      title: '🏀 練習日が決定されました！',
-      body: '${practiceDate.month}/${practiceDate.day}(${dayName})に練習が決定されました。参加/見送りを選択してください。',
+      title: '🏀 日程が決定されました！',
+      body:
+          '${practiceDate.month}/${practiceDate.day}(${dayName})に日程が決定されました。参加/見送りを選択してください。',
       type: 'practice_decision',
       data: {
         'practiceDate': practiceDate.toIso8601String(),
