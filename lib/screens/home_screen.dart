@@ -460,6 +460,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 // フィードバック告知バナー
                 _buildFeedbackBanner(),
                 const SizedBox(height: 16),
+                
+                // 日程が決定されました！セクション
+                if (_pendingPractices.isNotEmpty) ...[
+                  ..._pendingPractices.map(
+                    (practice) => _buildPendingPracticeCard(practice),
+                  ),
+                ],
+                
                 // 人気の日程セクション
                 Container(
                   margin: const EdgeInsets.only(bottom: 24),
@@ -617,11 +625,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                // Pending Practice Decisions Section
-                if (!_isLoadingPractices && _pendingPractices.isNotEmpty)
-                  ..._pendingPractices.map(
-                    (practice) => _buildPendingPracticeCard(practice),
-                  ),
 
                 // Personal Motivation Slider Section
                 Container(
