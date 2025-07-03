@@ -81,7 +81,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
           final notifications = snapshot.data!.docs
               .map((doc) => NotificationModel.fromFirestore(doc))
-              .toList();
+              .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -105,7 +106,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return FirebaseFirestore.instance
         .collection('notifications')
         .where('userId', isEqualTo: user.uid)
-        .orderBy('createdAt', descending: true)
         .limit(50)
         .snapshots();
   }
