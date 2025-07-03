@@ -9,7 +9,8 @@
       "Bash(./gradlew:*)",
       "Bash(keytool:*)",
       "Bash(java:*)",
-      "Bash(git filter-branch:*)"
+      "Bash(git filter-branch:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
