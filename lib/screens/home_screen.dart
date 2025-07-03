@@ -186,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (date.isAfter(now) && members.isNotEmpty) {
             final dayName = daysOfWeek[date.weekday % 7];
             final isDecided = decidedDateKeys.contains(doc.id);
-            
+
             dates.add({
               'date': date,
               'dateKey': doc.id,
@@ -244,7 +244,8 @@ class _HomeScreenState extends State<HomeScreen> {
           .doc(user.uid)
           .get();
       final userData = userDoc.data() as Map<String, dynamic>?;
-      final deciderName = userData?['displayName'] ?? userData?['username'] ?? '誰か';
+      final deciderName =
+          userData?['displayName'] ?? userData?['username'] ?? '誰か';
 
       // Create notifications for all available members (except the decider)
       final availableMembers = List<String>.from(dateInfo['members']);
@@ -1119,11 +1120,11 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDecided 
+        color: isDecided
             ? Colors.green.withValues(alpha: 0.2)
             : Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
-        border: isDecided 
+        border: isDecided
             ? Border.all(color: Colors.green.withValues(alpha: 0.4), width: 1)
             : null,
       ),
@@ -1143,7 +1144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 '($dayName)',
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDecided 
+                  color: isDecided
                       ? Colors.green[100]?.withValues(alpha: 0.8)
                       : Colors.white.withValues(alpha: 0.8),
                 ),
@@ -1176,12 +1177,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 Text(
-                  isDecided 
-                      ? 'この日に決定！'
-                      : '$memberCount人が参加可能',
+                  isDecided ? 'この日に決定！' : '$memberCount人が参加可能',
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDecided 
+                    color: isDecided
                         ? Colors.green[100]?.withValues(alpha: 0.9)
                         : Colors.white.withValues(alpha: 0.8),
                   ),
@@ -1212,7 +1211,10 @@ class _HomeScreenState extends State<HomeScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF667eea),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -1574,7 +1576,7 @@ class _HomeScreenState extends State<HomeScreen> {
       stream: NotificationService.getUnreadNotificationCount(user.uid),
       builder: (context, snapshot) {
         final unreadCount = snapshot.data ?? 0;
-        
+
         return GestureDetector(
           onTap: () {
             Navigator.of(context).push(
@@ -1629,11 +1631,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFeedbackBanner() {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const FeedbackScreen(),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const FeedbackScreen()));
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -1660,7 +1660,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 12),
             const Expanded(
               child: Text(
-                'フィードバックをお聞かせください 💭',
+                'フィードバック求む！',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
