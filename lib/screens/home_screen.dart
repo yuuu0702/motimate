@@ -19,41 +19,42 @@ class HomeScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeState = ref.watch(homeViewModelProvider);
     final homeViewModel = ref.watch(homeViewModelProvider.notifier);
-    
-    final motivationLevels = useMemoized(() => [
-      {
-        'level': 1,
-        'emoji': '😴',
-        'label': 'お疲れ気味...',
-        'color': [0xFF9CA3AF, 0xFF6B7280],
-      },
-      {
-        'level': 2,
-        'emoji': '😐',
-        'label': 'あまり気分が...',
-        'color': [0xFF60A5FA, 0xFF3B82F6],
-      },
-      {
-        'level': 3,
-        'emoji': '🙂',
-        'label': '普通かな',
-        'color': [0xFFFBBF24, 0xFFF59E0B],
-      },
-      {
-        'level': 4,
-        'emoji': '😊',
-        'label': 'やる気あり！',
-        'color': [0xFFFB923C, 0xFFEA580C],
-      },
-      {
-        'level': 5,
-        'emoji': '🔥',
-        'label': '超やる気！！',
-        'color': [0xFFF87171, 0xFFEF4444],
-      },
-    ]);
-    
-    
+
+    final motivationLevels = useMemoized(
+      () => [
+        {
+          'level': 1,
+          'emoji': '😴',
+          'label': 'お疲れ気味...',
+          'color': [0xFF9CA3AF, 0xFF6B7280],
+        },
+        {
+          'level': 2,
+          'emoji': '😐',
+          'label': 'あまり気分が...',
+          'color': [0xFF60A5FA, 0xFF3B82F6],
+        },
+        {
+          'level': 3,
+          'emoji': '🙂',
+          'label': '普通かな',
+          'color': [0xFFFBBF24, 0xFFF59E0B],
+        },
+        {
+          'level': 4,
+          'emoji': '😊',
+          'label': 'やる気あり！',
+          'color': [0xFFFB923C, 0xFFEA580C],
+        },
+        {
+          'level': 5,
+          'emoji': '🔥',
+          'label': '超やる気！！',
+          'color': [0xFFF87171, 0xFFEF4444],
+        },
+      ],
+    );
+
     useEffect(() {
       if (homeState.error != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -104,7 +105,10 @@ class HomeScreen extends HookConsumerWidget {
               children: [
                 Text(
                   '${schedule.date.month}月${schedule.date.day}日(${schedule.dayName})に日程を決定しますか？',
-                  style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Container(
@@ -134,9 +138,12 @@ class HomeScreen extends HookConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         '決定すると、参加可能なメンバーに通知が送信され、参加/見送りの回答を求めます。',
-                        style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -146,16 +153,16 @@ class HomeScreen extends HookConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
+                child: const Text(
                   'キャンセル',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  style: TextStyle(color: Colors.grey),
                 ),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  backgroundColor: const Color(0xFF667eea),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -185,7 +192,6 @@ class HomeScreen extends HookConsumerWidget {
         }
       }
     }
-
 
     return Scaffold(
       body: CustomScrollView(
@@ -244,19 +250,33 @@ class HomeScreen extends HookConsumerWidget {
                 // フィードバック告知バナー
                 _buildFeedbackBanner(context),
                 const SizedBox(height: 16),
-                
+
                 // 日程が決定されました！セクション
                 if (homeState.pendingPractices.isNotEmpty) ...[
                   ...homeState.pendingPractices.map(
-                    (practice) => _buildPendingPracticeCard(context, practice, homeViewModel),
+                    (practice) => _buildPendingPracticeCard(
+                      context,
+                      practice,
+                      homeViewModel,
+                    ),
                   ),
                 ],
-                
+
                 // 人気の日程セクション
-                _buildPopularDatesSection(context, homeState, onNavigate, handleDecisionDialog),
+                _buildPopularDatesSection(
+                  context,
+                  homeState,
+                  onNavigate,
+                  handleDecisionDialog,
+                ),
 
                 // Personal Motivation Slider Section
-                _buildMotivationSection(context, homeState, motivationLevels, handleMotivationUpdate),
+                _buildMotivationSection(
+                  context,
+                  homeState,
+                  motivationLevels,
+                  handleMotivationUpdate,
+                ),
 
                 // チーム全体のモチベーションとTOP3表示セクション
                 _buildTeamMotivationSection(),
@@ -270,21 +290,15 @@ class HomeScreen extends HookConsumerWidget {
 
   Widget _buildNotificationBell(WidgetRef ref) {
     final unreadCountAsync = ref.watch(unreadNotificationCountProvider);
-    
+
     return unreadCountAsync.when(
       loading: () => Container(
         padding: const EdgeInsets.all(8),
-        child: const Icon(
-          Icons.notifications_outlined,
-          size: 24,
-        ),
+        child: const Icon(Icons.notifications_outlined, size: 24),
       ),
       error: (error, stackTrace) => Container(
         padding: const EdgeInsets.all(8),
-        child: const Icon(
-          Icons.notifications_outlined,
-          size: 24,
-        ),
+        child: const Icon(Icons.notifications_outlined, size: 24),
       ),
       data: (unreadCount) => GestureDetector(
         onTap: () {
@@ -298,10 +312,7 @@ class HomeScreen extends HookConsumerWidget {
           padding: const EdgeInsets.all(8),
           child: Stack(
             children: [
-              const Icon(
-                Icons.notifications_outlined,
-                size: 24,
-              ),
+              const Icon(Icons.notifications_outlined, size: 24),
               if (unreadCount > 0)
                 Positioned(
                   right: 0,
@@ -309,9 +320,9 @@ class HomeScreen extends HookConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error,
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1),
+                      border: Border.all(color: Colors.white, width: 1),
                     ),
                     constraints: const BoxConstraints(
                       minWidth: 18,
@@ -319,8 +330,8 @@ class HomeScreen extends HookConsumerWidget {
                     ),
                     child: Text(
                       unreadCount > 99 ? '99+' : unreadCount.toString(),
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onError,
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -338,9 +349,9 @@ class HomeScreen extends HookConsumerWidget {
   Widget _buildFeedbackBanner(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const FeedbackScreen()),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const FeedbackScreen()));
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -351,7 +362,9 @@ class HomeScreen extends HookConsumerWidget {
           border: Border.all(color: Theme.of(context).colorScheme.outline),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
+              color: Theme.of(
+                context,
+              ).colorScheme.shadow.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -417,7 +430,9 @@ class HomeScreen extends HookConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -442,7 +457,9 @@ class HomeScreen extends HookConsumerWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.15),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onPrimary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Center(
@@ -457,7 +474,8 @@ class HomeScreen extends HookConsumerWidget {
                 ...state.popularDates
                     .take(2)
                     .map(
-                      (schedule) => _buildPopularDateItem(schedule, handleDecisionDialog),
+                      (schedule) =>
+                          _buildPopularDateItem(schedule, handleDecisionDialog),
                     ),
                 const SizedBox(height: 16),
                 SizedBox(
@@ -494,7 +512,9 @@ class HomeScreen extends HookConsumerWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.15),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onPrimary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -554,77 +574,83 @@ class HomeScreen extends HookConsumerWidget {
     ScheduleModel schedule,
     Future<void> Function(ScheduleModel) handleDecisionDialog,
   ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Column(
-            children: [
-              Text(
-                '${schedule.date.day}',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-              Text(
-                '(${schedule.dayName})',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Builder(
+      builder: (context) => Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Column(
               children: [
                 Text(
-                  '${schedule.date.month}月${schedule.date.day}日',
+                  '${schedule.date.day}',
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
                 Text(
-                  '${schedule.memberCount}人が参加可能',
+                  '(${schedule.dayName})',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withValues(alpha: 0.8),
                   ),
                 ),
               ],
             ),
-          ),
-          ElevatedButton(
-            onPressed: () => handleDecisionDialog(schedule),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              foregroundColor: Theme.of(context).colorScheme.primary,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${schedule.date.month}月${schedule.date.day}日',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                  Text(
+                    '${schedule.memberCount}人が参加可能',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimary.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            ),
+            ElevatedButton(
+              onPressed: () => handleDecisionDialog(schedule),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                minimumSize: const Size(0, 0),
               ),
-              minimumSize: const Size(0, 0),
+              child: const Text(
+                '決定',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ),
-            child: const Text(
-              '決定',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -656,7 +682,9 @@ class HomeScreen extends HookConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -685,10 +713,12 @@ class HomeScreen extends HookConsumerWidget {
               gradient: LinearGradient(
                 colors: [
                   Color(
-                    motivationLevels[state.currentMotivation.round() - 1]['color'][0],
+                    motivationLevels[state.currentMotivation.round() -
+                        1]['color'][0],
                   ),
                   Color(
-                    motivationLevels[state.currentMotivation.round() - 1]['color'][1],
+                    motivationLevels[state.currentMotivation.round() -
+                        1]['color'][1],
                   ),
                 ],
               ),
@@ -697,7 +727,8 @@ class HomeScreen extends HookConsumerWidget {
             child: Row(
               children: [
                 Text(
-                  motivationLevels[state.currentMotivation.round() - 1]['emoji'],
+                  motivationLevels[state.currentMotivation.round() -
+                      1]['emoji'],
                   style: const TextStyle(fontSize: 40),
                 ),
                 const SizedBox(width: 16),
@@ -706,7 +737,8 @@ class HomeScreen extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        motivationLevels[state.currentMotivation.round() - 1]['label'],
+                        motivationLevels[state.currentMotivation.round() -
+                            1]['label'],
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -717,14 +749,16 @@ class HomeScreen extends HookConsumerWidget {
                         'レベル ${state.currentMotivation.round()}',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
                   ),
                 ),
                 if (state.isLoadingMotivation)
-                  const SizedBox(
+                  SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
@@ -744,12 +778,11 @@ class HomeScreen extends HookConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: motivationLevels.map((level) {
-                  final isSelected = level['level'] == state.currentMotivation.round();
+                  final isSelected =
+                      level['level'] == state.currentMotivation.round();
                   return Text(
                     level['emoji'],
-                    style: TextStyle(
-                      fontSize: isSelected ? 24 : 18,
-                    ),
+                    style: TextStyle(fontSize: isSelected ? 24 : 18),
                   );
                 }).toList(),
               ),
@@ -757,14 +790,19 @@ class HomeScreen extends HookConsumerWidget {
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   activeTrackColor: Color(
-                    motivationLevels[state.currentMotivation.round() - 1]['color'][0],
+                    motivationLevels[state.currentMotivation.round() -
+                        1]['color'][0],
                   ),
-                  inactiveTrackColor: Theme.of(context).colorScheme.surfaceContainer,
+                  inactiveTrackColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainer,
                   thumbColor: Color(
-                    motivationLevels[state.currentMotivation.round() - 1]['color'][1],
+                    motivationLevels[state.currentMotivation.round() -
+                        1]['color'][1],
                   ),
                   overlayColor: Color(
-                    motivationLevels[state.currentMotivation.round() - 1]['color'][0],
+                    motivationLevels[state.currentMotivation.round() -
+                        1]['color'][0],
                   ).withValues(alpha: 0.2),
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 12,
@@ -776,9 +814,11 @@ class HomeScreen extends HookConsumerWidget {
                   min: 1,
                   max: 5,
                   divisions: 4,
-                  onChanged: state.isLoadingMotivation ? null : (value) {
-                    // Temporary visual update handled by ViewModel
-                  },
+                  onChanged: state.isLoadingMotivation
+                      ? null
+                      : (value) {
+                          // Temporary visual update handled by ViewModel
+                        },
                   onChangeEnd: (value) {
                     if (!state.isLoadingMotivation) {
                       handleMotivationUpdate(value);
@@ -831,7 +871,9 @@ class HomeScreen extends HookConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.tertiary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -878,7 +920,9 @@ class HomeScreen extends HookConsumerWidget {
                       '($dayName)',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -901,7 +945,9 @@ class HomeScreen extends HookConsumerWidget {
                         '参加: ${practice.joinCount}人 / 見送り: ${practice.skipCount}人',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -920,7 +966,7 @@ class HomeScreen extends HookConsumerWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Color(0xFF374151),
               ),
             ),
             const SizedBox(height: 16),
@@ -928,9 +974,10 @@ class HomeScreen extends HookConsumerWidget {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => homeViewModel.respondToPractice(practice.id, 'join'),
+                    onPressed: () =>
+                        homeViewModel.respondToPractice(practice.id, 'join'),
                     icon: const Icon(Icons.check_circle_outline, size: 20),
-                    label: const Text(
+                    label: Text(
                       '参加する',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
@@ -947,15 +994,18 @@ class HomeScreen extends HookConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => homeViewModel.respondToPractice(practice.id, 'skip'),
+                    onPressed: () =>
+                        homeViewModel.respondToPractice(practice.id, 'skip'),
                     icon: const Icon(Icons.cancel_outlined, size: 20),
-                    label: const Text(
+                    label: Text(
                       '見送り',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.secondary,
-                      foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSecondary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -970,8 +1020,12 @@ class HomeScreen extends HookConsumerWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: userResponse == 'join'
-                    ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-                    : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.1)
+                    : Theme.of(
+                        context,
+                      ).colorScheme.secondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -998,11 +1052,13 @@ class HomeScreen extends HookConsumerWidget {
                                 : Theme.of(context).colorScheme.secondary,
                           ),
                         ),
-                        const Text(
+                        Text(
                           '回答を変更したい場合は、再度ボタンを押してください',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -1032,9 +1088,7 @@ class HomeScreen extends HookConsumerWidget {
 
   Widget _buildTeamMotivationSection() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .snapshots(),
+      stream: FirebaseFirestore.instance.collection('users').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1056,9 +1110,7 @@ class HomeScreen extends HookConsumerWidget {
             allMotivations.add({
               'userId': doc.id,
               'displayName':
-                  data['displayName'] ??
-                  data['username'] ??
-                  'Unknown',
+                  data['displayName'] ?? data['username'] ?? 'Unknown',
               'username': data['username'] ?? '',
               'department': data['department'] ?? '',
               'group': data['group'] ?? '',
@@ -1101,7 +1153,9 @@ class HomeScreen extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.shadow.withValues(alpha: 0.08),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -1114,7 +1168,9 @@ class HomeScreen extends HookConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -1148,7 +1204,7 @@ class HomeScreen extends HookConsumerWidget {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
-                      const Text(
+                      Text(
                         ' / 5.0',
                         style: TextStyle(
                           fontSize: 20,
@@ -1169,7 +1225,9 @@ class HomeScreen extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.08),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.shadow.withValues(alpha: 0.08),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -1183,7 +1241,9 @@ class HomeScreen extends HookConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.tertiary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -1237,7 +1297,9 @@ class HomeScreen extends HookConsumerWidget {
                               child: Text(
                                 '${index + 1}',
                                 style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onPrimary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -1253,10 +1315,13 @@ class HomeScreen extends HookConsumerWidget {
                                   motivation['displayName'] ?? 'Unknown User',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
                                   ),
                                 ),
-                                if (motivation['department']?.isNotEmpty == true ||
+                                if (motivation['department']?.isNotEmpty ==
+                                        true ||
                                     motivation['group']?.isNotEmpty == true)
                                   Text(
                                     [
@@ -1267,7 +1332,9 @@ class HomeScreen extends HookConsumerWidget {
                                         .join(' / '),
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 if (motivation['comment'] != null &&
@@ -1275,7 +1342,9 @@ class HomeScreen extends HookConsumerWidget {
                                   Text(
                                     motivation['comment'],
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                       fontSize: 12,
                                     ),
                                     maxLines: 1,
@@ -1290,7 +1359,9 @@ class HomeScreen extends HookConsumerWidget {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(

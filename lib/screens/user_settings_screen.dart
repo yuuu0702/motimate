@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motimate/services/notification_service.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:motimate/main.dart';
+import 'package:motimate/providers/theme_provider.dart';
 
-class UserSettingsScreen extends StatefulWidget {
+class UserSettingsScreen extends ConsumerStatefulWidget {
   const UserSettingsScreen({super.key});
 
   @override
-  State<UserSettingsScreen> createState() => _UserSettingsScreenState();
+  ConsumerState<UserSettingsScreen> createState() => _UserSettingsScreenState();
 }
 
-class _UserSettingsScreenState extends State<UserSettingsScreen> {
+class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
   final _displayNameController = TextEditingController();
   final _departmentController = TextEditingController();
   final _groupController = TextEditingController();
@@ -20,7 +20,6 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
   
   bool _isLoading = true;
   bool _isSaving = false;
-  bool _isDarkMode = false;
   bool _notificationsEnabled = false;
   Map<String, dynamic>? _userData;
 
@@ -29,14 +28,6 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
     super.initState();
     _loadUserData();
     _loadNotificationStatus();
-    _loadThemePreference();
-  }
-
-  void _loadThemePreference() {
-    // ダークテーマは準備中のため、常にライトテーマ
-    setState(() {
-      _isDarkMode = false;
-    });
   }
 
   @override
@@ -66,7 +57,6 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
           _departmentController.text = data['department'] ?? '';
           _groupController.text = data['group'] ?? '';
           _bioController.text = data['bio'] ?? '';
-          _isDarkMode = data['isDarkMode'] ?? false;
           _isLoading = false;
         });
       }
@@ -101,9 +91,9 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
       if (granted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('通知が有効になりました'),
-              backgroundColor: Color(0xFF10B981),
+              backgroundColor: Theme.of(context).colorScheme.primary,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -111,7 +101,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('通知の許可が拒否されました'),
               backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
@@ -128,25 +118,25 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: const Text(
+            title: Text(
               '通知設定',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            content: const Text(
+            content: Text(
               '通知を無効にするには、端末の設定画面から変更してください。',
               style: TextStyle(
-                color: Color(0xFF374151),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
+                child: Text(
                   'キャンセル',
-                  style: TextStyle(color: Color(0xFF6B7280)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                 ),
               ),
               ElevatedButton(
@@ -155,8 +145,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                   await NotificationService.openSettings();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF667eea),
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -190,15 +180,14 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
         'department': _departmentController.text.trim(),
         'group': _groupController.text.trim(),
         'bio': _bioController.text.trim(),
-        'isDarkMode': _isDarkMode,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('プロフィールを更新しました'),
-            backgroundColor: Color(0xFF10B981),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -228,25 +217,25 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text(
+          title: Text(
             'ログアウト',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          content: const Text(
+          content: Text(
             'ログアウトしてもよろしいですか？',
             style: TextStyle(
-              color: Color(0xFF374151),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
+              child: Text(
                 'キャンセル',
-                style: TextStyle(color: Color(0xFF6B7280)),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
               ),
             ),
             ElevatedButton(
@@ -255,8 +244,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                 await FirebaseAuth.instance.signOut();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -275,20 +264,23 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF8FAFC),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+            colors: [
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).colorScheme.surface,
+            ],
           ),
         ),
         child: SafeArea(
@@ -300,12 +292,12 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                 child: Row(
                   children: [
                     const SizedBox(width: 16),
-                    const Text(
+                    Text(
                       '設定',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -331,18 +323,18 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.edit,
-                                    color: Color(0xFF667eea),
+                                    color: Theme.of(context).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
+                                  Text(
                                     'プロフィール編集',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937),
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -353,34 +345,34 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF9FAFB),
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'ユーザー名',
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF374151),
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.alternate_email,
-                                          color: Color(0xFF94A3B8),
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                           size: 16,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
                                           _userData?['username'] ?? 'Unknown',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
-                                            color: Color(0xFF6B7280),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                           ),
                                         ),
                                       ],
@@ -449,18 +441,18 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.palette,
-                                    color: Color(0xFF667eea),
+                                    color: Theme.of(context).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
+                                  Text(
                                     'テーマ設定',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937),
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -468,62 +460,38 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                               const SizedBox(height: 20),
                               
                               Container(
-                                padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF9FAFB),
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.construction,
-                                      color: Colors.orange.withOpacity(0.7),
-                                      size: 24,
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.all(16),
+                                  leading: Icon(
+                                    _getThemeIcon(ref.watch(themeProvider)),
+                                    color: Theme.of(context).colorScheme.primary,
+                                    size: 24,
+                                  ),
+                                  title: Text(
+                                    'アプリのテーマ',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'ダークテーマ',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                          Text(
-                                            '🚧 準備中です',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.orange[600],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                  ),
+                                  subtitle: Text(
+                                    ref.read(themeProvider.notifier).getThemeName(ref.watch(themeProvider)),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: Colors.orange.withOpacity(0.3),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'Coming Soon',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.orange[700],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
+                                  trailing: Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                    size: 16,
+                                  ),
+                                  onTap: () => _showThemeSelector(context),
                                 ),
                               ),
                             ],
@@ -546,18 +514,18 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.notifications,
-                                    color: Color(0xFF667eea),
+                                    color: Theme.of(context).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
+                                  Text(
                                     '通知設定',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937),
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -567,7 +535,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF9FAFB),
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
@@ -586,19 +554,19 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                         children: [
                                           Text(
                                             _notificationsEnabled ? 'プッシュ通知が有効' : 'プッシュ通知が無効',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF374151),
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                           Text(
                                             _notificationsEnabled 
                                                 ? '練習日決定などの重要な通知を受け取ります' 
                                                 : '通知を受け取りません',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 14,
-                                              color: Color(0xFF6B7280),
+                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -607,7 +575,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                     Switch(
                                       value: _notificationsEnabled,
                                       onChanged: _toggleNotifications,
-                                      activeColor: const Color(0xFF667eea),
+                                      activeColor: Theme.of(context).colorScheme.primary,
                                     ),
                                   ],
                                 ),
@@ -632,18 +600,18 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.account_circle,
-                                    color: Color(0xFF667eea),
+                                    color: Theme.of(context).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
+                                  Text(
                                     'アカウント',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937),
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -654,12 +622,12 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF9FAFB),
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.email,
                                       color: Color(0xFF94A3B8),
                                       size: 20,
@@ -669,19 +637,19 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text(
+                                          Text(
                                             'メールアドレス',
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF374151),
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                           Text(
                                             FirebaseAuth.instance.currentUser?.email ?? 'Unknown',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 14,
-                                              color: Color(0xFF6B7280),
+                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -707,8 +675,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: Theme.of(context).colorScheme.error,
+                                    foregroundColor: Theme.of(context).colorScheme.onError,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
@@ -729,7 +697,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                           '© 2025 WATANABE YUDAI',
                           style: TextStyle(
                             fontSize: 12,
-                            color: const Color(0xFF94A3B8),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -749,14 +717,13 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                   height: 56,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        // 白に設定
-                        colors: [Color(0xFF667eea), Color(0xFF667eea)],
+                      gradient: LinearGradient(
+                        colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary],
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF667eea).withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -765,11 +732,11 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _isSaving ? null : _saveProfile,
                       icon: _isSaving
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 strokeWidth: 2,
                               ),
                             )
@@ -783,7 +750,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -812,21 +779,21 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF374151),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -835,14 +802,14 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
           child: TextFormField(
             controller: controller,
             maxLines: maxLines,
-            style: const TextStyle(
-              color: Color(0xFF1F2937),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 16,
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-              prefixIcon: Icon(icon, color: const Color(0xFF94A3B8)),
+              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+              prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),
@@ -851,4 +818,140 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
       ],
     );
   }
+
+  // テーマアイコンを取得
+  IconData _getThemeIcon(ThemeMode themeMode) {
+    switch (themeMode) {
+      case ThemeMode.light:
+        return Icons.light_mode;
+      case ThemeMode.dark:
+        return Icons.dark_mode;
+      case ThemeMode.system:
+        return Icons.settings_brightness;
+    }
+  }
+
+  // テーマ選択ダイアログを表示
+  void _showThemeSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              height: 4,
+              width: 40,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Title
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'テーマ設定',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            
+            // Theme options
+            ...ThemeMode.values.map((themeMode) => _buildThemeOption(themeMode)),
+            
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // テーマオプションを構築
+  Widget _buildThemeOption(ThemeMode themeMode) {
+    final currentTheme = ref.watch(themeProvider);
+    final isSelected = currentTheme == themeMode;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected 
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        border: isSelected
+            ? Border.all(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                width: 2,
+              )
+            : null,
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Icon(
+          _getThemeIcon(themeMode),
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+          size: 24,
+        ),
+        title: Text(
+          ref.read(themeProvider.notifier).getThemeName(themeMode),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Text(
+          _getThemeDescription(themeMode),
+          style: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+        trailing: isSelected
+            ? Icon(
+                Icons.check_circle,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              )
+            : null,
+        onTap: () {
+          ref.read(themeProvider.notifier).setThemeMode(themeMode);
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  // テーマの説明を取得
+  String _getThemeDescription(ThemeMode themeMode) {
+    switch (themeMode) {
+      case ThemeMode.light:
+        return '明るいテーマを使用します';
+      case ThemeMode.dark:
+        return '暗いテーマを使用します';
+      case ThemeMode.system:
+        return '端末の設定に従います';
+    }
+  }
+
 }

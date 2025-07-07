@@ -176,8 +176,8 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
                       height: 4,
                       decoration: BoxDecoration(
                         color: isActive 
-                            ? const Color(0xFF667eea)
-                            : const Color(0xFFE2E8F0),
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -216,31 +216,31 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           style: TextStyle(fontSize: 48),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'ユーザー名を決めましょう',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'あとから変更できません。慎重に選んでください。',
           style: TextStyle(
             fontSize: 16,
-            color: Color(0xFF6B7280),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 32),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -248,16 +248,16 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           ),
           child: TextFormField(
             controller: _usernameController,
-            style: const TextStyle(
-              color: Color(0xFF1F2937),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 18,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'basketball_player',
-              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
-              prefixIcon: Icon(Icons.alternate_email, color: Color(0xFF94A3B8)),
+              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+              prefixIcon: Icon(Icons.alternate_email, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.all(20),
+              contentPadding: const EdgeInsets.all(20),
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -286,31 +286,31 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           style: TextStyle(fontSize: 48),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           '表示名を入力してください',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'チームメイトに表示される名前です。',
           style: TextStyle(
             fontSize: 16,
-            color: Color(0xFF6B7280),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 32),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -318,14 +318,14 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           ),
           child: TextFormField(
             controller: _displayNameController,
-            style: const TextStyle(
-              color: Color(0xFF1F2937),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 18,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: '田中 太郎',
-              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
-              prefixIcon: Icon(Icons.person_outline, color: Color(0xFF94A3B8)),
+              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+              prefixIcon: Icon(Icons.person_outline, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               border: InputBorder.none,
               contentPadding: EdgeInsets.all(20),
             ),
@@ -350,20 +350,20 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           style: TextStyle(fontSize: 48),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           '所属情報',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'あなたの部署と所属グループを教えてください。',
           style: TextStyle(
             fontSize: 16,
-            color: Color(0xFF6B7280),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 32),
@@ -372,12 +372,12 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
         Container(
           margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -385,14 +385,14 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           ),
           child: TextFormField(
             controller: _departmentController,
-            style: const TextStyle(
-              color: Color(0xFF1F2937),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 18,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: '部署名（例：営業部、開発部）',
-              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
-              prefixIcon: Icon(Icons.business, color: Color(0xFF94A3B8)),
+              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+              prefixIcon: Icon(Icons.business, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               border: InputBorder.none,
               contentPadding: EdgeInsets.all(20),
             ),
@@ -402,12 +402,12 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
         // Group
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -415,14 +415,14 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           ),
           child: TextFormField(
             controller: _groupController,
-            style: const TextStyle(
-              color: Color(0xFF1F2937),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 18,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: '所属グループ（例：第1営業課、フロントエンドチーム）',
-              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
-              prefixIcon: Icon(Icons.groups, color: Color(0xFF94A3B8)),
+              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+              prefixIcon: Icon(Icons.groups, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               border: InputBorder.none,
               contentPadding: EdgeInsets.all(20),
             ),
@@ -441,31 +441,31 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           style: TextStyle(fontSize: 48),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           '自己紹介',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'チームメイトに向けて一言どうぞ！（任意）',
           style: TextStyle(
             fontSize: 16,
-            color: Color(0xFF6B7280),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(height: 32),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -474,15 +474,15 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
           child: TextFormField(
             controller: _bioController,
             maxLines: 4,
-            style: const TextStyle(
-              color: Color(0xFF1F2937),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 16,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'バスケが大好きです！一緒に頑張りましょう🏀',
-              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.all(20),
+              contentPadding: const EdgeInsets.all(20),
             ),
           ),
         ),
@@ -493,13 +493,16 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+            colors: [
+              Theme.of(context).scaffoldBackgroundColor,
+              Theme.of(context).colorScheme.surface,
+            ],
           ),
         ),
         child: SafeArea(
@@ -517,16 +520,16 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
                           onPressed: _previousStep,
                           icon: const Icon(Icons.arrow_back),
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.white.withValues(alpha: 0.8),
+                            backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
                             shape: const CircleBorder(),
                           ),
                         ),
                       const Spacer(),
                       Text(
                         '${_currentStep + 1} / 4',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF6B7280),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -560,14 +563,14 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
                     margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                      border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       _errorMessage!,
-                      style: const TextStyle(
-                        color: Colors.red,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
                         fontSize: 14,
                       ),
                       textAlign: TextAlign.center,
@@ -582,13 +585,13 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
                     height: 56,
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                        gradient: LinearGradient(
+                          colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary.withValues(alpha: 0.8)],
                         ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF667eea).withValues(alpha: 0.3),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -604,18 +607,18 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
                           ),
                         ),
                         child: _isLoading
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 24,
                                 height: 24,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                   strokeWidth: 2,
                                 ),
                               )
                             : Text(
                                 _currentStep == 3 ? '完了' : '次へ',
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),

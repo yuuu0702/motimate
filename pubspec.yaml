@@ -40,6 +40,8 @@ dependencies:
   table_calendar: ^3.2.0
   firebase_messaging: ^15.2.8
   google_sign_in: ^6.2.1
+  dynamic_color: ^1.7.0
+  shared_preferences: ^2.3.3
   
   # State management
   flutter_riverpod: ^2.6.1
