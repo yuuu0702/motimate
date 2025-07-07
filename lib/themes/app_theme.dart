@@ -112,4 +112,23 @@ class AppTheme {
       elevation: 8,
     ),
   );
+
+  // Helper methods for theme-aware colors
+  static Color containerBackground(bool isDarkMode) =>
+      isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB);
+
+  static Color primaryText(bool isDarkMode) =>
+      isDarkMode ? Colors.white : const Color(0xFF1F2937);
+
+  static Color secondaryText(bool isDarkMode) =>
+      isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151);
+
+  static Color tertiaryText(bool isDarkMode) =>
+      isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+
+  static Color cardColor(bool isDarkMode) =>
+      isDarkMode ? darkCardBackground : lightCardBackground;
+
+  static Color scaffoldBackground(bool isDarkMode) =>
+      isDarkMode ? darkScaffoldBackground : lightScaffoldBackground;
 }

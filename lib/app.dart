@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motimate/screens/home_screen.dart';
 import 'package:motimate/screens/member_list_screen.dart';
 import 'package:motimate/screens/schedule_screen.dart';
 import 'package:motimate/screens/user_settings_screen.dart';
+import 'package:motimate/providers/providers.dart';
+import 'package:motimate/themes/app_theme.dart';
 
-class App extends StatefulWidget {
+class App extends ConsumerStatefulWidget {
   const App({super.key});
 
   @override
-  State<App> createState() => _AppState();
+  ConsumerState<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> {
+class _AppState extends ConsumerState<App> {
   int _selectedIndex = 0;
 
   late final List<Widget> _screens;
@@ -35,14 +38,16 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
+    
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppTheme.cardColor(isDarkMode),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -50,9 +55,9 @@ class _AppState extends State<App> {
         ),
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.white,
+          backgroundColor: AppTheme.cardColor(isDarkMode),
           selectedItemColor: const Color(0xFF667eea),
-          unselectedItemColor: const Color(0xFF94A3B8),
+          unselectedItemColor: isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8),
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 12,

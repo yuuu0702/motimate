@@ -9,6 +9,7 @@ import 'package:motimate/providers/providers.dart';
 import 'package:motimate/viewmodels/home_viewmodel.dart';
 import 'package:motimate/models/schedule_model.dart';
 import 'package:motimate/models/practice_decision_model.dart';
+import 'package:motimate/themes/app_theme.dart';
 
 class HomeScreen extends HookConsumerWidget {
   final Function(int) onNavigate;
@@ -19,6 +20,7 @@ class HomeScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeState = ref.watch(homeViewModelProvider);
     final homeViewModel = ref.watch(homeViewModelProvider.notifier);
+    final isDarkMode = ref.watch(themeProvider);
     
     final motivationLevels = useMemoized(() => [
       {
@@ -91,11 +93,11 @@ class HomeScreen extends HookConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: const Text(
+            title: Text(
               '日程の決定',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
+                color: AppTheme.primaryText(isDarkMode),
               ),
             ),
             content: Column(
@@ -104,13 +106,13 @@ class HomeScreen extends HookConsumerWidget {
               children: [
                 Text(
                   '${schedule.date.month}月${schedule.date.day}日(${schedule.dayName})に日程を決定しますか？',
-                  style: const TextStyle(fontSize: 16, color: Color(0xFF374151)),
+                  style: TextStyle(fontSize: 16, color: AppTheme.secondaryText(isDarkMode)),
                 ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
+                    color: AppTheme.containerBackground(isDarkMode),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -126,9 +128,9 @@ class HomeScreen extends HookConsumerWidget {
                           const SizedBox(width: 8),
                           Text(
                             '${schedule.memberCount}人が参加可能',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF374151),
+                              color: AppTheme.secondaryText(isDarkMode),
                             ),
                           ),
                         ],
@@ -188,14 +190,15 @@ class HomeScreen extends HookConsumerWidget {
 
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 48,
             floating: false,
             pinned: true,
-            backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFF1E293B),
+            backgroundColor: AppTheme.cardColor(isDarkMode),
+            foregroundColor: AppTheme.primaryText(isDarkMode),
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsetsDirectional.only(

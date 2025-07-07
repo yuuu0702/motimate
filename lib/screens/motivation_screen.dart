@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:motimate/providers/providers.dart';
+import 'package:motimate/themes/app_theme.dart';
 
-class MotivationScreen extends StatefulWidget {
+class MotivationScreen extends ConsumerStatefulWidget {
   const MotivationScreen({super.key});
 
   @override
-  State<MotivationScreen> createState() => _MotivationScreenState();
+  ConsumerState<MotivationScreen> createState() => _MotivationScreenState();
 }
 
-class _MotivationScreenState extends State<MotivationScreen> {
+class _MotivationScreenState extends ConsumerState<MotivationScreen> {
   double _motivationLevel = 3.0;
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmitted = false;
@@ -68,6 +71,8 @@ class _MotivationScreenState extends State<MotivationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
+    
     if (_isSubmitted) {
       return Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
@@ -96,20 +101,20 @@ class _MotivationScreenState extends State<MotivationScreen> {
                       style: TextStyle(fontSize: 64),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       '登録完了！',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+                        color: AppTheme.primaryText(isDarkMode),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       '今日のやる気を記録しました',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF6B7280),
+                        color: AppTheme.tertiaryText(isDarkMode),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -138,13 +143,15 @@ class _MotivationScreenState extends State<MotivationScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+            colors: isDarkMode 
+                ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
