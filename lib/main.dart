@@ -72,35 +72,20 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class MyAppState extends ConsumerState<MyApp> {
-  bool _isDarkMode = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // ダークテーマは準備中のため、常にライトテーマ
-    _isDarkMode = false;
-  }
-
-  void toggleTheme() {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-    });
-  }
-
-  bool get isDarkMode => _isDarkMode;
-
   ThemeData get lightTheme => AppTheme.lightTheme;
 
   ThemeData get darkTheme => AppTheme.darkTheme;
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
+    
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Motimate',
       theme: lightTheme,
-      // ダークテーマは準備中のため、常にライトテーマを使用
-      themeMode: ThemeMode.light,
+      darkTheme: darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routes: {
         '/schedule': (context) => const ScheduleScreen(),
         '/registration': (context) => const UserRegistrationScreen(),

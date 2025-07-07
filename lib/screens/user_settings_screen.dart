@@ -4,15 +4,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:motimate/services/notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:motimate/main.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:motimate/providers/providers.dart';
 
-class UserSettingsScreen extends StatefulWidget {
+class UserSettingsScreen extends ConsumerStatefulWidget {
   const UserSettingsScreen({super.key});
 
   @override
-  State<UserSettingsScreen> createState() => _UserSettingsScreenState();
+  ConsumerState<UserSettingsScreen> createState() => _UserSettingsScreenState();
 }
 
-class _UserSettingsScreenState extends State<UserSettingsScreen> {
+class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
   final _displayNameController = TextEditingController();
   final _departmentController = TextEditingController();
   final _groupController = TextEditingController();
@@ -33,9 +35,10 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
   }
 
   void _loadThemePreference() {
-    // ダークテーマは準備中のため、常にライトテーマ
+    // テーマプロバイダーから読み込み
+    final isDarkMode = ref.read(themeProvider);
     setState(() {
-      _isDarkMode = false;
+      _isDarkMode = isDarkMode;
     });
   }
 
@@ -476,8 +479,8 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                 child: Row(
                                   children: [
                                     Icon(
-                                      Icons.construction,
-                                      color: Colors.orange.withOpacity(0.7),
+                                      _isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                                      color: const Color(0xFF667eea),
                                       size: 24,
                                     ),
                                     const SizedBox(width: 16),
@@ -486,42 +489,32 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'ダークテーマ',
-                                            style: TextStyle(
+                                            _isDarkMode ? 'ダークテーマ' : 'ライトテーマ',
+                                            style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: Colors.grey[600],
+                                              color: Color(0xFF374151),
                                             ),
                                           ),
                                           Text(
-                                            '🚧 準備中です',
-                                            style: TextStyle(
+                                            _isDarkMode ? 'ダークモードで表示しています' : 'ライトモードで表示しています',
+                                            style: const TextStyle(
                                               fontSize: 14,
-                                              color: Colors.orange[600],
-                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF6B7280),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: Colors.orange.withOpacity(0.3),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'Coming Soon',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.orange[700],
-                                        ),
-                                      ),
+                                    Switch(
+                                      value: _isDarkMode,
+                                      onChanged: (value) async {
+                                        await ref.read(themeProvider.notifier).toggleTheme();
+                                        setState(() {
+                                          _isDarkMode = value;
+                                        });
+                                      },
+                                      activeColor: const Color(0xFF667eea),
                                     ),
                                   ],
                                 ),
