@@ -17,7 +17,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
   final _departmentController = TextEditingController();
   final _groupController = TextEditingController();
   final _bioController = TextEditingController();
-  
+
   bool _isLoading = true;
   bool _isSaving = false;
   bool _notificationsEnabled = false;
@@ -48,7 +48,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
           .collection('users')
           .doc(user.uid)
           .get();
-      
+
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         setState(() {
@@ -87,7 +87,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
       setState(() {
         _notificationsEnabled = granted;
       });
-      
+
       if (granted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +136,11 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(
                   'キャンセル',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
               ),
               ElevatedButton(
@@ -176,12 +180,12 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
           .collection('users')
           .doc(user.uid)
           .update({
-        'displayName': _displayNameController.text.trim(),
-        'department': _departmentController.text.trim(),
-        'group': _groupController.text.trim(),
-        'bio': _bioController.text.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+            'displayName': _displayNameController.text.trim(),
+            'department': _departmentController.text.trim(),
+            'group': _groupController.text.trim(),
+            'bio': _bioController.text.trim(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -235,7 +239,11 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'キャンセル',
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
               ),
             ),
             ElevatedButton(
@@ -325,7 +333,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 children: [
                                   Icon(
                                     Icons.edit,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -334,7 +344,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
@@ -345,7 +357,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Column(
@@ -356,7 +370,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -364,7 +380,10 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                       children: [
                                         Icon(
                                           Icons.alternate_email,
-                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.6),
                                           size: 16,
                                         ),
                                         const SizedBox(width: 8),
@@ -372,7 +391,10 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                           _userData?['username'] ?? 'Unknown',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.7),
                                           ),
                                         ),
                                       ],
@@ -380,7 +402,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                   ],
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 20),
 
                               // Display Name
@@ -390,7 +412,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 hint: '田中 太郎',
                                 icon: Icons.person_outline,
                               ),
-                              
+
                               const SizedBox(height: 20),
 
                               // Department
@@ -400,7 +422,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 hint: '営業部',
                                 icon: Icons.business,
                               ),
-                              
+
                               const SizedBox(height: 20),
 
                               // Group
@@ -410,7 +432,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 hint: '第1営業課',
                                 icon: Icons.groups,
                               ),
-                              
+
                               const SizedBox(height: 20),
 
                               // Bio
@@ -443,7 +465,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 children: [
                                   Icon(
                                     Icons.palette,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -452,23 +476,29 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 20),
-                              
+
                               Container(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.all(16),
                                   leading: Icon(
                                     _getThemeIcon(ref.watch(themeProvider)),
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 24,
                                   ),
                                   title: Text(
@@ -476,19 +506,29 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                   subtitle: Text(
-                                    ref.read(themeProvider.notifier).getThemeName(ref.watch(themeProvider)),
+                                    ref
+                                        .read(themeProvider.notifier)
+                                        .getThemeName(ref.watch(themeProvider)),
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.7),
                                     ),
                                   ),
                                   trailing: Icon(
                                     Icons.arrow_forward_ios,
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.5),
                                     size: 16,
                                   ),
                                   onTap: () => _showThemeSelector(context),
@@ -516,7 +556,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 children: [
                                   Icon(
                                     Icons.notifications,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -525,24 +567,28 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 20),
-                              
+
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
-                                      _notificationsEnabled 
-                                          ? Icons.notifications_active 
+                                      _notificationsEnabled
+                                          ? Icons.notifications_active
                                           : Icons.notifications_off,
                                       color: const Color(0xFF667eea),
                                       size: 24,
@@ -550,23 +596,31 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            _notificationsEnabled ? 'プッシュ通知が有効' : 'プッシュ通知が無効',
+                                            _notificationsEnabled
+                                                ? 'プッシュ通知が有効'
+                                                : 'プッシュ通知が無効',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                           Text(
-                                            _notificationsEnabled 
-                                                ? '練習日決定などの重要な通知を受け取ります' 
+                                            _notificationsEnabled
+                                                ? '練習日決定などの重要な通知を受け取ります'
                                                 : '通知を受け取りません',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -575,7 +629,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     Switch(
                                       value: _notificationsEnabled,
                                       onChanged: _toggleNotifications,
-                                      activeColor: Theme.of(context).colorScheme.primary,
+                                      activeColor: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
                                     ),
                                   ],
                                 ),
@@ -602,7 +658,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 children: [
                                   Icon(
                                     Icons.account_circle,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -611,18 +669,22 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 20),
-                              
+
                               // Email info
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surfaceContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainer,
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
@@ -635,21 +697,31 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             'メールアドレス',
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
                                             ),
                                           ),
                                           Text(
-                                            FirebaseAuth.instance.currentUser?.email ?? 'Unknown',
+                                            FirebaseAuth
+                                                    .instance
+                                                    .currentUser
+                                                    ?.email ??
+                                                'Unknown',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.7),
                                             ),
                                           ),
                                         ],
@@ -658,9 +730,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                   ],
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 16),
-                              
+
                               // Logout button
                               SizedBox(
                                 width: double.infinity,
@@ -675,9 +747,15 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).colorScheme.error,
-                                    foregroundColor: Theme.of(context).colorScheme.onError,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.error,
+                                    foregroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.onError,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),
@@ -697,7 +775,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                           '© 2025 WATANABE YUDAI',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.5),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -718,12 +798,17 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primary],
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.primary,
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -750,7 +835,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
-                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -788,12 +875,18 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: Theme.of(context).colorScheme.onSurface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.2),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.shadow.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -808,8 +901,17 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
-              prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+              hintStyle: TextStyle(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),
@@ -854,11 +956,13 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
               height: 4,
               width: 40,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // Title
             Padding(
               padding: const EdgeInsets.all(24),
@@ -871,10 +975,12 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                 ),
               ),
             ),
-            
+
             // Theme options
-            ...ThemeMode.values.map((themeMode) => _buildThemeOption(themeMode)),
-            
+            ...ThemeMode.values.map(
+              (themeMode) => _buildThemeOption(themeMode),
+            ),
+
             const SizedBox(height: 20),
           ],
         ),
@@ -886,17 +992,19 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
   Widget _buildThemeOption(ThemeMode themeMode) {
     final currentTheme = ref.watch(themeProvider);
     final isSelected = currentTheme == themeMode;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: isSelected 
+        color: isSelected
             ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         border: isSelected
             ? Border.all(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.3),
                 width: 2,
               )
             : null,
@@ -924,7 +1032,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
           _getThemeDescription(themeMode),
           style: TextStyle(
             fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
         trailing: isSelected
@@ -953,5 +1063,4 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
         return '端末の設定に従います';
     }
   }
-
 }
