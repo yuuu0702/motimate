@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:motimate/providers/providers.dart';
+import 'package:motimate/themes/app_theme.dart';
 
-class MemberListScreen extends StatelessWidget {
+class MemberListScreen extends ConsumerWidget {
   const MemberListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(themeProvider);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+            colors: isDarkMode 
+                ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
@@ -25,12 +31,12 @@ class MemberListScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     const SizedBox(width: 16),
-                    const Text(
+                    Text(
                       'メンバー一覧',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+                        color: AppTheme.primaryText(isDarkMode),
                       ),
                     ),
                   ],
@@ -74,7 +80,6 @@ class MemberListScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final userDoc = users[index];
                         final userData = userDoc.data() as Map<String, dynamic>;
-                        final userId = userDoc.id;
 
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -121,10 +126,10 @@ class MemberListScreen extends StatelessWidget {
                                               userData['displayName'] ??
                                                   userData['username'] ??
                                                   'Unknown User',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Color(0xFF1F2937),
+                                                color: AppTheme.primaryText(isDarkMode),
                                               ),
                                             ),
                                             Text(
@@ -145,9 +150,9 @@ class MemberListScreen extends StatelessWidget {
                                                         )
                                                         .join(' / ')
                                                   : 'メンバー',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 14,
-                                                color: Color(0xFF6B7280),
+                                                color: AppTheme.tertiaryText(isDarkMode),
                                               ),
                                             ),
                                           ],
@@ -162,7 +167,7 @@ class MemberListScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF9FAFB),
+                                      color: AppTheme.containerBackground(isDarkMode),
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Column(
@@ -177,12 +182,12 @@ class MemberListScreen extends StatelessWidget {
                                               size: 20,
                                             ),
                                             const SizedBox(width: 8),
-                                            const Text(
+                                            Text(
                                               'モチベーション',
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
-                                                color: Color(0xFF374151),
+                                                color: AppTheme.secondaryText(isDarkMode),
                                               ),
                                             ),
                                           ],
@@ -193,8 +198,8 @@ class MemberListScreen extends StatelessWidget {
                                                   null
                                               ? '${userData['latestMotivationLevel']}/5'
                                               : '未登録',
-                                          style: const TextStyle(
-                                            color: Color(0xFF6B7280),
+                                          style: TextStyle(
+                                            color: AppTheme.tertiaryText(isDarkMode),
                                             fontSize: 14,
                                           ),
                                         ),
@@ -202,8 +207,8 @@ class MemberListScreen extends StatelessWidget {
                                             null)
                                           Text(
                                             '最終更新: ${_formatTimestamp(userData['latestMotivationTimestamp'] as Timestamp)}',
-                                            style: const TextStyle(
-                                              color: Color(0xFF9CA3AF),
+                                            style: TextStyle(
+                                              color: AppTheme.tertiaryText(isDarkMode),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -218,7 +223,7 @@ class MemberListScreen extends StatelessWidget {
                                     Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFF9FAFB),
+                                        color: AppTheme.containerBackground(isDarkMode),
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Column(
@@ -233,12 +238,12 @@ class MemberListScreen extends StatelessWidget {
                                                 size: 20,
                                               ),
                                               const SizedBox(width: 8),
-                                              const Text(
+                                              Text(
                                                 '自己紹介',
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
-                                                  color: Color(0xFF374151),
+                                                  color: AppTheme.secondaryText(isDarkMode),
                                                 ),
                                               ),
                                             ],
@@ -246,8 +251,8 @@ class MemberListScreen extends StatelessWidget {
                                           const SizedBox(height: 8),
                                           Text(
                                             userData['bio'],
-                                            style: const TextStyle(
-                                              color: Color(0xFF6B7280),
+                                            style: TextStyle(
+                                              color: AppTheme.tertiaryText(isDarkMode),
                                               fontSize: 14,
                                             ),
                                           ),

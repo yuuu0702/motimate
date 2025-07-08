@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motimate/app.dart';
@@ -12,11 +13,14 @@ import 'package:motimate/screens/feedback_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:motimate/providers/providers.dart';
+import 'package:motimate/themes/app_theme.dart';
 
 // バックグラウンドメッセージハンドラ
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print("Handling a background message: ${message.messageId}");
+  if (kDebugMode) {
+    debugPrint("Handling a background message: ${message.messageId}");
+  }
   // ここで通知の表示などを行う
 }
 
@@ -39,19 +43,26 @@ void main() async {
 
   // フォアグラウンドメッセージのハンドリング
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    if (kDebugMode) {
+      debugPrint('Got a message whilst in the foreground!');
+      debugPrint('Message data: ${message.data}');
+    }
 
     if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
+      if (kDebugMode) {
+        debugPrint('Message also contained a notification: ${message.notification}');
+      }
       // ここでフォアグラウンド通知の表示などを行う
-      ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
-        SnackBar(
-          content: Text(
-            message.notification!.title ?? ': ${message.notification!.body}',
+      final context = navigatorKey.currentState?.context;
+      if (context != null && navigatorKey.currentState?.mounted == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${message.notification!.title ?? ''}: ${message.notification!.body}',
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   });
 
@@ -71,131 +82,20 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class MyAppState extends ConsumerState<MyApp> {
-  bool _isDarkMode = false;
+  ThemeData get lightTheme => AppTheme.lightTheme;
 
-  @override
-  void initState() {
-    super.initState();
-    // ダークテーマは準備中のため、常にライトテーマ
-    _isDarkMode = false;
-  }
-
-  void toggleTheme() {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-    });
-  }
-
-  bool get isDarkMode => _isDarkMode;
-
-  ThemeData get lightTheme => ThemeData(
-    fontFamily: 'MPLUSRounded1c',
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF667eea),
-      brightness: Brightness.light,
-    ),
-    scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
-      foregroundColor: Color(0xFF1E293B),
-      elevation: 0,
-      centerTitle: true,
-      titleTextStyle: TextStyle(
-        fontFamily: 'MPLUSRounded1c',
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF1E293B),
-      ),
-    ),
-    cardTheme: CardThemeData(
-      color: Colors.white,
-      elevation: 8,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
-      selectedItemColor: Color(0xFF667eea),
-      unselectedItemColor: Color(0xFF64748B),
-      elevation: 8,
-      type: BottomNavigationBarType.fixed,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color(0xFF667eea),
-      foregroundColor: Colors.white,
-      elevation: 8,
-    ),
-  );
-
-  ThemeData get darkTheme => ThemeData(
-    fontFamily: 'MPLUSRounded1c',
-    useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF667eea),
-      brightness: Brightness.dark,
-    ),
-    scaffoldBackgroundColor: const Color(0xFF0F172A),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1E293B),
-      foregroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: true,
-      titleTextStyle: TextStyle(
-        fontFamily: 'MPLUSRounded1c',
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    ),
-    cardTheme: CardThemeData(
-      color: const Color(0xFF1E293B),
-      elevation: 8,
-      shadowColor: Colors.black.withValues(alpha: 0.3),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Color(0xFF1E293B),
-      selectedItemColor: Color(0xFF667eea),
-      unselectedItemColor: Color(0xFF94A3B8),
-      elevation: 8,
-      type: BottomNavigationBarType.fixed,
-    ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color(0xFF667eea),
-      foregroundColor: Colors.white,
-      elevation: 8,
-    ),
-  );
+  ThemeData get darkTheme => AppTheme.darkTheme;
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
+    
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Motimate',
       theme: lightTheme,
-      // ダークテーマは準備中のため、常にライトテーマを使用
-      themeMode: ThemeMode.light,
+      darkTheme: darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       routes: {
         '/schedule': (context) => const ScheduleScreen(),
         '/registration': (context) => const UserRegistrationScreen(),

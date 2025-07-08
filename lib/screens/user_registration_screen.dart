@@ -163,7 +163,6 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
       child: Row(
         children: List.generate(4, (index) {
           final isActive = index <= _currentStep;
-          final isCompleted = index < _currentStep;
           
           return Expanded(
             child: Container(

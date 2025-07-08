@@ -9,6 +9,7 @@ import 'package:motimate/providers/providers.dart';
 import 'package:motimate/viewmodels/home_viewmodel.dart';
 import 'package:motimate/models/schedule_model.dart';
 import 'package:motimate/models/practice_decision_model.dart';
+import 'package:motimate/themes/app_theme.dart';
 
 class HomeScreen extends HookConsumerWidget {
   final Function(int) onNavigate;
@@ -19,6 +20,7 @@ class HomeScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeState = ref.watch(homeViewModelProvider);
     final homeViewModel = ref.watch(homeViewModelProvider.notifier);
+    final isDarkMode = ref.watch(themeProvider);
     
     final motivationLevels = useMemoized(() => [
       {
@@ -91,11 +93,11 @@ class HomeScreen extends HookConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: const Text(
+            title: Text(
               '日程の決定',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
+                color: AppTheme.primaryText(isDarkMode),
               ),
             ),
             content: Column(
@@ -104,13 +106,13 @@ class HomeScreen extends HookConsumerWidget {
               children: [
                 Text(
                   '${schedule.date.month}月${schedule.date.day}日(${schedule.dayName})に日程を決定しますか？',
-                  style: const TextStyle(fontSize: 16, color: Color(0xFF374151)),
+                  style: TextStyle(fontSize: 16, color: AppTheme.secondaryText(isDarkMode)),
                 ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
+                    color: AppTheme.containerBackground(isDarkMode),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -126,17 +128,17 @@ class HomeScreen extends HookConsumerWidget {
                           const SizedBox(width: 8),
                           Text(
                             '${schedule.memberCount}人が参加可能',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF374151),
+                              color: AppTheme.secondaryText(isDarkMode),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         '決定すると、参加可能なメンバーに通知が送信され、参加/見送りの回答を求めます。',
-                        style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                        style: TextStyle(fontSize: 14, color: AppTheme.tertiaryText(isDarkMode)),
                       ),
                     ],
                   ),
@@ -146,9 +148,9 @@ class HomeScreen extends HookConsumerWidget {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text(
+                child: Text(
                   'キャンセル',
-                  style: TextStyle(color: Color(0xFF6B7280)),
+                  style: TextStyle(color: AppTheme.tertiaryText(isDarkMode)),
                 ),
               ),
               ElevatedButton(
@@ -188,14 +190,15 @@ class HomeScreen extends HookConsumerWidget {
 
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 48,
             floating: false,
             pinned: true,
-            backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFF1E293B),
+            backgroundColor: AppTheme.cardColor(isDarkMode),
+            foregroundColor: AppTheme.primaryText(isDarkMode),
             elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsetsDirectional.only(
@@ -248,7 +251,7 @@ class HomeScreen extends HookConsumerWidget {
                 // 日程が決定されました！セクション
                 if (homeState.pendingPractices.isNotEmpty) ...[
                   ...homeState.pendingPractices.map(
-                    (practice) => _buildPendingPracticeCard(context, practice, homeViewModel),
+                    (practice) => _buildPendingPracticeCard(context, practice, homeViewModel, isDarkMode),
                   ),
                 ],
                 
@@ -256,10 +259,10 @@ class HomeScreen extends HookConsumerWidget {
                 _buildPopularDatesSection(context, homeState, onNavigate, handleDecisionDialog),
 
                 // Personal Motivation Slider Section
-                _buildMotivationSection(context, homeState, motivationLevels, handleMotivationUpdate),
+                _buildMotivationSection(context, homeState, motivationLevels, handleMotivationUpdate, isDarkMode),
 
                 // チーム全体のモチベーションとTOP3表示セクション
-                _buildTeamMotivationSection(),
+                _buildTeamMotivationSection(isDarkMode),
               ]),
             ),
           ),
@@ -634,12 +637,13 @@ class HomeScreen extends HookConsumerWidget {
     HomeState state,
     List<Map<String, dynamic>> motivationLevels,
     Future<void> Function(double) handleMotivationUpdate,
+    bool isDarkMode,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardColor(isDarkMode),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -666,12 +670,12 @@ class HomeScreen extends HookConsumerWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 'バスケのモチベ',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+                  color: AppTheme.primaryText(isDarkMode),
                 ),
               ),
             ],
@@ -759,7 +763,7 @@ class HomeScreen extends HookConsumerWidget {
                   activeTrackColor: Color(
                     motivationLevels[state.currentMotivation.round() - 1]['color'][0],
                   ),
-                  inactiveTrackColor: const Color(0xFFE2E8F0),
+                  inactiveTrackColor: isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0),
                   thumbColor: Color(
                     motivationLevels[state.currentMotivation.round() - 1]['color'][1],
                   ),
@@ -797,6 +801,7 @@ class HomeScreen extends HookConsumerWidget {
     BuildContext context,
     PracticeDecisionModel practice,
     HomeViewModel homeViewModel,
+    bool isDarkMode,
   ) {
     final daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
     final dayName = daysOfWeek[practice.practiceDate.weekday % 7];
@@ -807,7 +812,7 @@ class HomeScreen extends HookConsumerWidget {
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardColor(isDarkMode),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: userResponse == null
@@ -1030,7 +1035,7 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildTeamMotivationSection() {
+  Widget _buildTeamMotivationSection(bool isDarkMode) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
@@ -1097,7 +1102,7 @@ class HomeScreen extends HookConsumerWidget {
               margin: const EdgeInsets.only(bottom: 20),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardColor(isDarkMode),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -1124,12 +1129,12 @@ class HomeScreen extends HookConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         'チーム平均やる気',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+                          color: AppTheme.secondaryText(isDarkMode),
                         ),
                       ),
                     ],
@@ -1148,11 +1153,11 @@ class HomeScreen extends HookConsumerWidget {
                           color: Color(0xFF667eea),
                         ),
                       ),
-                      const Text(
+                      Text(
                         ' / 5.0',
                         style: TextStyle(
                           fontSize: 20,
-                          color: Color(0xFF94A3B8),
+                          color: AppTheme.tertiaryText(isDarkMode),
                         ),
                       ),
                     ],
@@ -1165,7 +1170,7 @@ class HomeScreen extends HookConsumerWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.cardColor(isDarkMode),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -1193,12 +1198,12 @@ class HomeScreen extends HookConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         'やる気ランキング TOP3',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
+                          color: AppTheme.primaryText(isDarkMode),
                         ),
                       ),
                     ],
@@ -1217,7 +1222,7 @@ class HomeScreen extends HookConsumerWidget {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: AppTheme.containerBackground(isDarkMode),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: rankColors[index].withValues(alpha: 0.3),
@@ -1251,9 +1256,9 @@ class HomeScreen extends HookConsumerWidget {
                               children: [
                                 Text(
                                   motivation['displayName'] ?? 'Unknown User',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1E293B),
+                                    color: AppTheme.primaryText(isDarkMode),
                                   ),
                                 ),
                                 if (motivation['department']?.isNotEmpty == true ||
@@ -1265,17 +1270,17 @@ class HomeScreen extends HookConsumerWidget {
                                         ]
                                         .where((s) => s?.isNotEmpty == true)
                                         .join(' / '),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
-                                      color: Color(0xFF94A3B8),
+                                      color: AppTheme.tertiaryText(isDarkMode),
                                     ),
                                   ),
                                 if (motivation['comment'] != null &&
                                     motivation['comment'].isNotEmpty)
                                   Text(
                                     motivation['comment'],
-                                    style: const TextStyle(
-                                      color: Color(0xFF64748B),
+                                    style: TextStyle(
+                                      color: AppTheme.tertiaryText(isDarkMode),
                                       fontSize: 12,
                                     ),
                                     maxLines: 1,

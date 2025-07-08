@@ -28,9 +28,11 @@ class _ProposalScreenState extends State<ProposalScreen> {
           .get();
 
       if (existingVote.docs.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('この日程にはすでに投票済みです。')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('この日程にはすでに投票済みです。')),
+          );
+        }
         return;
       }
 
@@ -40,13 +42,17 @@ class _ProposalScreenState extends State<ProposalScreen> {
         'timestamp': Timestamp.now(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${date.month}/${date.day} に投票しました！')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${date.month}/${date.day} に投票しました！')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('投票に失敗しました: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('投票に失敗しました: $e')),
+        );
+      }
     }
   }
 
