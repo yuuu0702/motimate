@@ -36,9 +36,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
 
   void _loadThemePreference() {
     // テーマプロバイダーから読み込み
-    final isDarkMode = ref.read(themeProvider);
+    final darkMode = ref.read(themeProvider);
     setState(() {
-      _isDarkMode = isDarkMode;
+      _isDarkMode = darkMode;
     });
   }
 
@@ -128,28 +128,29 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
+            backgroundColor: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            title: const Text(
+            title: Text(
               '通知設定',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
+                color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
               ),
             ),
-            content: const Text(
+            content: Text(
               '通知を無効にするには、端末の設定画面から変更してください。',
               style: TextStyle(
-                color: Color(0xFF374151),
+                color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
+                child: Text(
                   'キャンセル',
-                  style: TextStyle(color: Color(0xFF6B7280)),
+                  style: TextStyle(color: _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
                 ),
               ),
               ElevatedButton(
@@ -228,28 +229,29 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text(
+          title: Text(
             'ログアウト',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
+              color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
             ),
           ),
-          content: const Text(
+          content: Text(
             'ログアウトしてもよろしいですか？',
             style: TextStyle(
-              color: Color(0xFF374151),
+              color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
+              child: Text(
                 'キャンセル',
-                style: TextStyle(color: Color(0xFF6B7280)),
+                style: TextStyle(color: _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
               ),
             ),
             ElevatedButton(
@@ -277,21 +279,23 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
+    
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF8FAFC),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      backgroundColor: isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: _isDarkMode 
+            colors: isDarkMode 
                 ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
                 : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
@@ -310,7 +314,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                        color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
                       ),
                     ),
                   ],
@@ -347,7 +351,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
                                     ),
                                   ),
                                 ],
@@ -358,7 +362,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Column(
@@ -369,7 +373,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: _isDarkMode ? Colors.white : const Color(0xFF374151),
+                                        color: isDarkMode ? Colors.white : const Color(0xFF374151),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -385,7 +389,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                           _userData?['username'] ?? 'Unknown',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                            color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
                                           ),
                                         ),
                                       ],
@@ -402,6 +406,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 label: '表示名',
                                 hint: '田中 太郎',
                                 icon: Icons.person_outline,
+                                isDarkMode: isDarkMode,
                               ),
                               
                               const SizedBox(height: 20),
@@ -412,6 +417,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 label: '部署',
                                 hint: '営業部',
                                 icon: Icons.business,
+                                isDarkMode: isDarkMode,
                               ),
                               
                               const SizedBox(height: 20),
@@ -422,6 +428,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 label: '所属グループ',
                                 hint: '第1営業課',
                                 icon: Icons.groups,
+                                isDarkMode: isDarkMode,
                               ),
                               
                               const SizedBox(height: 20),
@@ -432,6 +439,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                 label: '自己紹介',
                                 hint: 'バスケが大好きです！一緒に頑張りましょう🏀',
                                 icon: Icons.chat_bubble_outline,
+                                isDarkMode: isDarkMode,
                                 maxLines: 3,
                               ),
                             ],
@@ -465,7 +473,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
                                     ),
                                   ),
                                 ],
@@ -475,13 +483,13 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
-                                      _isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                                      isDarkMode ? Icons.dark_mode : Icons.light_mode,
                                       color: const Color(0xFF667eea),
                                       size: 24,
                                     ),
@@ -491,30 +499,29 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            _isDarkMode ? 'ダークテーマ' : 'ライトテーマ',
-                                            style: const TextStyle(
+                                            isDarkMode ? 'ダークテーマ' : 'ライトテーマ',
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF374151),
+                                              color: isDarkMode ? Colors.white : const Color(0xFF374151),
                                             ),
                                           ),
                                           Text(
-                                            _isDarkMode ? 'ダークモードで表示しています' : 'ライトモードで表示しています',
-                                            style: const TextStyle(
+                                            isDarkMode ? 'ダークモードで表示しています' : 'ライトモードで表示しています',
+                                            style: TextStyle(
                                               fontSize: 14,
-                                              color: Color(0xFF6B7280),
+                                              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Switch(
-                                      value: _isDarkMode,
+                                      value: isDarkMode,
                                       onChanged: (value) async {
                                         await ref.read(themeProvider.notifier).toggleTheme();
-                                        setState(() {
-                                          _isDarkMode = value;
-                                        });
+                                        // プロバイダーの状態変更を監視するため、setStateは不要
+                                        // ウィジェット全体が再ビルドされる
                                       },
                                       activeColor: const Color(0xFF667eea),
                                     ),
@@ -552,7 +559,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
                                     ),
                                   ),
                                 ],
@@ -562,7 +569,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
@@ -584,7 +591,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: _isDarkMode ? Colors.white : const Color(0xFF374151),
+                                              color: isDarkMode ? Colors.white : const Color(0xFF374151),
                                             ),
                                           ),
                                           Text(
@@ -593,7 +600,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                                 : '通知を受け取りません',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
                                             ),
                                           ),
                                         ],
@@ -638,7 +645,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
                                     ),
                                   ),
                                 ],
@@ -649,7 +656,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: _isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
@@ -669,14 +676,14 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: _isDarkMode ? Colors.white : const Color(0xFF374151),
+                                              color: isDarkMode ? Colors.white : const Color(0xFF374151),
                                             ),
                                           ),
                                           Text(
                                             FirebaseAuth.instance.currentUser?.email ?? 'Unknown',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
                                             ),
                                           ),
                                         ],
@@ -724,7 +731,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                           '© 2025 WATANABE YUDAI',
                           style: TextStyle(
                             fontSize: 12,
-                            color: _isDarkMode ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                            color: isDarkMode ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -800,6 +807,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
     required String label,
     required String hint,
     required IconData icon,
+    required bool isDarkMode,
     int maxLines = 1,
   }) {
     return Column(
@@ -810,15 +818,15 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: _isDarkMode ? Colors.white : const Color(0xFF374151),
+            color: isDarkMode ? Colors.white : const Color(0xFF374151),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: _isDarkMode ? const Color(0xFF374151) : Colors.white,
+            color: isDarkMode ? const Color(0xFF374151) : Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0)),
+            border: Border.all(color: isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
@@ -831,13 +839,13 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
             controller: controller,
             maxLines: maxLines,
             style: TextStyle(
-              color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+              color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
               fontSize: 16,
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF)),
-              prefixIcon: Icon(icon, color: _isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF94A3B8)),
+              hintStyle: TextStyle(color: isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF)),
+              prefixIcon: Icon(icon, color: isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF94A3B8)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),

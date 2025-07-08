@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:motimate/providers/providers.dart';
+import 'package:motimate/themes/app_theme.dart';
 
-class ScheduleScreen extends StatefulWidget {
+class ScheduleScreen extends ConsumerStatefulWidget {
   const ScheduleScreen({super.key});
 
   @override
-  State<ScheduleScreen> createState() => _ScheduleScreenState();
+  ConsumerState<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
-class _ScheduleScreenState extends State<ScheduleScreen> {
+class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   Set<DateTime> selectedDates = {};
   Set<DateTime> myRegisteredDates = {};
   DateTime currentDate = DateTime.now();
@@ -224,21 +227,28 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
+    
     if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
 
     final days = getDaysInMonth();
     final currentMonthText = '${currentDate.year}年${currentDate.month}月';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+            colors: isDarkMode 
+                ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
@@ -254,12 +264,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     Row(
                       children: [
                         const SizedBox(width: 16),
-                        const Text(
+                        Text(
                           'スケジュール',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1F2937),
+                            color: AppTheme.primaryText(isDarkMode),
                           ),
                         ),
                       ],
@@ -296,10 +306,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                       const SizedBox(width: 8),
                                       Text(
                                         currentMonthText,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF1F2937),
+                                          color: AppTheme.primaryText(isDarkMode),
                                         ),
                                       ),
                                     ],
@@ -323,11 +333,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              const Text(
+                              Text(
                                 '日付をタップして選択/解除できます',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFF6B7280),
+                                  color: AppTheme.tertiaryText(isDarkMode),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -338,15 +348,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                     Colors.green,
                                     '登録済み',
                                     Icons.check_circle,
+                                    isDarkMode,
                                   ),
                                   const SizedBox(width: 16),
                                   _buildLegendItem(
                                     const Color(0xFF667eea),
                                     '選択中',
                                     null,
+                                    isDarkMode,
                                   ),
                                   const SizedBox(width: 16),
-                                  _buildLegendItem(Colors.orange, '他の人', null),
+                                  _buildLegendItem(Colors.orange, '他の人', null, isDarkMode),
                                 ],
                               ),
                               const SizedBox(height: 24),
@@ -359,10 +371,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                         child: Center(
                                           child: Text(
                                             day,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF6B7280),
+                                              color: AppTheme.tertiaryText(isDarkMode),
                                             ),
                                           ),
                                         ),
@@ -400,7 +412,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                   // Determine the visual state
                                   Color? backgroundColor;
                                   Gradient? gradient;
-                                  Color textColor = const Color(0xFF1F2937);
+                                  Color textColor = AppTheme.primaryText(isDarkMode);
                                   Widget? statusIcon;
 
                                   if (isMyRegistered) {
@@ -480,7 +492,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                                 child: Center(
                                                   child: Text(
                                                     '${dateInfo['available']}',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: 10,
                                                       fontWeight:
@@ -515,16 +527,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             padding: const EdgeInsets.all(24),
                             child: Column(
                               children: [
-                                const Row(
+                                Row(
                                   children: [
-                                    Icon(Icons.people, color: Colors.green),
-                                    SizedBox(width: 8),
+                                    const Icon(Icons.people, color: Colors.green),
+                                    const SizedBox(width: 8),
                                     Text(
                                       '人気の日程',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1F2937),
+                                        color: AppTheme.primaryText(isDarkMode),
                                       ),
                                     ),
                                   ],
@@ -550,7 +562,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                         ),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF9FAFB),
+                                          color: AppTheme.containerBackground(isDarkMode),
                                           borderRadius: BorderRadius.circular(
                                             16,
                                           ),
@@ -561,17 +573,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               children: [
                                                 Text(
                                                   '${date.day}',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
-                                                    color: Color(0xFF1F2937),
+                                                    color: AppTheme.primaryText(isDarkMode),
                                                   ),
                                                 ),
                                                 Text(
                                                   '($dayName)',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 12,
-                                                    color: Color(0xFF6B7280),
+                                                    color: AppTheme.tertiaryText(isDarkMode),
                                                   ),
                                                 ),
                                               ],
@@ -592,7 +604,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               ),
                                               child: Text(
                                                 '${info['available']}人参加可能',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 12,
                                                   color: Colors.green,
                                                   fontWeight: FontWeight.w600,
@@ -627,7 +639,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             ),
                             child: Text(
                               '空き状況を更新する (${selectedDates.length}日選択中)',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -647,7 +659,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Widget _buildLegendItem(Color color, String label, IconData? icon) {
+  Widget _buildLegendItem(Color color, String label, IconData? icon, bool isDarkMode) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -660,7 +672,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+          style: TextStyle(fontSize: 12, color: AppTheme.tertiaryText(isDarkMode)),
         ),
       ],
     );

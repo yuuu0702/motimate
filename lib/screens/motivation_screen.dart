@@ -75,13 +75,15 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
     
     if (_isSubmitted) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
         body: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
+              colors: isDarkMode 
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                  : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
             ),
           ),
           child: Center(
@@ -166,17 +168,17 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.8),
+                        backgroundColor: AppTheme.cardColor(isDarkMode).withValues(alpha: 0.8),
                         shape: const CircleBorder(),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Text(
+                    Text(
                       '今日のやる気は？',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+                        color: AppTheme.primaryText(isDarkMode),
                       ),
                     ),
                   ],
@@ -198,16 +200,16 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             children: [
-                              const Text(
+                              Text(
                                 '気分を選んでね！',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1F2937),
+                                  color: AppTheme.primaryText(isDarkMode),
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              ...motivationOptions.map((option) => _buildMotivationOption(option)),
+                              ...motivationOptions.map((option) => _buildMotivationOption(option, isDarkMode)),
                             ],
                           ),
                         ),
@@ -224,12 +226,12 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 '一言コメント（任意）',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1F2937),
+                                  color: AppTheme.primaryText(isDarkMode),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -238,7 +240,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                                 decoration: InputDecoration(
                                   hintText: '今日の気分や理由があれば...',
                                   filled: true,
-                                  fillColor: const Color(0xFFF9FAFB),
+                                  fillColor: AppTheme.containerBackground(isDarkMode),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide.none,
@@ -294,7 +296,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
     );
   }
 
-  Widget _buildMotivationOption(Map<String, dynamic> option) {
+  Widget _buildMotivationOption(Map<String, dynamic> option, bool isDarkMode) {
     final isSelected = (_motivationLevel.round() == option['level']);
     final colors = option['color'] as List<int>;
     
@@ -319,7 +321,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                       colors: [Color(colors[0]), Color(colors[1])],
                     )
                   : null,
-              color: isSelected ? null : const Color(0xFFF9FAFB),
+              color: isSelected ? null : AppTheme.containerBackground(isDarkMode),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
@@ -344,7 +346,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF1F2937),
+                      color: isSelected ? Colors.white : AppTheme.primaryText(isDarkMode),
                     ),
                   ),
                 ),
@@ -354,7 +356,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                     fontSize: 14,
                     color: isSelected 
                         ? Colors.white.withValues(alpha: 0.8)
-                        : const Color(0xFF6B7280),
+                        : AppTheme.tertiaryText(isDarkMode),
                   ),
                 ),
               ],
