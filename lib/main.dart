@@ -97,66 +97,70 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
     
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      title: 'Motimate',
-      theme: AppTheme.getLightTheme(),
-      darkTheme: AppTheme.getDarkTheme(),
-      themeMode: themeMode,
-      routes: {
-        '/schedule': (context) => const ScheduleScreen(),
-        '/registration': (context) => const UserRegistrationScreen(),
-        '/home': (context) => const App(),
-        '/notifications': (context) => const NotificationsScreen(),
-        '/feedback': (context) => const FeedbackScreen(),
-      },
-      home: Consumer(
-        builder: (context, ref, child) {
-          final authState = ref.watch(authStateProvider);
-          
-          return authState.when(
-            loading: () => Scaffold(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              body: const Center(child: CircularProgressIndicator()),
-            ),
-            error: (error, stackTrace) => const AuthScreen(),
-            data: (user) {
-              if (user == null) {
-                return const AuthScreen();
-              }
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        return MaterialApp(
+          navigatorKey: navigatorKey,
+          title: 'Motimate',
+          theme: AppTheme.getLightTheme(dynamicColorScheme: lightDynamic),
+          darkTheme: AppTheme.getDarkTheme(dynamicColorScheme: darkDynamic),
+          themeMode: themeMode,
+          routes: {
+            '/schedule': (context) => const ScheduleScreen(),
+            '/registration': (context) => const UserRegistrationScreen(),
+            '/home': (context) => const App(),
+            '/notifications': (context) => const NotificationsScreen(),
+            '/feedback': (context) => const FeedbackScreen(),
+          },
+          home: Consumer(
+            builder: (context, ref, child) {
+              final authState = ref.watch(authStateProvider);
               
-              // User is logged in, check if profile is set up
-              return StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(user.uid)
-                    .snapshots(),
-                builder: (context, userSnapshot) {
-                  if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    return Scaffold(
-                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                      body: const Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  
-                  if (userSnapshot.hasError) {
+              return authState.when(
+                loading: () => Scaffold(
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  body: const Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stackTrace) => const AuthScreen(),
+                data: (user) {
+                  if (user == null) {
                     return const AuthScreen();
                   }
                   
-                  final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
-                  final hasProfileSetup = userData?['profileSetup'] == true;
-                  
-                  if (hasProfileSetup) {
-                    return const App(); // Profile is set up, go to app
-                  } else {
-                    return const UserRegistrationScreen(); // Profile needs setup
-                  }
+                  // User is logged in, check if profile is set up
+                  return StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user.uid)
+                        .snapshots(),
+                    builder: (context, userSnapshot) {
+                      if (userSnapshot.connectionState == ConnectionState.waiting) {
+                        return Scaffold(
+                          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                          body: const Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      
+                      if (userSnapshot.hasError) {
+                        return const AuthScreen();
+                      }
+                      
+                      final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
+                      final hasProfileSetup = userData?['profileSetup'] == true;
+                      
+                      if (hasProfileSetup) {
+                        return const App(); // Profile is set up, go to app
+                      } else {
+                        return const UserRegistrationScreen(); // Profile needs setup
+                      }
+                    },
+                  );
                 },
               );
             },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

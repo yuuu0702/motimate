@@ -12,8 +12,7 @@
       "Bash(git filter-branch:*)",
       "Bash(rm:*)",
       "Bash(flutter pub:*)",
-      "Bash(grep:*)",
-      "WebFetch(domain:m3.material.io)"
+      "Bash(grep:*)"
     ],
     "deny": []
   }
