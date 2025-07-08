@@ -74,7 +74,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       'motimateをより良いアプリにするため、\nご意見・ご要望をお聞かせください！',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.white.withOpacity(0.9),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -111,13 +111,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? category['color'].withValues(alpha: 0.1)
-                            : Colors.grey.withValues(alpha: 0.1),
+                            ? category['color'].withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected
                               ? category['color']
-                              : Colors.grey.withValues(alpha: 0.3),
+                              : Colors.grey.withOpacity(0.3),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -154,7 +154,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -199,7 +199,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF667eea).withValues(alpha: 0.3),
+                        color: const Color(0xFF667eea).withOpacity(0.3),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -241,10 +241,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
+                  color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.blue.withValues(alpha: 0.3),
+                    color: Colors.blue.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -323,21 +323,19 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
       if (mounted) {
         // Show success message
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('フィードバックを送信しました。ありがとうございます！'),
-              backgroundColor: Color(0xFF10B981),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('フィードバックを送信しました。ありがとうございます！'),
+            backgroundColor: Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
 
-          // Close the screen
-          Navigator.of(context).pop();
-        }
+        // Close the screen
+        Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted && context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('送信に失敗しました: $e'),

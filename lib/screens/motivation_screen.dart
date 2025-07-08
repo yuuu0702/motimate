@@ -70,16 +70,13 @@ class _MotivationScreenState extends State<MotivationScreen> {
   Widget build(BuildContext context) {
     if (_isSubmitted) {
       return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: const Color(0xFFF8FAFC),
         body: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).scaffoldBackgroundColor,
-                Theme.of(context).colorScheme.surface,
-              ],
+              colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
             ),
           ),
           child: Center(
@@ -99,28 +96,28 @@ class _MotivationScreenState extends State<MotivationScreen> {
                       style: TextStyle(fontSize: 64),
                     ),
                     const SizedBox(height: 16),
-                    Text(
+                    const Text(
                       '登録完了！',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: Color(0xFF1F2937),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       '今日のやる気を記録しました',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: Color(0xFF6B7280),
                       ),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 32,
                           vertical: 12,
@@ -141,16 +138,13 @@ class _MotivationScreenState extends State<MotivationScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).colorScheme.surface,
-            ],
+            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
@@ -165,17 +159,17 @@ class _MotivationScreenState extends State<MotivationScreen> {
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
                       style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                        backgroundColor: Colors.white.withValues(alpha: 0.8),
                         shape: const CircleBorder(),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Text(
+                    const Text(
                       '今日のやる気は？',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: Color(0xFF1F2937),
                       ),
                     ),
                   ],
@@ -197,12 +191,12 @@ class _MotivationScreenState extends State<MotivationScreen> {
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             children: [
-                              Text(
+                              const Text(
                                 '気分を選んでね！',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: Color(0xFF1F2937),
                                 ),
                               ),
                               const SizedBox(height: 24),
@@ -223,12 +217,12 @@ class _MotivationScreenState extends State<MotivationScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 '一言コメント（任意）',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: Color(0xFF1F2937),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -237,7 +231,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                                 decoration: InputDecoration(
                                   hintText: '今日の気分や理由があれば...',
                                   filled: true,
-                                  fillColor: Theme.of(context).colorScheme.surfaceContainer,
+                                  fillColor: const Color(0xFFF9FAFB),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide.none,
@@ -258,8 +252,8 @@ class _MotivationScreenState extends State<MotivationScreen> {
                         child: ElevatedButton(
                           onPressed: _submitMotivation,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -318,7 +312,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                       colors: [Color(colors[0]), Color(colors[1])],
                     )
                   : null,
-              color: isSelected ? null : Theme.of(context).colorScheme.surfaceContainer,
+              color: isSelected ? null : const Color(0xFFF9FAFB),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
@@ -343,7 +337,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                      color: isSelected ? Colors.white : const Color(0xFF1F2937),
                     ),
                   ),
                 ),
@@ -353,7 +347,7 @@ class _MotivationScreenState extends State<MotivationScreen> {
                     fontSize: 14,
                     color: isSelected 
                         ? Colors.white.withValues(alpha: 0.8)
-                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                        : const Color(0xFF6B7280),
                   ),
                 ),
               ],

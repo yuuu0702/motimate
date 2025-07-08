@@ -7,16 +7,13 @@ class MemberListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).colorScheme.surface,
-            ],
+            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
@@ -28,12 +25,12 @@ class MemberListScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     const SizedBox(width: 16),
-                    Text(
+                    const Text(
                       'メンバー一覧',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: Color(0xFF1F2937),
                       ),
                     ),
                   ],
@@ -77,6 +74,7 @@ class MemberListScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final userDoc = users[index];
                         final userData = userDoc.data() as Map<String, dynamic>;
+                        final userId = userDoc.id;
 
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -97,19 +95,19 @@ class MemberListScreen extends StatelessWidget {
                                         width: 48,
                                         height: 48,
                                         decoration: BoxDecoration(
-                                          gradient: LinearGradient(
+                                          gradient: const LinearGradient(
                                             colors: [
-                                              Theme.of(context).colorScheme.primary,
-                                              Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                                              Color(0xFF667eea),
+                                              Color(0xFF764ba2),
                                             ],
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             16,
                                           ),
                                         ),
-                                        child: Icon(
+                                        child: const Icon(
                                           Icons.person,
-                                          color: Theme.of(context).colorScheme.onPrimary,
+                                          color: Colors.white,
                                           size: 24,
                                         ),
                                       ),
@@ -123,10 +121,10 @@ class MemberListScreen extends StatelessWidget {
                                               userData['displayName'] ??
                                                   userData['username'] ??
                                                   'Unknown User',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
-                                                color: Theme.of(context).colorScheme.onSurface,
+                                                color: Color(0xFF1F2937),
                                               ),
                                             ),
                                             Text(
@@ -147,9 +145,9 @@ class MemberListScreen extends StatelessWidget {
                                                         )
                                                         .join(' / ')
                                                   : 'メンバー',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 14,
-                                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                                color: Color(0xFF6B7280),
                                               ),
                                             ),
                                           ],
@@ -164,7 +162,7 @@ class MemberListScreen extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.surfaceContainer,
+                                      color: const Color(0xFFF9FAFB),
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Column(
@@ -173,18 +171,18 @@ class MemberListScreen extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            Icon(
+                                            const Icon(
                                               Icons.sentiment_satisfied,
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Color(0xFF667eea),
                                               size: 20,
                                             ),
                                             const SizedBox(width: 8),
-                                            Text(
+                                            const Text(
                                               'モチベーション',
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
-                                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                color: Color(0xFF374151),
                                               ),
                                             ),
                                           ],
@@ -195,8 +193,8 @@ class MemberListScreen extends StatelessWidget {
                                                   null
                                               ? '${userData['latestMotivationLevel']}/5'
                                               : '未登録',
-                                          style: TextStyle(
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                          style: const TextStyle(
+                                            color: Color(0xFF6B7280),
                                             fontSize: 14,
                                           ),
                                         ),
@@ -204,8 +202,8 @@ class MemberListScreen extends StatelessWidget {
                                             null)
                                           Text(
                                             '最終更新: ${_formatTimestamp(userData['latestMotivationTimestamp'] as Timestamp)}',
-                                            style: TextStyle(
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                            style: const TextStyle(
+                                              color: Color(0xFF9CA3AF),
                                               fontSize: 12,
                                             ),
                                           ),
@@ -220,7 +218,7 @@ class MemberListScreen extends StatelessWidget {
                                     Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: Theme.of(context).colorScheme.surfaceContainer,
+                                        color: const Color(0xFFF9FAFB),
                                         borderRadius: BorderRadius.circular(16),
                                       ),
                                       child: Column(
@@ -229,18 +227,18 @@ class MemberListScreen extends StatelessWidget {
                                         children: [
                                           Row(
                                             children: [
-                                              Icon(
+                                              const Icon(
                                                 Icons.chat_bubble_outline,
-                                                color: Theme.of(context).colorScheme.primary,
+                                                color: Color(0xFF667eea),
                                                 size: 20,
                                               ),
                                               const SizedBox(width: 8),
-                                              Text(
+                                              const Text(
                                                 '自己紹介',
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w600,
-                                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                  color: Color(0xFF374151),
                                                 ),
                                               ),
                                             ],
@@ -248,8 +246,8 @@ class MemberListScreen extends StatelessWidget {
                                           const SizedBox(height: 8),
                                           Text(
                                             userData['bio'],
-                                            style: TextStyle(
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                            style: const TextStyle(
+                                              color: Color(0xFF6B7280),
                                               fontSize: 14,
                                             ),
                                           ),

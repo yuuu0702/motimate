@@ -140,7 +140,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${date.month}/${date.day}の予定を削除しました'),
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            backgroundColor: Colors.orange,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -152,7 +152,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('削除に失敗しました: $e'),
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -190,10 +190,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('空き状況を更新しました (${selectedDates.length}日選択中)'),
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          ),
+          SnackBar(content: Text('空き状況を更新しました (${selectedDates.length}日選択中)')),
         );
       }
 
@@ -206,12 +203,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text('更新に失敗しました: $e'),
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          ),
-        );
+        ).showSnackBar(SnackBar(content: Text('更新に失敗しました: $e')));
       }
     }
   }
@@ -240,16 +232,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final currentMonthText = '${currentDate.year}年${currentDate.month}月';
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).scaffoldBackgroundColor,
-              Theme.of(context).colorScheme.surface,
-            ],
+            colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
           ),
         ),
         child: SafeArea(
@@ -265,12 +254,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     Row(
                       children: [
                         const SizedBox(width: 16),
-                        Text(
+                        const Text(
                           'スケジュール',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: Color(0xFF1F2937),
                           ),
                         ),
                       ],
@@ -300,17 +289,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.calendar_today,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: Colors.blue,
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
                                         currentMonthText,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.onSurface,
+                                          color: Color(0xFF1F2937),
                                         ),
                                       ),
                                     ],
@@ -334,11 +323,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Text(
+                              const Text(
                                 '日付をタップして選択/解除できます',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: Color(0xFF6B7280),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -346,18 +335,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 children: [
                                   // Legend
                                   _buildLegendItem(
-                                    Theme.of(context).colorScheme.primary,
+                                    Colors.green,
                                     '登録済み',
                                     Icons.check_circle,
                                   ),
                                   const SizedBox(width: 16),
                                   _buildLegendItem(
-                                    Theme.of(context).colorScheme.secondary,
+                                    const Color(0xFF667eea),
                                     '選択中',
                                     null,
                                   ),
                                   const SizedBox(width: 16),
-                                  _buildLegendItem(Theme.of(context).colorScheme.tertiary, '他の人', null),
+                                  _buildLegendItem(Colors.orange, '他の人', null),
                                 ],
                               ),
                               const SizedBox(height: 24),
@@ -370,10 +359,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                         child: Center(
                                           child: Text(
                                             day,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              color: Color(0xFF6B7280),
                                             ),
                                           ),
                                         ),
@@ -410,22 +399,28 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
                                   // Determine the visual state
                                   Color? backgroundColor;
-                                  Color textColor = Theme.of(context).colorScheme.onSurface;
+                                  Gradient? gradient;
+                                  Color textColor = const Color(0xFF1F2937);
                                   Widget? statusIcon;
 
                                   if (isMyRegistered) {
-                                    // Already registered by me - primary color with checkmark
-                                    backgroundColor = Theme.of(context).colorScheme.primary;
-                                    textColor = Theme.of(context).colorScheme.onPrimary;
-                                    statusIcon = Icon(
+                                    // Already registered by me - green with checkmark
+                                    backgroundColor = const Color(0xFF10B981);
+                                    textColor = Colors.white;
+                                    statusIcon = const Icon(
                                       Icons.check_circle,
-                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      color: Colors.white,
                                       size: 16,
                                     );
                                   } else if (isSelected) {
-                                    // Currently selected for new registration - secondary color
-                                    backgroundColor = Theme.of(context).colorScheme.secondary;
-                                    textColor = Theme.of(context).colorScheme.onSecondary;
+                                    // Currently selected for new registration - blue gradient
+                                    gradient = const LinearGradient(
+                                      colors: [
+                                        Color(0xFF667eea),
+                                        Color(0xFF764ba2),
+                                      ],
+                                    );
+                                    textColor = Colors.white;
                                   } else {
                                     // Default state
                                     backgroundColor = Colors.transparent;
@@ -436,13 +431,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(12),
+                                        gradient: gradient,
                                         color: backgroundColor,
                                         border: isMyRegistered
                                             ? null
                                             : Border.all(
                                                 color: isSelected
                                                     ? Colors.transparent
-                                                    : Theme.of(context).colorScheme.outline,
+                                                    : const Color(0xFFE2E8F0),
                                                 width: 1,
                                               ),
                                       ),
@@ -477,8 +473,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               child: Container(
                                                 width: 16,
                                                 height: 16,
-                                                decoration: BoxDecoration(
-                                                  color: Theme.of(context).colorScheme.tertiary,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.orange,
                                                   shape: BoxShape.circle,
                                                 ),
                                                 child: Center(
@@ -519,16 +515,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             padding: const EdgeInsets.all(24),
                             child: Column(
                               children: [
-                                Row(
+                                const Row(
                                   children: [
-                                    Icon(Icons.people, color: Theme.of(context).colorScheme.primary),
-                                    const SizedBox(width: 8),
+                                    Icon(Icons.people, color: Colors.green),
+                                    SizedBox(width: 8),
                                     Text(
                                       '人気の日程',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).colorScheme.onSurface,
+                                        color: Color(0xFF1F2937),
                                       ),
                                     ),
                                   ],
@@ -554,7 +550,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                         ),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: Theme.of(context).colorScheme.surfaceContainer,
+                                          color: const Color(0xFFF9FAFB),
                                           borderRadius: BorderRadius.circular(
                                             16,
                                           ),
@@ -565,17 +561,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               children: [
                                                 Text(
                                                   '${date.day}',
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
-                                                    color: Theme.of(context).colorScheme.onSurface,
+                                                    color: Color(0xFF1F2937),
                                                   ),
                                                 ),
                                                 Text(
                                                   '($dayName)',
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     fontSize: 12,
-                                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                                    color: Color(0xFF6B7280),
                                                   ),
                                                 ),
                                               ],
@@ -588,15 +584,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                                     vertical: 4,
                                                   ),
                                               decoration: BoxDecoration(
-                                                color: Theme.of(context).colorScheme.primaryContainer,
+                                                color: Colors.green.withValues(
+                                                  alpha: 0.1,
+                                                ),
                                                 borderRadius:
                                                     BorderRadius.circular(12),
                                               ),
                                               child: Text(
                                                 '${info['available']}人参加可能',
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 12,
-                                                  color: Theme.of(context).colorScheme.primary,
+                                                  color: Colors.green,
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -620,8 +618,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           child: ElevatedButton(
                             onPressed: _updateAvailability,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -657,15 +655,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           width: 12,
           height: 12,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: icon != null ? Icon(icon, color: Theme.of(context).colorScheme.onPrimary, size: 8) : null,
+          child: icon != null ? Icon(icon, color: Colors.white, size: 8) : null,
         ),
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
         ),
       ],
     );

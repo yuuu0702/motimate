@@ -11,8 +11,7 @@
       "Bash(java:*)",
       "Bash(git filter-branch:*)",
       "Bash(rm:*)",
-      "Bash(flutter pub:*)",
-      "Bash(grep:*)"
+      "Bash(flutter pub:*)"
     ],
     "deny": []
   }

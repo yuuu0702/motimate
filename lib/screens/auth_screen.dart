@@ -173,32 +173,32 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
     });
   }
 
-  // Future<void> _signInAnonymously() async {
-  //   setState(() {
-  //     _isLoading = true;
-  //     _errorMessage = null;
-  //   });
+  Future<void> _signInAnonymously() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-  //   try {
-  //     await FirebaseAuth.instance.signInAnonymously();
-  //   } on FirebaseAuthException catch (e) {
-  //     String message = '匿名ログインに失敗しました。';
-  //     if (e.code == 'operation-not-allowed') {
-  //       message = '匿名認証がFirebaseプロジェクトで有効になっていません。';
-  //     }
-  //     setState(() {
-  //       _errorMessage = message;
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _errorMessage = 'エラーが発生しました: $e';
-  //     });
-  //   }
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+    } on FirebaseAuthException catch (e) {
+      String message = '匿名ログインに失敗しました。';
+      if (e.code == 'operation-not-allowed') {
+        message = '匿名認証がFirebaseプロジェクトで有効になっていません。';
+      }
+      setState(() {
+        _errorMessage = message;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'エラーが発生しました: $e';
+      });
+    }
 
-  //   setState(() {
-  //     _isLoading = false;
-  //   });
-  // }
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -221,47 +221,38 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.secondary,
-                          ],
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.sports_basketball,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                        color: Colors.white,
                         size: 40,
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text(
+                    const Text(
                       'motimate',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: Color(0xFF1E293B),
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       'バスケサークルアプリ',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 16),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       'みんなのやる気、スケジュールを見える化',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 16,
-                      ),
+                      style: TextStyle(color: Color(0xFF64748B), fontSize: 16),
                     ),
                   ],
                 ),
@@ -277,14 +268,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       // Email Field
                       Container(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                           boxShadow: [
                             BoxShadow(
-                              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -292,20 +281,16 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         ),
                         child: TextFormField(
                           controller: _emailController,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                          decoration: InputDecoration(
+                          style: const TextStyle(color: Color(0xFF1E293B)),
+                          decoration: const InputDecoration(
                             hintText: 'メールアドレス',
-                            hintStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                            hintStyle: TextStyle(color: Color(0xFF94A3B8)),
                             prefixIcon: Icon(
                               Icons.email_outlined,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Color(0xFF94A3B8),
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(16),
+                            contentPadding: const EdgeInsets.all(16),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -326,14 +311,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       // Password Field
                       Container(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                           boxShadow: [
                             BoxShadow(
-                              color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -342,24 +325,22 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         child: TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          style: const TextStyle(color: Color(0xFF1E293B)),
                           decoration: InputDecoration(
                             hintText: 'パスワード',
-                            hintStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
                             ),
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.lock_outline,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Color(0xFF94A3B8),
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: const Color(0xFF94A3B8),
                               ),
                               onPressed: () {
                                 setState(() {
@@ -368,7 +349,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               },
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(16),
+                            contentPadding: const EdgeInsets.all(16),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -388,11 +369,8 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       Container(
                         height: 56,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Theme.of(context).colorScheme.primary,
-                              Theme.of(context).colorScheme.secondary,
-                            ],
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -408,18 +386,18 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                             ),
                           ),
                           child: _isLoading
-                              ? SizedBox(
+                              ? const SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
-                                    color: Theme.of(context).colorScheme.onPrimary,
+                                    color: Colors.white,
                                     strokeWidth: 2,
                                   ),
                                 )
                               : Text(
                                   _isLoginMode ? 'ログイン' : 'アカウント作成',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onPrimary,
+                                  style: const TextStyle(
+                                    color: Colors.white,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -443,14 +421,12 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               text: _isLoginMode
                                   ? 'アカウントをお持ちでない方は '
                                   : 'すでにアカウントをお持ちの方は ',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
+                              style: const TextStyle(color: Color(0xFF64748B)),
                               children: [
                                 TextSpan(
                                   text: _isLoginMode ? '新規登録' : 'ログイン',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.primary,
+                                  style: const TextStyle(
+                                    color: Color(0xFF667eea),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -465,25 +441,15 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       // Divider
                       Row(
                         children: [
-                          Expanded(
-                            child: Divider(
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
-                          Padding(
+                          Expanded(child: Divider(color: Colors.grey[300])),
+                          const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               'または',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
+                              style: TextStyle(color: Color(0xFF94A3B8)),
                             ),
                           ),
-                          Expanded(
-                            child: Divider(
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
+                          Expanded(child: Divider(color: Colors.grey[300])),
                         ],
                       ),
 
@@ -493,17 +459,14 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                       Container(
                         height: 56,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
                         ),
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _signInWithGoogle,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.surface,
-                            foregroundColor: Theme.of(context).colorScheme.onSurface,
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black87,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -521,12 +484,11 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                 },
                               ),
                               const SizedBox(width: 12),
-                              Text(
+                              const Text(
                                 'Googleでログイン',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -541,16 +503,16 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.errorContainer,
+                            color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Theme.of(context).colorScheme.error,
+                              color: Colors.red.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(
                             _errorMessage!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onErrorContainer,
+                            style: const TextStyle(
+                              color: Colors.red,
                               fontSize: 14,
                             ),
                             textAlign: TextAlign.center,
@@ -565,7 +527,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                           '© 2025 WATANABE YUDAI',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: const Color(0xFF94A3B8),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
