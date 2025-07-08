@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -165,40 +166,16 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       setState(() {
         _errorMessage = 'Googleログインに失敗しました: ${e.toString()}';
       });
-      print('Google Sign-In Error: $e');
-    }
-
-    setState(() {
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _signInAnonymously() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      await FirebaseAuth.instance.signInAnonymously();
-    } on FirebaseAuthException catch (e) {
-      String message = '匿名ログインに失敗しました。';
-      if (e.code == 'operation-not-allowed') {
-        message = '匿名認証がFirebaseプロジェクトで有効になっていません。';
+      if (kDebugMode) {
+        debugPrint('Google Sign-In Error: $e');
       }
-      setState(() {
-        _errorMessage = message;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'エラーが発生しました: $e';
-      });
     }
 
     setState(() {
       _isLoading = false;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +247,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: Color(0xFFE2E8F0)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.05),
@@ -290,7 +267,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               color: Color(0xFF94A3B8),
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.all(16),
+                            contentPadding: EdgeInsets.all(16),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -313,7 +290,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: Color(0xFFE2E8F0)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.05),
@@ -349,7 +326,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                               },
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.all(16),
+                            contentPadding: EdgeInsets.all(16),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {

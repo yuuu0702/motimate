@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:motimate/app.dart';
@@ -17,7 +18,9 @@ import 'package:motimate/themes/app_theme.dart';
 // バックグラウンドメッセージハンドラ
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print("Handling a background message: ${message.messageId}");
+  if (kDebugMode) {
+    debugPrint("Handling a background message: ${message.messageId}");
+  }
   // ここで通知の表示などを行う
 }
 
@@ -40,19 +43,26 @@ void main() async {
 
   // フォアグラウンドメッセージのハンドリング
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    if (kDebugMode) {
+      debugPrint('Got a message whilst in the foreground!');
+      debugPrint('Message data: ${message.data}');
+    }
 
     if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
+      if (kDebugMode) {
+        debugPrint('Message also contained a notification: ${message.notification}');
+      }
       // ここでフォアグラウンド通知の表示などを行う
-      ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
-        SnackBar(
-          content: Text(
-            message.notification!.title ?? ': ${message.notification!.body}',
+      final context = navigatorKey.currentState?.context;
+      if (context != null && navigatorKey.currentState?.mounted == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${message.notification!.title ?? ''}: ${message.notification!.body}',
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   });
 

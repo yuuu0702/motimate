@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -120,7 +121,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           side: notification.isRead
               ? BorderSide.none
               : BorderSide(
-                  color: const Color(0xFF667eea).withOpacity(0.3),
+                  color: const Color(0xFF667eea).withValues(alpha: 0.3),
                   width: 1,
                 ),
         ),
@@ -137,7 +138,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: notification.typeColor.withOpacity(0.1),
+                    color: notification.typeColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -187,7 +188,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               .textTheme
                               .bodyMedium
                               ?.color
-                              ?.withOpacity(0.8),
+                              ?.withValues(alpha: 0.8),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -230,7 +231,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           .doc(notification.id)
           .update({'isRead': true});
     } catch (e) {
-      print('Failed to mark notification as read: $e');
+      if (kDebugMode) {
+        debugPrint('Failed to mark notification as read: $e');
+      }
     }
   }
 

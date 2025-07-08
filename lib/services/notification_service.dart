@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,7 +21,9 @@ class NotificationService {
         sound: true,
       );
 
-      print('Notification permission: ${settings.authorizationStatus}');
+      if (kDebugMode) {
+        debugPrint('Notification permission: ${settings.authorizationStatus}');
+      }
 
       // 許可が得られた場合はFCMトークンを保存
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
@@ -31,7 +34,9 @@ class NotificationService {
 
       return false;
     } catch (e) {
-      print('Error requesting notification permission: $e');
+      if (kDebugMode) {
+        debugPrint('Error requesting notification permission: $e');
+      }
       return false;
     }
   }
@@ -43,7 +48,9 @@ class NotificationService {
           .getNotificationSettings();
       return settings.authorizationStatus;
     } catch (e) {
-      print('Error getting notification status: $e');
+      if (kDebugMode) {
+        debugPrint('Error getting notification status: $e');
+      }
       return AuthorizationStatus.notDetermined;
     }
   }
@@ -60,10 +67,14 @@ class NotificationService {
           'fcmToken': token,
           'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
-        print('FCM Token saved: $token');
+        if (kDebugMode) {
+          debugPrint('FCM Token saved: $token');
+        }
       }
     } catch (e) {
-      print('Error saving FCM token: $e');
+      if (kDebugMode) {
+        debugPrint('Error saving FCM token: $e');
+      }
     }
   }
 
@@ -117,7 +128,9 @@ class NotificationService {
         ...notification.toFirestore(),
       });
     } catch (e) {
-      print('Failed to create notification: $e');
+      if (kDebugMode) {
+        debugPrint('Failed to create notification: $e');
+      }
     }
   }
 
@@ -134,7 +147,7 @@ class NotificationService {
       userId: userId,
       title: '🏀 日程が決定されました！',
       body:
-          '${practiceDate.month}/${practiceDate.day}(${dayName})に日程が決定されました。参加/見送りを選択してください。',
+          '${practiceDate.month}/${practiceDate.day}($dayName)に日程が決定されました。参加/見送りを選択してください。',
       type: 'practice_decision',
       data: {
         'practiceDate': practiceDate.toIso8601String(),
