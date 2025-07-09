@@ -13,7 +13,6 @@ import '../screens/motivation_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/feedback_screen.dart';
 import '../screens/user_settings_screen.dart';
-import '../screens/proposal_screen.dart';
 import '../app.dart';
 
 /// App routes
@@ -27,7 +26,6 @@ abstract class AppRoutes {
   static const String notifications = '/notifications';
   static const String feedback = '/feedback';
   static const String settings = '/settings';
-  static const String proposal = '/proposal';
 }
 
 /// Router provider
@@ -121,11 +119,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.settings,
             name: 'settings',
             builder: (context, state) => const UserSettingsScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.proposal,
-            name: 'proposal',
-            builder: (context, state) => const ProposalScreen(),
           ),
         ],
       ),

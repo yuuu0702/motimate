@@ -7,6 +7,7 @@ import '../services/notification_service.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/notification_viewmodel.dart';
+import '../core/theme/theme_controller.dart';
 
 // Firebase instances
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
@@ -59,4 +60,10 @@ final unreadNotificationCountProvider = StreamProvider<int>((ref) {
   if (user == null) return Stream.value(0);
   
   return NotificationService.getUnreadNotificationCount(user.uid);
+});
+
+// Legacy theme provider for backward compatibility
+final themeProvider = Provider<bool>((ref) {
+  final theme = ref.watch(themeControllerProvider);
+  return theme == ThemeMode.dark;
 });

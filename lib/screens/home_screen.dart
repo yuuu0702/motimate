@@ -3,18 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:motimate/screens/notifications_screen.dart';
-import 'package:motimate/screens/feedback_screen.dart';
-import 'package:motimate/providers/providers.dart';
-import 'package:motimate/viewmodels/home_viewmodel.dart';
-import 'package:motimate/models/schedule_model.dart';
-import 'package:motimate/models/practice_decision_model.dart';
-import 'package:motimate/themes/app_theme.dart';
+import 'package:go_router/go_router.dart';
+
+import '../providers/providers.dart';
+import '../viewmodels/home_viewmodel.dart';
+import '../models/schedule_model.dart';
+import '../models/practice_decision_model.dart';
+import '../themes/app_theme.dart';
+import '../core/constants/app_constants.dart';
+import '../routing/app_router.dart';
 
 class HomeScreen extends HookConsumerWidget {
-  final Function(int) onNavigate;
-
-  const HomeScreen({super.key, required this.onNavigate});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,38 +22,14 @@ class HomeScreen extends HookConsumerWidget {
     final homeViewModel = ref.watch(homeViewModelProvider.notifier);
     final isDarkMode = ref.watch(themeProvider);
     
-    final motivationLevels = useMemoized(() => [
-      {
-        'level': 1,
-        'emoji': '😴',
-        'label': 'お疲れ気味...',
-        'color': [0xFF9CA3AF, 0xFF6B7280],
-      },
-      {
-        'level': 2,
-        'emoji': '😐',
-        'label': 'あまり気分が...',
-        'color': [0xFF60A5FA, 0xFF3B82F6],
-      },
-      {
-        'level': 3,
-        'emoji': '🙂',
-        'label': '普通かな',
-        'color': [0xFFFBBF24, 0xFFF59E0B],
-      },
-      {
-        'level': 4,
-        'emoji': '😊',
-        'label': 'やる気あり！',
-        'color': [0xFFFB923C, 0xFFEA580C],
-      },
-      {
-        'level': 5,
-        'emoji': '🔥',
-        'label': '超やる気！！',
-        'color': [0xFFF87171, 0xFFEF4444],
-      },
-    ]);
+    final motivationLevels = useMemoized(() => AppConstants.motivationLevels
+        .asMap()
+        .entries
+        .map((entry) => {
+              'level': entry.key + 1,
+              ...entry.value,
+            })
+        .toList());
     
     
     useEffect(() {
@@ -226,7 +202,7 @@ class HomeScreen extends HookConsumerWidget {
                     ],
                   ),
                   const Spacer(),
-                  _buildNotificationBell(ref),
+                  _buildNotificationBell(context, ref),
                 ],
               ),
               background: Container(
@@ -256,7 +232,7 @@ class HomeScreen extends HookConsumerWidget {
                 ],
                 
                 // 人気の日程セクション
-                _buildPopularDatesSection(context, homeState, onNavigate, handleDecisionDialog),
+                _buildPopularDatesSection(context, homeState, handleDecisionDialog),
 
                 // Personal Motivation Slider Section
                 _buildMotivationSection(context, homeState, motivationLevels, handleMotivationUpdate, isDarkMode),
@@ -271,7 +247,7 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildNotificationBell(WidgetRef ref) {
+  Widget _buildNotificationBell(BuildContext context, WidgetRef ref) {
     final unreadCountAsync = ref.watch(unreadNotificationCountProvider);
     
     return unreadCountAsync.when(
@@ -291,11 +267,7 @@ class HomeScreen extends HookConsumerWidget {
       ),
       data: (unreadCount) => GestureDetector(
         onTap: () {
-          Navigator.of(ref.context).push(
-            MaterialPageRoute(
-              builder: (context) => const NotificationsScreen(),
-            ),
-          );
+          context.go(AppRoutes.notifications);
         },
         child: Container(
           padding: const EdgeInsets.all(8),
@@ -341,9 +313,7 @@ class HomeScreen extends HookConsumerWidget {
   Widget _buildFeedbackBanner(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const FeedbackScreen()),
-        );
+        context.go(AppRoutes.feedback);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -392,7 +362,6 @@ class HomeScreen extends HookConsumerWidget {
   Widget _buildPopularDatesSection(
     BuildContext context,
     HomeState state,
-    Function(int) onNavigate,
     Future<void> Function(ScheduleModel) handleDecisionDialog,
   ) {
     return Container(
@@ -467,7 +436,7 @@ class HomeScreen extends HookConsumerWidget {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      onNavigate(1);
+                      context.go(AppRoutes.schedule);
                     },
                     icon: const Icon(Icons.add_rounded, size: 20),
                     label: const Text(
@@ -521,7 +490,7 @@ class HomeScreen extends HookConsumerWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        onNavigate(1);
+                        context.go(AppRoutes.schedule);
                       },
                       icon: const Icon(Icons.add_rounded, size: 20),
                       label: const Text(
