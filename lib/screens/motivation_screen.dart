@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:motimate/providers/providers.dart';
-import 'package:motimate/themes/app_theme.dart';
+import 'package:go_router/go_router.dart';
+
+import '../providers/providers.dart';
+import '../themes/app_theme.dart';
+import '../routing/app_router.dart';
 
 class MotivationScreen extends ConsumerStatefulWidget {
   const MotivationScreen({super.key});
@@ -56,7 +59,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
       if (mounted) {
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
-            Navigator.pop(context);
+            context.pop();
           }
         });
       }
@@ -121,7 +124,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,
@@ -165,7 +168,7 @@ class _MotivationScreenState extends ConsumerState<MotivationScreen> {
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                       icon: const Icon(Icons.arrow_back),
                       style: IconButton.styleFrom(
                         backgroundColor: AppTheme.cardColor(isDarkMode).withValues(alpha: 0.8),

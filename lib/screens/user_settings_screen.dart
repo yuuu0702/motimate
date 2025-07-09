@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../services/notification_service.dart';
 import '../core/theme/theme_controller.dart';
@@ -137,7 +138,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => context.pop(),
                 child: Text(
                   'キャンセル',
                   style: TextStyle(color: isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
@@ -145,7 +146,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  Navigator.of(context).pop();
+                  context.pop();
                   await NotificationService.openSettings();
                 },
                 style: ElevatedButton.styleFrom(
@@ -237,7 +238,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: Text(
                 'キャンセル',
                 style: TextStyle(color: isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
@@ -245,7 +246,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.of(context).pop();
+                context.pop();
                 await FirebaseAuth.instance.signOut();
               },
               style: ElevatedButton.styleFrom(

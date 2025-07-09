@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go_router/go_router.dart';
+
+import '../routing/app_router.dart';
 
 class UserRegistrationScreen extends StatefulWidget {
   const UserRegistrationScreen({super.key});
@@ -103,7 +106,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
       }, SetOptions(merge: true));
 
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        context.go(AppRoutes.home);
       }
     } catch (e) {
       setState(() {
