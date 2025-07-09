@@ -22,10 +22,7 @@ final googleSignInProvider = Provider<GoogleSignIn>((ref) {
   return GoogleSignIn();
 });
 
-// Services
-final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return NotificationService();
-});
+// Services - NotificationService is a static utility class, no provider needed
 
 // ViewModels
 final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {

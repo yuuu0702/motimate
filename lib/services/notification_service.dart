@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../models/notification_model.dart';
 
 class NotificationService {
@@ -101,18 +102,6 @@ class NotificationService {
     }
   }
 
-  /// 通知許可が必要かどうかをチェック
-  static Future<bool> shouldRequestPermission() async {
-    final status = await getNotificationStatus();
-    return status == AuthorizationStatus.notDetermined;
-  }
-
-  /// 通知許可が拒否されているかチェック
-  static Future<bool> isPermissionDenied() async {
-    final status = await getNotificationStatus();
-    return status == AuthorizationStatus.denied;
-  }
-
   /// 通知が有効かどうかをチェック
   static Future<bool> isNotificationEnabled() async {
     final status = await getNotificationStatus();
@@ -164,7 +153,7 @@ class NotificationService {
     required String deciderName,
   }) async {
     final dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-    final dayName = dayNames[practiceDate.weekday % 7];
+    final dayName = dayNames[practiceDate.weekday == 7 ? 0 : practiceDate.weekday];
 
     await createNotification(
       userId: userId,
@@ -176,19 +165,6 @@ class NotificationService {
         'practiceDate': practiceDate.toIso8601String(),
         'deciderName': deciderName,
       },
-    );
-  }
-
-  /// スケジュール更新通知を作成
-  static Future<void> createScheduleUpdateNotification({
-    required String userId,
-    required String message,
-  }) async {
-    await createNotification(
-      userId: userId,
-      title: '📅 スケジュール更新',
-      body: message,
-      type: 'schedule_update',
     );
   }
 
