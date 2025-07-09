@@ -48,6 +48,12 @@ dependencies:
   flutter_hooks: ^0.20.5
   hooks_riverpod: ^2.6.1
   
+  # Local storage
+  shared_preferences: ^2.3.3
+  
+  # Routing
+  go_router: ^14.6.2
+  
   # Freezed for immutable data classes
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0

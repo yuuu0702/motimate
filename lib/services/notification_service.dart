@@ -2,11 +2,34 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:motimate/models/notification_model.dart';
+import '../models/notification_model.dart';
 
 class NotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// Initialize notification service
+  static Future<void> initialize() async {
+    try {
+      // Handle foreground messages
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        if (kDebugMode) {
+          debugPrint('Foreground message: ${message.messageId}');
+        }
+      });
+      
+      // Handle notification taps
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        if (kDebugMode) {
+          debugPrint('Notification opened: ${message.messageId}');
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error initializing notifications: $e');
+      }
+    }
+  }
 
   /// 通知許可を求める（必要時のみ呼び出し）
   static Future<bool> requestNotificationPermission() async {

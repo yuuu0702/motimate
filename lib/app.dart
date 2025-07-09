@@ -1,91 +1,142 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:motimate/screens/home_screen.dart';
-import 'package:motimate/screens/member_list_screen.dart';
-import 'package:motimate/screens/schedule_screen.dart';
-import 'package:motimate/screens/user_settings_screen.dart';
-import 'package:motimate/providers/providers.dart';
-import 'package:motimate/themes/app_theme.dart';
+import 'package:go_router/go_router.dart';
 
-class App extends ConsumerStatefulWidget {
-  const App({super.key});
+import 'core/theme/theme_controller.dart';
+import 'routing/app_router.dart';
+import 'themes/app_theme.dart';
 
-  @override
-  ConsumerState<App> createState() => _AppState();
-}
+class App extends ConsumerWidget {
+  const App({super.key, required this.child});
 
-class _AppState extends ConsumerState<App> {
-  int _selectedIndex = 0;
-
-  late final List<Widget> _screens;
+  final Widget child;
 
   @override
-  void initState() {
-    super.initState();
-    _screens = [
-      HomeScreen(onNavigate: _onItemTapped),
-      const ScheduleScreen(),
-      const MemberListScreen(),
-      const UserSettingsScreen(),
-    ];
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    final currentLocation = GoRouterState.of(context).uri.toString();
     
     return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.cardColor(isDarkMode),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
+      body: child,
+      bottomNavigationBar: _buildBottomNavigationBar(
+        context,
+        ref,
+        isDarkMode,
+        currentLocation,
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar(
+    BuildContext context,
+    WidgetRef ref,
+    bool isDarkMode,
+    String currentLocation,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor(isDarkMode),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDarkMode ? 0.3 : 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Container(
+          height: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(
+                context,
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home,
+                label: 'ホーム',
+                route: AppRoutes.home,
+                isActive: currentLocation == AppRoutes.home,
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                context,
+                icon: Icons.calendar_today_outlined,
+                activeIcon: Icons.calendar_today,
+                label: 'スケジュール',
+                route: AppRoutes.schedule,
+                isActive: currentLocation == AppRoutes.schedule,
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                context,
+                icon: Icons.people_outline,
+                activeIcon: Icons.people,
+                label: 'メンバー',
+                route: AppRoutes.memberList,
+                isActive: currentLocation == AppRoutes.memberList,
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                context,
+                icon: Icons.settings_outlined,
+                activeIcon: Icons.settings,
+                label: '設定',
+                route: AppRoutes.settings,
+                isActive: currentLocation == AppRoutes.settings,
+                isDarkMode: isDarkMode,
+              ),
+            ],
+          ),
         ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppTheme.cardColor(isDarkMode),
-          selectedItemColor: const Color(0xFF667eea),
-          unselectedItemColor: isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8),
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 12,
-          ),
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'ホーム',
+      ),
+    );
+  }
+
+  Widget _buildNavItem(
+    BuildContext context, {
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required String route,
+    required bool isActive,
+    required bool isDarkMode,
+  }) {
+    final color = isActive
+        ? const Color(0xFF667eea)
+        : isDarkMode
+            ? const Color(0xFF9CA3AF)
+            : const Color(0xFF6B7280);
+
+    return GestureDetector(
+      onTap: () => context.go(route),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? const Color(0xFF667eea).withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isActive ? activeIcon : icon,
+              color: color,
+              size: 20,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_rounded),
-              label: 'スケジュール',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people_rounded),
-              label: 'メンバー',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_rounded),
-              label: '設定',
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
           ],
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
         ),
       ),
     );

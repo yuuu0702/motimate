@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:motimate/services/notification_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:motimate/providers/providers.dart';
+
+import '../services/notification_service.dart';
+import '../core/theme/theme_controller.dart';
+import '../themes/app_theme.dart';
 
 class UserSettingsScreen extends ConsumerStatefulWidget {
   const UserSettingsScreen({super.key});
@@ -20,7 +22,6 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
   
   bool _isLoading = true;
   bool _isSaving = false;
-  bool _isDarkMode = false;
   bool _notificationsEnabled = false;
   Map<String, dynamic>? _userData;
 
@@ -29,16 +30,8 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
     super.initState();
     _loadUserData();
     _loadNotificationStatus();
-    _loadThemePreference();
   }
 
-  void _loadThemePreference() {
-    // テーマプロバイダーから読み込み
-    final darkMode = ref.read(themeProvider);
-    setState(() {
-      _isDarkMode = darkMode;
-    });
-  }
 
   @override
   void dispose() {
@@ -67,7 +60,6 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
           _departmentController.text = data['department'] ?? '';
           _groupController.text = data['group'] ?? '';
           _bioController.text = data['bio'] ?? '';
-          _isDarkMode = data['isDarkMode'] ?? false;
           _isLoading = false;
         });
       }
@@ -126,7 +118,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            backgroundColor: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+            backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -134,13 +126,13 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
               '通知設定',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
               ),
             ),
             content: Text(
               '通知を無効にするには、端末の設定画面から変更してください。',
               style: TextStyle(
-                color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
+                color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
               ),
             ),
             actions: [
@@ -148,7 +140,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(
                   'キャンセル',
-                  style: TextStyle(color: _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
+                  style: TextStyle(color: isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
                 ),
               ),
               ElevatedButton(
@@ -192,7 +184,6 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
         'department': _departmentController.text.trim(),
         'group': _groupController.text.trim(),
         'bio': _bioController.text.trim(),
-        'isDarkMode': _isDarkMode,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
@@ -227,7 +218,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+          backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -235,13 +226,13 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
             'ログアウト',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: _isDarkMode ? Colors.white : const Color(0xFF1F2937),
+              color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
             ),
           ),
           content: Text(
             'ログアウトしてもよろしいですか？',
             style: TextStyle(
-              color: _isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
+              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
             ),
           ),
           actions: [
@@ -249,7 +240,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'キャンセル',
-                style: TextStyle(color: _isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
+                style: TextStyle(color: isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
               ),
             ),
             ElevatedButton(
@@ -277,7 +268,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(themeProvider);
+    final isDarkMode = ref.watch(isDarkModeProvider);
     
     if (_isLoading) {
       return Scaffold(
@@ -517,9 +508,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     Switch(
                                       value: isDarkMode,
                                       onChanged: (value) async {
-                                        await ref.read(themeProvider.notifier).toggleTheme();
-                                        // プロバイダーの状態変更を監視するため、setStateは不要
-                                        // ウィジェット全体が再ビルドされる
+                                        await ref.read(themeControllerProvider.notifier).toggleTheme();
                                       },
                                       activeColor: const Color(0xFF667eea),
                                     ),

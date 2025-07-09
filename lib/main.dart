@@ -1,155 +1,54 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:motimate/app.dart';
-import 'package:motimate/firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:motimate/screens/auth_screen.dart';
-import 'package:motimate/screens/schedule_screen.dart';
-import 'package:motimate/screens/user_registration_screen.dart';
-import 'package:motimate/screens/notifications_screen.dart';
-import 'package:motimate/screens/feedback_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:motimate/providers/providers.dart';
-import 'package:motimate/themes/app_theme.dart';
 
-// バックグラウンドメッセージハンドラ
+import 'firebase_options.dart';
+import 'routing/app_router.dart';
+import 'core/theme/theme_controller.dart';
+import 'themes/app_theme.dart';
+import 'services/notification_service.dart';
+
+// Background message handler
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (kDebugMode) {
-    debugPrint("Handling a background message: ${message.messageId}");
+    debugPrint('Background message: ${message.messageId}');
   }
-  // ここで通知の表示などを行う
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // FCM設定
+  
+  // Initialize Firebase Messaging
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // ユーザーログイン状態の監視（通知許可は設定画面で個別に管理）
-  FirebaseAuth.instance.authStateChanges().listen((User? user) async {
-    if (user != null) {
-      // ログイン時刻のみ記録（FCMトークンは通知許可時に保存）
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'lastLogin': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    }
-  });
-
-  // フォアグラウンドメッセージのハンドリング
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    if (kDebugMode) {
-      debugPrint('Got a message whilst in the foreground!');
-      debugPrint('Message data: ${message.data}');
-    }
-
-    if (message.notification != null) {
-      if (kDebugMode) {
-        debugPrint('Message also contained a notification: ${message.notification}');
-      }
-      // ここでフォアグラウンド通知の表示などを行う
-      final context = navigatorKey.currentState?.context;
-      if (context != null && navigatorKey.currentState?.mounted == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${message.notification!.title ?? ''}: ${message.notification!.body}',
-            ),
-          ),
-        );
-      }
-    }
-  });
-
-  runApp(const ProviderScope(child: MyApp()));
+  
+  // Initialize notification service
+  await NotificationService.initialize();
+  
+  runApp(const ProviderScope(child: MotiMateApp()));
 }
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-class MyApp extends ConsumerStatefulWidget {
-  const MyApp({super.key});
-
-  static MyAppState? of(BuildContext context) => 
-      context.findAncestorStateOfType<MyAppState>();
+class MotiMateApp extends ConsumerWidget {
+  const MotiMateApp({super.key});
 
   @override
-  ConsumerState<MyApp> createState() => MyAppState();
-}
-
-class MyAppState extends ConsumerState<MyApp> {
-  ThemeData get lightTheme => AppTheme.lightTheme;
-
-  ThemeData get darkTheme => AppTheme.darkTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(themeProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeControllerProvider);
     
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      title: 'Motimate',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      routes: {
-        '/schedule': (context) => const ScheduleScreen(),
-        '/registration': (context) => const UserRegistrationScreen(),
-        '/home': (context) => const App(),
-        '/notifications': (context) => const NotificationsScreen(),
-        '/feedback': (context) => const FeedbackScreen(),
-      },
-      home: Consumer(
-        builder: (context, ref, child) {
-          final authState = ref.watch(authStateProvider);
-          
-          return authState.when(
-            loading: () => const Scaffold(
-              backgroundColor: Color(0xFFF8FAFC),
-              body: Center(child: CircularProgressIndicator()),
-            ),
-            error: (error, stackTrace) => const AuthScreen(),
-            data: (user) {
-              if (user == null) {
-                return const AuthScreen();
-              }
-              
-              // User is logged in, check if profile is set up
-              return StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(user.uid)
-                    .snapshots(),
-                builder: (context, userSnapshot) {
-                  if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    return const Scaffold(
-                      backgroundColor: Color(0xFFF8FAFC),
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  
-                  if (userSnapshot.hasError) {
-                    return const AuthScreen();
-                  }
-                  
-                  final userData = userSnapshot.data?.data() as Map<String, dynamic>?;
-                  final hasProfileSetup = userData?['profileSetup'] == true;
-                  
-                  if (hasProfileSetup) {
-                    return const App(); // Profile is set up, go to app
-                  } else {
-                    return const UserRegistrationScreen(); // Profile needs setup
-                  }
-                },
-              );
-            },
-          );
-        },
-      ),
+    return MaterialApp.router(
+      title: 'MotiMate',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+      routerConfig: router,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
