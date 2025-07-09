@@ -297,6 +297,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       final user = FirebaseAuth.instance.currentUser;
       final userId = user?.uid;
 
+      // Get platform info before async operation
+      final platformName = Theme.of(context).platform.name;
+
       // Get user info for context
       String? userDisplayName;
       if (user != null) {
@@ -309,9 +312,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           userDisplayName = userData['displayName'] ?? userData['username'];
         }
       }
-
-      // Get platform info before async operation
-      final platformName = Theme.of(context).platform.name;
 
       // Save feedback to Firestore
       await FirebaseFirestore.instance.collection('feedback').add({

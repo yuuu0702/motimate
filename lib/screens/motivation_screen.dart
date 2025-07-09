@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/providers.dart';
 import '../themes/app_theme.dart';
-import '../routing/app_router.dart';
 
 class MotivationScreen extends ConsumerStatefulWidget {
   const MotivationScreen({super.key});

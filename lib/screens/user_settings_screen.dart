@@ -118,6 +118,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
+          final isDarkMode = ref.read(isDarkModeProvider);
           return AlertDialog(
             backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
             shape: RoundedRectangleBorder(
@@ -218,6 +219,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final isDarkMode = ref.read(isDarkModeProvider);
         return AlertDialog(
           backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
           shape: RoundedRectangleBorder(

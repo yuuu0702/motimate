@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -49,8 +48,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             .get();
         
         final hasProfileSetup = doc.exists && 
-            (doc.data() as Map<String, dynamic>?)?.containsKey('profileSetup') == true &&
-            (doc.data() as Map<String, dynamic>?)!['profileSetup'] == true;
+            doc.data()?.containsKey('profileSetup') == true &&
+            doc.data()!['profileSetup'] == true;
         
         if (!hasProfileSetup && location != AppRoutes.registration) {
           return AppRoutes.registration;
