@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:motimate/models/user_model.dart';
+import '../core/error/error_handler.dart';
 
 part 'auth_viewmodel.freezed.dart';
 
@@ -19,7 +20,7 @@ class AuthState with _$AuthState {
 }
 
 class AuthViewModel extends StateNotifier<AuthState> {
-  AuthViewModel(this._auth, this._firestore, this._googleSignIn)
+  AuthViewModel(this._auth, this._firestore, this._googleSignIn, this._errorNotifier)
       : super(const AuthState()) {
     _auth.authStateChanges().listen(_onAuthStateChanged);
   }
@@ -27,6 +28,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
+  final ErrorNotifier _errorNotifier;
 
   Future<void> _onAuthStateChanged(User? user) async {
     if (user != null) {
@@ -46,7 +48,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
         state = state.copyWith(userModel: userModel);
       }
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      _errorNotifier.showErrorFromException(e);
     }
   }
 
@@ -71,10 +73,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
       await _auth.signInWithCredential(credential);
       state = state.copyWith(isSigningIn: false);
     } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        isSigningIn: false,
-      );
+      state = state.copyWith(isSigningIn: false);
+      _errorNotifier.showErrorFromException(e);
     }
   }
 
@@ -83,7 +83,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       await _googleSignIn.signOut();
       await _auth.signOut();
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      _errorNotifier.showErrorFromException(e);
     }
   }
 
@@ -96,7 +96,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       
       state = state.copyWith(userModel: userModel);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      _errorNotifier.showErrorFromException(e);
     }
   }
 

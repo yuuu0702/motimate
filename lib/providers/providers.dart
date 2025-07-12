@@ -9,6 +9,7 @@ import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../viewmodels/notification_viewmodel.dart';
 import '../core/theme/theme_controller.dart';
+import '../core/error/error_handler.dart';
 
 // Firebase instances
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
@@ -31,6 +32,7 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((r
     ref.watch(firebaseAuthProvider),
     ref.watch(firestoreProvider),
     ref.watch(googleSignInProvider),
+    ref.watch(errorProvider.notifier),
   );
 });
 

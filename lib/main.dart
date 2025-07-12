@@ -9,6 +9,8 @@ import 'routing/app_router.dart';
 import 'core/theme/theme_controller.dart';
 import 'themes/app_theme.dart';
 import 'services/notification_service.dart';
+import 'core/error/error_handler.dart';
+import 'widgets/global_error_listener.dart';
 
 // Background message handler
 @pragma('vm:entry-point')
@@ -21,6 +23,19 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set up global error handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    GlobalErrorHandler.handleError(details.exception, details.stack);
+    FlutterError.presentError(details);
+  };
+  
+  PlatformDispatcher.instance.onError = (error, stack) {
+    GlobalErrorHandler.handleError(error, stack);
+    return true;
+  };
+  
+  ErrorWidget.builder = GlobalErrorHandler.errorWidgetBuilder;
   
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -42,13 +57,15 @@ class MotiMateApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeControllerProvider);
     
-    return MaterialApp.router(
-      title: 'MotiMate',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
+    return GlobalErrorListener(
+      child: MaterialApp.router(
+        title: 'MotiMate',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeMode,
+        routerConfig: router,
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }
