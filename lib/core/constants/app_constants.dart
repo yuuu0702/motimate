@@ -69,4 +69,29 @@ class AppConstants {
   /// Shadow elevation
   static const double cardElevation = 8.0;
   static const double buttonElevation = 4.0;
+  
+  /// Status colors
+  static const Color successColor = Color(0xFF10B981);
+  static const Color warningColor = Color(0xFFFB923C);
+  static const Color errorColor = Color(0xFFFF6B6B);
+  static const Color infoColor = Color(0xFF667eea);
+  
+  /// Text colors
+  static const Color lightPrimaryText = Color(0xFF1F2937);
+  static const Color lightSecondaryText = Color(0xFF374151);
+  static const Color darkPrimaryText = Color(0xFFFFFFFF);
+  static const Color darkSecondaryText = Color(0xFFD1D5DB);
+  
+  /// Background colors
+  static const Color lightBackground = Color(0xFFF8FAFC);
+  static const Color darkBackground = Color(0xFF0F172A);
+  static const Color lightCardBackground = Color(0xFFFFFFFF);
+  static const Color darkCardBackground = Color(0xFF1E293B);
+  
+  /// Font sizes
+  static const double headlineFontSize = 24.0;
+  static const double titleFontSize = 18.0;
+  static const double bodyFontSize = 16.0;
+  static const double captionFontSize = 14.0;
+  static const double smallFontSize = 12.0;
 }
