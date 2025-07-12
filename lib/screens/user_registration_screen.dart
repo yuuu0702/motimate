@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../routing/app_router.dart';
+import '../core/auth/auth_state_provider.dart';
 
-class UserRegistrationScreen extends StatefulWidget {
+class UserRegistrationScreen extends ConsumerStatefulWidget {
   const UserRegistrationScreen({super.key});
 
   @override
-  State<UserRegistrationScreen> createState() => _UserRegistrationScreenState();
+  ConsumerState<UserRegistrationScreen> createState() => _UserRegistrationScreenState();
 }
 
-class _UserRegistrationScreenState extends State<UserRegistrationScreen> with TickerProviderStateMixin {
+class _UserRegistrationScreenState extends ConsumerState<UserRegistrationScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _displayNameController = TextEditingController();
@@ -104,6 +106,9 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> with Ti
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+
+      // Mark registration as complete in auth state
+      ref.read(authStateProvider.notifier).markRegistrationComplete();
 
       if (mounted) {
         context.go(AppRoutes.home);

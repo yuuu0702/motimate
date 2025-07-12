@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../services/notification_service.dart';
 import '../core/theme/theme_controller.dart';
-import '../themes/app_theme.dart';
 
 class UserSettingsScreen extends ConsumerStatefulWidget {
   const UserSettingsScreen({super.key});

@@ -1,7 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../screens/auth_screen.dart';
 import '../screens/user_registration_screen.dart';
@@ -12,10 +10,14 @@ import '../screens/motivation_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/feedback_screen.dart';
 import '../screens/user_settings_screen.dart';
+import '../screens/splash_screen.dart';
 import '../app.dart';
+import '../core/auth/auth_state_provider.dart';
+import '../core/auth/auth_refresh_notifier.dart';
 
 /// App routes
 abstract class AppRoutes {
+  static const String splash = '/splash';
   static const String auth = '/auth';
   static const String registration = '/registration';
   static const String home = '/';
@@ -29,46 +31,43 @@ abstract class AppRoutes {
 
 /// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
+  final authRefreshNotifier = ref.watch(authRefreshNotifierProvider);
+  
   return GoRouter(
-    initialLocation: AppRoutes.home,
-    redirect: (context, state) async {
-      final user = FirebaseAuth.instance.currentUser;
+    initialLocation: AppRoutes.splash,
+    refreshListenable: authRefreshNotifier,
+    redirect: (context, state) {
+      final authStatus = ref.read(authStateProvider);
       final location = state.uri.toString();
       
-      // If user is not authenticated, redirect to auth
-      if (user == null) {
-        return location == AppRoutes.auth ? null : AppRoutes.auth;
+      // Show splash while auth state is being determined
+      if (authStatus == AuthStatus.initial) {
+        return location == AppRoutes.splash ? null : AppRoutes.splash;
       }
       
-      // Check if user needs to complete registration
-      try {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        
-        final hasProfileSetup = doc.exists && 
-            doc.data()?.containsKey('profileSetup') == true &&
-            doc.data()!['profileSetup'] == true;
-        
-        if (!hasProfileSetup && location != AppRoutes.registration) {
-          return AppRoutes.registration;
-        }
-      } catch (e) {
-        // If there's an error, assume user needs registration
-        if (location != AppRoutes.registration) {
-          return AppRoutes.registration;
-        }
+      // Redirect based on authentication status
+      switch (authStatus) {
+        case AuthStatus.unauthenticated:
+          return location == AppRoutes.auth ? null : AppRoutes.auth;
+        case AuthStatus.registrationRequired:
+          return location == AppRoutes.registration ? null : AppRoutes.registration;
+        case AuthStatus.authenticated:
+          if (location == AppRoutes.auth || 
+              location == AppRoutes.registration || 
+              location == AppRoutes.splash) {
+            return AppRoutes.home;
+          }
+          return null;
+        case AuthStatus.initial:
+          return AppRoutes.splash;
       }
-      
-      // If on auth page but authenticated, redirect to home
-      if (location == AppRoutes.auth) {
-        return AppRoutes.home;
-      }
-      
-      return null;
     },
     routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: AppRoutes.auth,
         name: 'auth',
