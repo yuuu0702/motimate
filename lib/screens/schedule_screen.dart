@@ -589,26 +589,71 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                               ],
                                             ),
                                             const SizedBox(width: 12),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 4,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.green.withValues(
+                                                        alpha: 0.1,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(12),
+                                                    ),
+                                                    child: Text(
+                                                      '${info['available']}人参加可能',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.green,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
                                                   ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.green.withValues(
-                                                  alpha: 0.1,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                '${info['available']}人参加可能',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.green,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                                  const SizedBox(width: 8),
+                                                  GestureDetector(
+                                                    onTap: () => _showParticipantsDialog(
+                                                      context, 
+                                                      date, 
+                                                      info['members'] as List<dynamic>,
+                                                      isDarkMode
+                                                    ),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        border: Border.all(
+                                                          color: const Color(0xFF667eea).withValues(alpha: 0.3),
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.info_outline,
+                                                            size: 12,
+                                                            color: const Color(0xFF667eea),
+                                                          ),
+                                                          const SizedBox(width: 4),
+                                                          Text(
+                                                            '詳細',
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              color: const Color(0xFF667eea),
+                                                              fontWeight: FontWeight.w600,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ],
@@ -673,6 +718,224 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         Text(
           label,
           style: TextStyle(fontSize: 12, color: AppTheme.tertiaryText(isDarkMode)),
+        ),
+      ],
+    );
+  }
+
+  void _showParticipantsDialog(BuildContext context, DateTime date, List<dynamic> members, bool isDarkMode) {
+    final memberIds = members.cast<String>();
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return FutureBuilder<Map<String, String>>(
+          future: _getUserNames(memberIds),
+          builder: (context, snapshot) {
+            final userNames = snapshot.data ?? {};
+            
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('ユーザー情報を読み込み中...'),
+                  ],
+                ),
+              );
+            }
+            
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.people_rounded,
+                    color: const Color(0xFF667eea),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '参加可能ユーザー',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryText(isDarkMode),
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 日程情報
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 16,
+                            color: const Color(0xFF667eea),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${date.month}月${date.day}日',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryText(isDarkMode),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // 参加可能ユーザーリスト
+                    _buildParticipantSectionWithNames(
+                      '参加可能 (${memberIds.length}人)',
+                      memberIds,
+                      userNames,
+                      const Color(0xFF10B981),
+                      Icons.check_circle,
+                      isDarkMode,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    '閉じる',
+                    style: TextStyle(
+                      color: const Color(0xFF667eea),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<Map<String, String>> _getUserNames(List<String> userIds) async {
+    final Map<String, String> userNames = {};
+    
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where(FieldPath.documentId, whereIn: userIds.isEmpty ? ['dummy'] : userIds)
+          .get();
+      
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        userNames[doc.id] = data['displayName'] ?? 
+                           data['username'] ?? 
+                           data['name'] ?? 
+                           'ユーザー${doc.id.substring(0, 4)}';
+      }
+      
+      // 見つからなかったユーザーのフォールバック
+      for (final userId in userIds) {
+        if (!userNames.containsKey(userId)) {
+          if (userId.startsWith('user')) {
+            userNames[userId] = 'ユーザー${userId.substring(4)}';
+          } else {
+            userNames[userId] = 'ユーザー${userId.substring(0, 4)}';
+          }
+        }
+      }
+    } catch (e) {
+      // エラー時のフォールバック
+      for (final userId in userIds) {
+        if (userId.startsWith('user')) {
+          userNames[userId] = 'ユーザー${userId.substring(4)}';
+        } else {
+          userNames[userId] = 'ユーザー${userId.substring(0, 4)}';
+        }
+      }
+    }
+    
+    return userNames;
+  }
+
+  Widget _buildParticipantSectionWithNames(
+    String title,
+    List<String> userIds,
+    Map<String, String> userNames,
+    Color color,
+    IconData icon,
+    bool isDarkMode,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: color.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: userIds.map((userId) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  userNames[userId] ?? 'ユーザー${userId.substring(0, 4)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.primaryText(isDarkMode),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );

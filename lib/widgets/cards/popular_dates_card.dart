@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../models/schedule_model.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../routing/app_router.dart';
+import '../../themes/app_theme.dart';
 
 /// 人気の日程表示カードWidget
 /// 
@@ -253,12 +255,53 @@ class PopularDateItem extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          Text(
-            '${schedule.memberCount}人が参加可能',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
+          Row(
+            children: [
+              Text(
+                '参加可能: ${schedule.memberCount}人',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Builder(
+                builder: (context) => GestureDetector(
+                  onTap: () => _showParticipantsDialog(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 10,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          '詳細',
+                          style: TextStyle(
+                            fontSize: 8,
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -284,6 +327,217 @@ class PopularDateItem extends StatelessWidget {
         '決定',
         style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
       ),
+    );
+  }
+
+  void _showParticipantsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return FutureBuilder<Map<String, String>>(
+          future: _getUserNames(schedule.members),
+          builder: (context, snapshot) {
+            final userNames = snapshot.data ?? {};
+            
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('ユーザー情報を読み込み中...'),
+                  ],
+                ),
+              );
+            }
+            
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.people_rounded,
+                    color: const Color(0xFF667eea),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    '参加可能ユーザー',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 日程情報
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 16,
+                            color: const Color(0xFF667eea),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${schedule.date.month}月${schedule.date.day}日',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // 参加可能ユーザーリスト
+                    _buildParticipantSectionWithNames(
+                      '参加可能 (${schedule.members.length}人)',
+                      schedule.members,
+                      userNames,
+                      const Color(0xFF10B981),
+                      Icons.check_circle,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    '閉じる',
+                    style: TextStyle(
+                      color: Color(0xFF667eea),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<Map<String, String>> _getUserNames(List<String> userIds) async {
+    final Map<String, String> userNames = {};
+    
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where(FieldPath.documentId, whereIn: userIds.isEmpty ? ['dummy'] : userIds)
+          .get();
+      
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        userNames[doc.id] = data['displayName'] ?? 
+                           data['username'] ?? 
+                           data['name'] ?? 
+                           'ユーザー${doc.id.substring(0, 4)}';
+      }
+      
+      // 見つからなかったユーザーのフォールバック
+      for (final userId in userIds) {
+        if (!userNames.containsKey(userId)) {
+          if (userId.startsWith('user')) {
+            userNames[userId] = 'ユーザー${userId.substring(4)}';
+          } else {
+            userNames[userId] = 'ユーザー${userId.substring(0, 4)}';
+          }
+        }
+      }
+    } catch (e) {
+      // エラー時のフォールバック
+      for (final userId in userIds) {
+        if (userId.startsWith('user')) {
+          userNames[userId] = 'ユーザー${userId.substring(4)}';
+        } else {
+          userNames[userId] = 'ユーザー${userId.substring(0, 4)}';
+        }
+      }
+    }
+    
+    return userNames;
+  }
+
+  Widget _buildParticipantSectionWithNames(
+    String title,
+    List<String> userIds,
+    Map<String, String> userNames,
+    Color color,
+    IconData icon,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: color.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: userIds.map((userId) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  userNames[userId] ?? 'ユーザー${userId.substring(0, 4)}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }
