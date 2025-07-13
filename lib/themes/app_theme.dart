@@ -131,4 +131,10 @@ class AppTheme {
 
   static Color scaffoldBackground(bool isDarkMode) =>
       isDarkMode ? darkScaffoldBackground : lightScaffoldBackground;
+
+  static Color backgroundColor(bool isDarkMode) =>
+      isDarkMode ? darkScaffoldBackground : lightScaffoldBackground;
+
+  static Color borderColor(bool isDarkMode) =>
+      isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB);
 }

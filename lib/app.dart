@@ -71,6 +71,15 @@ class App extends ConsumerWidget {
               ),
               _buildNavItem(
                 context,
+                icon: Icons.sports_basketball_outlined,
+                activeIcon: Icons.sports_basketball,
+                label: 'バスケ会場',
+                route: AppRoutes.gymnasium,
+                isActive: currentLocation == AppRoutes.gymnasium,
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                context,
                 icon: Icons.people_outline,
                 activeIcon: Icons.people,
                 label: 'メンバー',

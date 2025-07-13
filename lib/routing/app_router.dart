@@ -5,6 +5,7 @@ import '../screens/auth_screen.dart';
 import '../screens/user_registration_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/schedule_screen.dart';
+import '../screens/gymnasium_screen.dart';
 import '../screens/member_list_screen.dart';
 import '../screens/motivation_screen.dart';
 import '../screens/notifications_screen.dart';
@@ -22,6 +23,7 @@ abstract class AppRoutes {
   static const String registration = '/registration';
   static const String home = '/';
   static const String schedule = '/schedule';
+  static const String gymnasium = '/gymnasium';
   static const String memberList = '/member-list';
   static const String motivation = '/motivation';
   static const String notifications = '/notifications';
@@ -92,6 +94,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.schedule,
             name: 'schedule',
             builder: (context, state) => const ScheduleScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.gymnasium,
+            name: 'gymnasium',
+            builder: (context, state) => const GymnasiumScreen(),
           ),
           GoRoute(
             path: AppRoutes.memberList,

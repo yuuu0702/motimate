@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../services/notification_service.dart';
+import '../services/user_location_service.dart';
 import '../core/theme/theme_controller.dart';
+import 'user_locations_list_screen.dart';
 
 class UserSettingsScreen extends ConsumerStatefulWidget {
   const UserSettingsScreen({super.key});
@@ -24,12 +26,14 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
   bool _isSaving = false;
   bool _notificationsEnabled = false;
   Map<String, dynamic>? _userData;
+  int _locationCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadNotificationStatus();
+    _loadLocationCount();
   }
 
 
@@ -79,6 +83,19 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
     } catch (e) {
       setState(() {
         _notificationsEnabled = false;
+      });
+    }
+  }
+
+  Future<void> _loadLocationCount() async {
+    try {
+      final count = await UserLocationService.instance.getLocationCount();
+      setState(() {
+        _locationCount = count;
+      });
+    } catch (e) {
+      setState(() {
+        _locationCount = 0;
       });
     }
   }
@@ -601,6 +618,102 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                       activeColor: const Color(0xFF667eea),
                                     ),
                                   ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Location Management
+                      Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on,
+                                    color: Color(0xFF667eea),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '拠点管理',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              
+                              GestureDetector(
+                                onTap: () async {
+                                  final result = await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const UserLocationsListScreen(),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    _loadLocationCount();
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _locationCount > 0 ? Icons.location_city : Icons.add_location,
+                                        color: const Color(0xFF667eea),
+                                        size: 24,
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _locationCount > 0 ? '拠点を管理' : '拠点を追加',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: isDarkMode ? Colors.white : const Color(0xFF374151),
+                                              ),
+                                            ),
+                                            Text(
+                                              _locationCount > 0 
+                                                  ? '${_locationCount}個の拠点が登録済み'
+                                                  : 'エリア単位で安全に拠点を登録',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
