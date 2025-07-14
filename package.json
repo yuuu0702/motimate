@@ -1,0 +1,32 @@
+{
+  "name": "motimate-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-End tests for MotiMate Flutter Web application",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "build:web": "cd .. && flutter build web --web-renderer html",
+    "serve:web": "cd build/web && python -m http.server 8080",
+    "pretest": "npm run build:web",
+    "install:browsers": "playwright install"
+  },
+  "keywords": [
+    "flutter",
+    "web",
+    "e2e",
+    "testing",
+    "playwright"
+  ],
+  "author": "MotiMate Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
