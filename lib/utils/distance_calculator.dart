@@ -116,8 +116,8 @@ class DistanceCalculator {
     }
 
     return LatLng(
-      totalLat / locations.length,
-      totalLon / locations.length,
+      latitude: totalLat / locations.length,
+      longitude: totalLon / locations.length,
     );
   }
 

@@ -1,7 +1,7 @@
 import '../models/gymnasium_model.dart';
 import '../models/user_location_model.dart';
 import '../data/gymnasium_data.dart';
-import '../utils/distance_calculator.dart';
+import '../utils/distance_calculator.dart' as calc;
 
 /// 最適会場算出サービス
 /// 
@@ -24,9 +24,10 @@ class OptimalVenueService {
     if (participantUserLocations.isEmpty) return null;
 
     // ユーザー位置情報をLatLngに変換
-    final participantLatLngs = participantUserLocations
-        .map((userLoc) => userLoc.location)
-        .toList();
+    // 参加者位置をLatLngリストに変換（現在は未使用だが将来のために保持）
+    // final participantLatLngs = participantUserLocations
+    //     .map((userLoc) => userLoc.location)
+    //     .toList();
 
     // バスケ利用可能な体育館のみを対象
     final basketballGymnasiums = GymnasiumData.gymnasiums
@@ -74,7 +75,7 @@ class OptimalVenueService {
     double totalDistance = 0;
 
     for (final userLocation in participantUserLocations) {
-      final distance = DistanceCalculator.calculateDistanceToGymnasium(
+      final distance = calc.DistanceCalculator.calculateDistanceToGymnasium(
         userLocation.location.latitude,
         userLocation.location.longitude,
         gymnasium,
@@ -103,7 +104,7 @@ class OptimalVenueService {
   /// 参加者の重心位置を計算
   LatLng calculateParticipantCentroid(List<UserLocationModel> participants) {
     final locations = participants.map((p) => p.location).toList();
-    return DistanceCalculator.calculateCentroid(locations) ?? 
+    return calc.DistanceCalculator.calculateCentroid(locations) ?? 
            const LatLng(latitude: 36.5616, longitude: 136.6561); // 金沢市中心
   }
 
@@ -116,7 +117,7 @@ class OptimalVenueService {
         .where((gym) => gym.facilities.contains(GymnasiumFacilities.basketball))
         .toList();
 
-    return DistanceCalculator.findNearestGymnasium(
+    return calc.DistanceCalculator.findNearestGymnasium(
       centroid.latitude,
       centroid.longitude,
       basketballGymnasiums,
@@ -148,13 +149,13 @@ class OptimalVenueResult {
 
   /// 結果の要約テキスト
   String get summaryText {
-    return '参加者${participantCount}名の平均移動距離: ${DistanceCalculator.formatDistance(averageDistance)}';
+    return '参加者${participantCount}名の平均移動距離: ${calc.DistanceCalculator.formatDistance(averageDistance)}';
   }
 
   /// 詳細説明テキスト
   String get detailText {
-    final maxDistanceText = DistanceCalculator.formatDistance(maxDistance);
-    final minDistanceText = DistanceCalculator.formatDistance(minDistance);
+    final maxDistanceText = calc.DistanceCalculator.formatDistance(maxDistance);
+    final minDistanceText = calc.DistanceCalculator.formatDistance(minDistance);
     return '最短: $minDistanceText、最長: $maxDistanceText';
   }
 }
@@ -188,5 +189,5 @@ class ParticipantDistance {
   final UserLocationModel userLocation;
   final double distance;
 
-  String get formattedDistance => DistanceCalculator.formatDistance(distance);
+  String get formattedDistance => calc.DistanceCalculator.formatDistance(distance);
 }

@@ -424,33 +424,5 @@ class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen> {
     );
   }
 
-  void _showGymnasiumDetail(GymnasiumModel gymnasium) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(gymnasium.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('住所: ${gymnasium.address}'),
-            if (gymnasium.phone != null) 
-              Text('電話: ${gymnasium.phone}'),
-            if (gymnasium.openingHours != null)
-              Text('営業時間: ${gymnasium.openingHours}'),
-            if (gymnasium.description != null) ...[
-              const SizedBox(height: 8),
-              Text(gymnasium.description!),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('閉じる'),
-          ),
-        ],
-      ),
-    );
-  }
+  // 重複したメソッドを削除
 }

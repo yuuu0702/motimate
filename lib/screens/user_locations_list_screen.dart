@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+// import 'package:go_router/go_router.dart';  // 未使用のため削除
 
 import '../models/user_location_model.dart';
 import '../services/user_location_service.dart';

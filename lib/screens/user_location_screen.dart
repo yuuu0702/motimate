@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
+// import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;  // Google Maps削除
 
 import '../models/user_location_model.dart';
 import '../services/user_location_service.dart';
@@ -353,30 +353,39 @@ class _UserLocationScreenState extends ConsumerState<UserLocationScreen> {
               color: AppTheme.borderColor(isDarkMode),
             ),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: gmaps.GoogleMap(
-              initialCameraPosition: gmaps.CameraPosition(
-                target: gmaps.LatLng(location.latitude, location.longitude),
-                zoom: 14.0,
-              ),
-              markers: {
-                gmaps.Marker(
-                  markerId: const gmaps.MarkerId('selected_area'),
-                  position: gmaps.LatLng(location.latitude, location.longitude),
-                  infoWindow: gmaps.InfoWindow(
-                    title: _selectedArea,
-                    snippet: 'このエリア周辺',
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: AppTheme.containerBackground(isDarkMode),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    size: 48,
+                    color: const Color(0xFF667eea),
                   ),
-                ),
-              },
-              zoomControlsEnabled: false,
-              mapToolbarEnabled: false,
-              myLocationButtonEnabled: false,
-              scrollGesturesEnabled: false,
-              zoomGesturesEnabled: false,
-              tiltGesturesEnabled: false,
-              rotateGesturesEnabled: false,
+                  const SizedBox(height: 8),
+                  Text(
+                    _selectedArea,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryText(isDarkMode),
+                    ),
+                  ),
+                  Text(
+                    'このエリア周辺',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.secondaryText(isDarkMode),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
