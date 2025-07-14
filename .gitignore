@@ -66,3 +66,16 @@ android/local.properties
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Playwright E2E Testing
+/test-results/
+/playwright-report/
+/playwright/.cache/
+.server.pid
+
+# Node.js (for E2E testing)
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
