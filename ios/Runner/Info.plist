@@ -46,14 +46,14 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	
-	<!-- Location permissions -->
+	<!-- Location permissions (required for basic GPS functionality) -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>このアプリは近くのバスケ体育館を表示するために位置情報を使用します。</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>このアプリは近くのバスケ体育館を表示するために位置情報を使用します。</string>
 	
-	<!-- Google Maps API Key (iOS) -->
-	<key>GoogleMapsAPIKey</key>
-	<string>YOUR_GOOGLE_MAPS_API_KEY_HERE</string>
+	<!-- Google Maps API Key removed - no longer needed -->
+	<!-- <key>GoogleMapsAPIKey</key> -->
+	<!-- <string>YOUR_GOOGLE_MAPS_API_KEY_HERE</string> -->
 </dict>
 </plist>

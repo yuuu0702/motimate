@@ -1,8 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Location permissions -->
+    <!-- Internet permission (required for Firebase) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- Location permissions (required for basic GPS functionality) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET" />
     
     <application
         android:label="motimate"
@@ -30,10 +32,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- Google Maps API Key -->
-        <meta-data
+        <!-- Google Maps API Key removed - no longer needed -->
+        <!-- <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE" />
+            android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE" /> -->
             
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

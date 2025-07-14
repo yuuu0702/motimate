@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/gymnasium_model.dart';
 import '../../themes/app_theme.dart';
-import '../../services/location_service.dart';
+import '../../utils/distance_calculator.dart';
 
 /// 体育館情報カードWidget
 /// 
@@ -389,16 +389,13 @@ class GymnasiumCard extends StatelessWidget {
   String _getDistanceText() {
     if (userLocation == null) return '';
     
-    final distance = LocationService.instance.calculateDistanceToGymnasium(
-      userLocation!,
+    final distance = DistanceCalculator.calculateDistanceToGymnasium(
+      userLocation!.latitude,
+      userLocation!.longitude,
       gymnasium,
     );
     
-    if (distance < 1.0) {
-      return '${(distance * 1000).round()}m';
-    } else {
-      return '${distance.toStringAsFixed(1)}km';
-    }
+    return DistanceCalculator.formatDistance(distance);
   }
 
   /// 設備をバスケ優先でソートする

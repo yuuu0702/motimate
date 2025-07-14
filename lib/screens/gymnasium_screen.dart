@@ -6,8 +6,9 @@ import '../core/theme/theme_controller.dart';
 import '../data/gymnasium_data.dart';
 import '../models/gymnasium_model.dart';
 import '../widgets/cards/gymnasium_card.dart';
-import '../widgets/gymnasium_map.dart';
 import '../services/location_service.dart';
+import '../utils/distance_calculator.dart';
+// import '../widgets/gymnasium_map.dart';  // マップ機能は無効化（Google Maps不使用）
 
 /// 体育館一覧画面
 /// 
@@ -20,32 +21,39 @@ class GymnasiumScreen extends ConsumerStatefulWidget {
   ConsumerState<GymnasiumScreen> createState() => _GymnasiumScreenState();
 }
 
-class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
+class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen> {
   String _selectedFacility = GymnasiumFacilities.basketball; // デフォルトでバスケに絞り込み
   String _searchQuery = '';
   LatLng? _userLocation;
+  bool _sortByDistance = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _getUserLocation();
   }
 
   Future<void> _getUserLocation() async {
-    final location = await LocationService.instance.getCurrentPosition();
-    if (mounted) {
-      setState(() {
-        _userLocation = location;
-      });
+    try {
+      final position = await LocationService.instance.getCurrentPosition();
+      if (mounted) {
+        setState(() {
+          _userLocation = position;
+        });
+      }
+    } catch (e) {
+      // 位置情報取得失敗時はデフォルト位置を使用
+      if (mounted) {
+        setState(() {
+          _userLocation = LocationService.kanazawaCenterLocation;
+        });
+      }
     }
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    // TabControllerを削除したため、disposeも不要
     super.dispose();
   }
 
@@ -59,15 +67,8 @@ class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen>
       body: Column(
         children: [
           _buildSearchAndFilter(isDarkMode),
-          _buildTabBar(isDarkMode),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildListView(isDarkMode),
-                _buildMapView(isDarkMode),
-              ],
-            ),
+            child: _buildListView(isDarkMode),
           ),
         ],
       ),
@@ -107,6 +108,20 @@ class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen>
             color: AppTheme.primaryText(isDarkMode),
           ),
         ),
+        IconButton(
+          onPressed: () {
+            setState(() {
+              _sortByDistance = !_sortByDistance;
+            });
+          },
+          icon: Icon(
+            _sortByDistance ? Icons.near_me : Icons.near_me_outlined,
+            color: _sortByDistance 
+                ? const Color(0xFF667eea) 
+                : AppTheme.primaryText(isDarkMode),
+          ),
+          tooltip: _sortByDistance ? '距離順ソートOFF' : '距離順ソートON',
+        ),
       ],
     );
   }
@@ -121,7 +136,9 @@ class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen>
           TextField(
             onChanged: (value) => setState(() => _searchQuery = value),
             decoration: InputDecoration(
-              hintText: 'バスケ体育館名で検索...',
+              hintText: _userLocation != null 
+              ? 'バスケ体育館名で検索... (現在位置取得済み)'
+              : 'バスケ体育館名で検索...',
               hintStyle: TextStyle(color: AppTheme.tertiaryText(isDarkMode)),
               prefixIcon: Icon(
                 Icons.search,
@@ -196,27 +213,7 @@ class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen>
     );
   }
 
-  Widget _buildTabBar(bool isDarkMode) {
-    return Container(
-      color: AppTheme.cardColor(isDarkMode),
-      child: TabBar(
-        controller: _tabController,
-        indicatorColor: const Color(0xFF667eea),
-        labelColor: const Color(0xFF667eea),
-        unselectedLabelColor: AppTheme.tertiaryText(isDarkMode),
-        tabs: const [
-          Tab(
-            icon: Icon(Icons.list),
-            text: 'リスト',
-          ),
-          Tab(
-            icon: Icon(Icons.map),
-            text: '地図',
-          ),
-        ],
-      ),
-    );
-  }
+  // TabBarは削除 - マップ機能を無効化したため
 
   Widget _buildListView(bool isDarkMode) {
     final filteredGymnasiums = _getFilteredGymnasiums();
@@ -225,28 +222,108 @@ class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen>
       return _buildEmptyState(isDarkMode);
     }
     
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: filteredGymnasiums.length,
-      itemBuilder: (context, index) {
-        return GymnasiumCard(
-          gymnasium: filteredGymnasiums[index],
-          isDarkMode: isDarkMode,
-          userLocation: _userLocation,
-        );
-      },
+    return Column(
+      children: [
+        // 距離順ソート時の情報表示
+        if (_sortByDistance && _userLocation != null)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: const Color(0xFF667eea).withValues(alpha: 0.1),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.near_me,
+                  size: 16,
+                  color: Color(0xFF667eea),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '現在位置から近い順に表示中',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.primaryText(isDarkMode),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                if (filteredGymnasiums.isNotEmpty && _userLocation != null)
+                  Text(
+                    '最寄り: ${DistanceCalculator.formatDistance(
+                      DistanceCalculator.calculateDistanceToGymnasium(
+                        _userLocation!.latitude,
+                        _userLocation!.longitude,
+                        filteredGymnasiums.first,
+                      )
+                    )}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.secondaryText(isDarkMode),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: filteredGymnasiums.length,
+            itemBuilder: (context, index) {
+              final isNearest = _sortByDistance && index == 0 && _userLocation != null;
+              return Column(
+                children: [
+                  if (isNearest)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF667eea).withValues(alpha: 0.1),
+                            const Color(0xFF764ba2).withValues(alpha: 0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF667eea).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            color: Color(0xFF667eea),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '最寄りの体育館',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryText(isDarkMode),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  GymnasiumCard(
+                    gymnasium: filteredGymnasiums[index],
+                    isDarkMode: isDarkMode,
+                    userLocation: _userLocation,
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMapView(bool isDarkMode) {
-    final filteredGymnasiums = _getFilteredGymnasiums();
-    
-    return GymnasiumMap(
-      gymnasiums: filteredGymnasiums,
-      isDarkMode: isDarkMode,
-      onGymnasiumTapped: (gymnasium) => _showGymnasiumDetail(gymnasium),
-    );
-  }
+  // マップビューは削除 - Google Maps機能を無効化したため
 
   Widget _buildEmptyState(bool isDarkMode) {
     return Center(
@@ -300,6 +377,16 @@ class _GymnasiumScreenState extends ConsumerState<GymnasiumScreen>
       gymnasiums = gymnasiums
           .where((gym) => gym.facilities.contains(_selectedFacility))
           .toList();
+    }
+    
+    // 距離順ソートが有効な場合
+    if (_sortByDistance && _userLocation != null) {
+      final gymnasiumsWithDistance = DistanceCalculator.sortGymnasiumsByDistance(
+        _userLocation!.latitude,
+        _userLocation!.longitude,
+        gymnasiums,
+      );
+      gymnasiums = gymnasiumsWithDistance.map((gwd) => gwd.gymnasium).toList();
     }
     
     return gymnasiums;

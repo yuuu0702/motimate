@@ -1,6 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../models/gymnasium_model.dart';
+import '../utils/distance_calculator.dart';
 
 /// 位置情報サービス
 /// 
@@ -80,8 +81,11 @@ class LocationService {
 
   /// 体育館までの距離を計算（キロメートル単位）
   double calculateDistanceToGymnasium(LatLng userLocation, GymnasiumModel gymnasium) {
-    final distanceInMeters = calculateDistance(userLocation, gymnasium.location);
-    return distanceInMeters / 1000; // キロメートルに変換
+    return DistanceCalculator.calculateDistanceToGymnasium(
+      userLocation.latitude,
+      userLocation.longitude,
+      gymnasium,
+    );
   }
 
   /// 複数の体育館を距離順にソート

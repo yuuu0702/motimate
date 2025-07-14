@@ -61,10 +61,10 @@ dependencies:
   # URL launcher for external links
   url_launcher: ^6.3.1
   
-  # Maps and location
-  google_maps_flutter: ^2.5.0
-  geolocator: ^10.1.0
-  permission_handler: ^11.2.0
+  # Location (basic GPS and distance calculation only)
+  # google_maps_flutter: ^2.5.0  # Removed due to cost concerns
+  geolocator: ^10.1.0  # Re-enabled for basic GPS location
+  permission_handler: ^11.2.0  # Re-enabled for location permissions
 
 dev_dependencies:
   flutter_test:
