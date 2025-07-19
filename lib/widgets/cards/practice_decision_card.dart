@@ -28,33 +28,47 @@ class PracticeDecisionCard extends StatelessWidget {
     final dayName = daysOfWeek[practice.practiceDate.weekday % 7];
     final user = FirebaseAuth.instance.currentUser;
     final userResponse = user != null ? practice.responses[user.uid] : null;
-
+    
+    // 当日かどうかの判定
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final practiceDay = DateTime(practice.practiceDate.year, practice.practiceDate.month, practice.practiceDate.day);
+    final isToday = today == practiceDay;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isToday ? 20 : 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor(isDarkMode),
-        borderRadius: BorderRadius.circular(12),
+        color: isToday 
+            ? const Color(0xFF667eea).withValues(alpha: 0.05)
+            : AppTheme.cardColor(isDarkMode),
+        borderRadius: BorderRadius.circular(isToday ? 16 : 12),
         border: Border.all(
-          color: userResponse == null
-              ? const Color(0xFFFB923C).withValues(alpha: 0.3)
-              : userResponse == 'join'
-                  ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                  : const Color(0xFFFF6B6B).withValues(alpha: 0.3),
-          width: 1,
+          color: isToday 
+              ? const Color(0xFF667eea).withValues(alpha: 0.6)
+              : userResponse == null
+                  ? const Color(0xFFFB923C).withValues(alpha: 0.3)
+                  : userResponse == 'join'
+                      ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                      : const Color(0xFFFF6B6B).withValues(alpha: 0.3),
+          width: isToday ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: isToday 
+                ? const Color(0xFF667eea).withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.05),
+            blurRadius: isToday ? 12 : 8,
+            offset: const Offset(0, isToday ? 4 : 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSimpleHeader(dayName, userResponse),
+          if (isToday) _buildTodayBadge(),
+          if (isToday) const SizedBox(height: 12),
+          _buildSimpleHeader(dayName, userResponse, isToday),
           const SizedBox(height: 12),
           _buildActionButtons(userResponse),
         ],
@@ -62,32 +76,90 @@ class PracticeDecisionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleHeader(String dayName, String? userResponse) {
+  Widget _buildTodayBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF667eea).withValues(alpha: 0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.today,
+            color: Colors.white,
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          const Text(
+            '今日の練習',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimpleHeader(String dayName, String? userResponse, bool isToday) {
     return Row(
       children: [
         // 日付表示
         Container(
-          width: 60,
-          height: 60,
+          width: isToday ? 70 : 60,
+          height: isToday ? 70 : 60,
           decoration: BoxDecoration(
-            color: const Color(0xFF667eea),
-            borderRadius: BorderRadius.circular(12),
+            color: isToday 
+                ? const Color(0xFF667eea)
+                : const Color(0xFF667eea),
+            borderRadius: BorderRadius.circular(isToday ? 16 : 12),
+            boxShadow: isToday ? [
+              BoxShadow(
+                color: const Color(0xFF667eea).withValues(alpha: 0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ] : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '${practice.practiceDate.day}',
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: isToday ? 24 : 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               Text(
                 dayName,
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: isToday ? 14 : 12,
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
@@ -104,11 +176,13 @@ class PracticeDecisionCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '日程決定',
+                    isToday ? '今日の練習決定' : '日程決定',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: isToday ? 18 : 16,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryText(isDarkMode),
+                      color: isToday 
+                          ? const Color(0xFF667eea)
+                          : AppTheme.primaryText(isDarkMode),
                     ),
                   ),
                   const SizedBox(width: 8),
