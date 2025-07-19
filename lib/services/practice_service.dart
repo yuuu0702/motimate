@@ -16,15 +16,19 @@ class PracticeService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  /// 未回答の練習決定を取得
+  /// 未回答の練習決定を取得（現在・未来のもののみ）
   Future<List<PracticeDecisionModel>> getPendingPractices() async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('ユーザーがログインしていません');
 
     try {
-      // 全ての練習決定を取得
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      // 今日以降の練習決定を取得
       final snapshot = await _firestore
           .collection('practice_decisions')
+          .where('practiceDate', isGreaterThanOrEqualTo: Timestamp.fromDate(today))
           .get();
 
       print('取得した練習決定数: ${snapshot.docs.length}');
@@ -36,6 +40,7 @@ class PracticeService {
         // テストデータ作成後に再取得
         final retrySnapshot = await _firestore
             .collection('practice_decisions')
+            .where('practiceDate', isGreaterThanOrEqualTo: Timestamp.fromDate(today))
             .get();
         
         final practices = <PracticeDecisionModel>[];
@@ -66,6 +71,36 @@ class PracticeService {
       throw Exception('練習一覧の取得に失敗しました: $e');
     }
   }
+
+  /// 過去の練習決定を取得（履歴用）
+  Future<List<PracticeDecisionModel>> getPastPractices() async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      // 昨日以前の練習決定を取得
+      final snapshot = await _firestore
+          .collection('practice_decisions')
+          .where('practiceDate', isLessThan: Timestamp.fromDate(today))
+          .orderBy('practiceDate', descending: true)
+          .limit(10) // 最新10件のみ
+          .get();
+
+      final practices = <PracticeDecisionModel>[];
+      
+      for (final doc in snapshot.docs) {
+        final practice = PracticeDecisionModel.fromFirestore(doc);
+        practices.add(practice);
+      }
+
+      return practices;
+    } catch (e) {
+      throw Exception('過去の練習一覧の取得に失敗しました: $e');
+    }
+  }
   
   /// テスト用の練習決定データを作成
   Future<void> _createTestPracticeData() async {
@@ -76,13 +111,13 @@ class PracticeService {
       final now = DateTime.now();
       final batch = _firestore.batch();
       
-      // 今週末の土曜日の練習決定
-      final practiceDate = now.add(Duration(days: (6 - now.weekday) % 7 + 1));
-      
       // yyyy-MM-dd形式の日付キーを生成
       String formatDateKey(DateTime date) {
         return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
       }
+      
+      // 今週末の土曜日の練習決定
+      final practiceDate = now.add(Duration(days: (6 - now.weekday) % 7 + 1));
       
       final testPractice = {
         'decidedBy': user.uid,
@@ -92,10 +127,43 @@ class PracticeService {
         'availableMembers': ['user1', 'user2', 'user3', 'user4', 'user5'],
         'status': 'pending',
         'responses': <String, dynamic>{},
+        'memo': null,
       };
       
       final docRef = _firestore.collection('practice_decisions').doc();
       batch.set(docRef, testPractice);
+      
+      // 過去の練習データも作成（履歴表示用）
+      final pastDates = [
+        now.subtract(const Duration(days: 7)), // 1週間前
+        now.subtract(const Duration(days: 14)), // 2週間前
+        now.subtract(const Duration(days: 21)), // 3週間前
+      ];
+      
+      for (int i = 0; i < pastDates.length; i++) {
+        final pastDate = pastDates[i];
+        final testResponses = {
+          'user1': i == 0 ? 'join' : 'skip',
+          'user2': 'join',
+          'user3': i == 2 ? 'skip' : 'join',
+          'user4': 'join',
+          'user5': i == 1 ? 'skip' : 'join',
+        };
+        
+        final pastPractice = {
+          'decidedBy': user.uid,
+          'decidedAt': Timestamp.fromDate(pastDate.subtract(const Duration(days: 1))),
+          'practiceDate': Timestamp.fromDate(pastDate),
+          'dateKey': formatDateKey(pastDate),
+          'availableMembers': ['user1', 'user2', 'user3', 'user4', 'user5'],
+          'status': 'completed',
+          'responses': testResponses,
+          'memo': i == 0 ? '良い練習でした！' : null,
+        };
+        
+        final pastDocRef = _firestore.collection('practice_decisions').doc();
+        batch.set(pastDocRef, pastPractice);
+      }
       
       await batch.commit();
       print('テスト練習決定データを作成しました');
@@ -124,6 +192,23 @@ class PracticeService {
       // 回答通知は将来的に実装予定
     } catch (e) {
       throw Exception('回答の送信に失敗しました: $e');
+    }
+  }
+
+  /// 練習にメモを追加
+  Future<void> updatePracticeMemo(String practiceId, String memo) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+
+    try {
+      await _firestore
+          .collection('practice_decisions')
+          .doc(practiceId)
+          .update({
+        'memo': memo.trim().isEmpty ? null : memo.trim(),
+      });
+    } catch (e) {
+      throw Exception('メモの更新に失敗しました: $e');
     }
   }
 }
