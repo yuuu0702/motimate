@@ -479,7 +479,6 @@ class PracticeHistoryCard extends StatelessWidget {
     final ValueNotifier<List<String>> selectedParticipants = ValueNotifier(
       List<String>.from(practice.actualParticipants),
     );
-    final ValueNotifier<String> searchQuery = ValueNotifier('');
 
     showDialog(
       context: context,

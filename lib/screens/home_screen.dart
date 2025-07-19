@@ -6,12 +6,10 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/providers.dart';
 import '../models/schedule_model.dart';
-import '../viewmodels/home_viewmodel.dart';
 import '../themes/app_theme.dart';
 import '../core/constants/app_constants.dart';
 import '../routing/app_router.dart';
 import '../widgets/cards/practice_decision_card.dart';
-import '../widgets/cards/practice_history_card.dart';
 import '../widgets/cards/motivation_card.dart';
 import '../widgets/cards/popular_dates_card.dart';
 
@@ -204,6 +202,8 @@ class HomeScreen extends HookConsumerWidget {
                     ],
                   ),
                   const Spacer(),
+                  _buildHistoryButton(context),
+                  const SizedBox(width: 8),
                   _buildNotificationBell(context, ref),
                 ],
               ),
@@ -251,9 +251,6 @@ class HomeScreen extends HookConsumerWidget {
                   isDarkMode: isDarkMode,
                 ),
 
-                // バスケ履歴セクション
-                if (homeState.pastPractices.isNotEmpty) 
-                  _buildPracticeHistorySection(homeState, isDarkMode, ref),
 
                 // チーム全体のモチベーションとTOP3表示セクション
                 _buildTeamMotivationSection(isDarkMode),
@@ -261,6 +258,22 @@ class HomeScreen extends HookConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.go(AppRoutes.basketballHistory);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: Icon(
+          Icons.history,
+          size: 24,
+          color: Theme.of(context).appBarTheme.foregroundColor,
+        ),
       ),
     );
   }
@@ -665,71 +678,4 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildPracticeHistorySection(HomeState homeState, bool isDarkMode, WidgetRef ref) {
-    return Column(
-      children: [
-        Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppTheme.cardColor(isDarkMode),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.history,
-                      color: Colors.grey,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'バスケ履歴',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryText(isDarkMode),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (homeState.isLoadingPastPractices)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              else
-                ...homeState.pastPractices.map(
-                  (practice) => PracticeHistoryCard(
-                    practice: practice,
-                    homeViewModel: ref.read(homeViewModelProvider.notifier),
-                    isDarkMode: isDarkMode,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }
