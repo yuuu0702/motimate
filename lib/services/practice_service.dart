@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/practice_decision_model.dart';
 
-/// 練習管理サービス
+/// バスケ管理サービス
 /// 
-/// 練習決定への回答、未回答練習の取得を担当
+/// バスケ決定への回答、未回答バスケの取得を担当
 class PracticeService {
   PracticeService({
     FirebaseAuth? auth,
@@ -16,7 +16,7 @@ class PracticeService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  /// 未回答の練習決定を取得（現在・未来のもののみ）
+  /// 未回答のバスケ決定を取得（現在・未来のもののみ）
   Future<List<PracticeDecisionModel>> getPendingPractices() async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('ユーザーがログインしていません');
@@ -72,7 +72,7 @@ class PracticeService {
     }
   }
 
-  /// 過去の練習決定を取得（履歴用）
+  /// 過去のバスケ決定を取得（履歴用）
   Future<List<PracticeDecisionModel>> getPastPractices() async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('ユーザーがログインしていません');
@@ -172,7 +172,7 @@ class PracticeService {
     }
   }
 
-  /// 練習への参加回答を送信
+  /// バスケへの参加回答を送信
   Future<void> respondToPractice(String practiceId, String response) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('ユーザーがログインしていません');
@@ -195,7 +195,7 @@ class PracticeService {
     }
   }
 
-  /// 練習にメモを追加
+  /// バスケにメモを追加
   Future<void> updatePracticeMemo(String practiceId, String memo) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('ユーザーがログインしていません');

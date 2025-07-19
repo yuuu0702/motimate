@@ -8,7 +8,7 @@ import '../../themes/app_theme.dart';
 
 /// 日程決定カードWidget
 /// 
-/// 練習日程が決定された際にユーザーに参加/見送りの回答を求めるカード
+/// バスケ日程が決定された際にユーザーに参加/見送りの回答を求めるカード
 class PracticeDecisionCard extends StatelessWidget {
   const PracticeDecisionCard({
     super.key,
@@ -103,7 +103,7 @@ class PracticeDecisionCard extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           const Text(
-            '今日の練習',
+            '今日のバスケ',
             style: TextStyle(
               color: Colors.white,
               fontSize: 12,
@@ -175,7 +175,7 @@ class PracticeDecisionCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    isToday ? '今日の練習決定' : '日程決定',
+                    isToday ? '今日のバスケ決定' : '日程決定',
                     style: TextStyle(
                       fontSize: isToday ? 18 : 16,
                       fontWeight: FontWeight.bold,

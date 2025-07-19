@@ -6,9 +6,9 @@ import '../../models/practice_decision_model.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../themes/app_theme.dart';
 
-/// 練習履歴カードWidget
+/// バスケ履歴カードWidget
 /// 
-/// 過去の練習日程の履歴を表示し、メモの追加・編集機能を提供
+/// 過去のバスケ日程の履歴を表示し、メモの追加・編集機能を提供
 class PracticeHistoryCard extends StatelessWidget {
   const PracticeHistoryCard({
     super.key,
@@ -101,7 +101,7 @@ class PracticeHistoryCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '練習履歴',
+                    'バスケ履歴',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -296,7 +296,7 @@ class PracticeHistoryCard extends StatelessWidget {
           ] else ...[
             const SizedBox(height: 6),
             Text(
-              'この練習についてメモを追加できます',
+              'このバスケについてメモを追加できます',
               style: TextStyle(
                 fontSize: 12,
                 color: AppTheme.tertiaryText(isDarkMode),
@@ -358,7 +358,7 @@ class PracticeHistoryCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${practice.practiceDate.year}年${practice.practiceDate.month}月${practice.practiceDate.day}日の練習',
+                      '${practice.practiceDate.year}年${practice.practiceDate.month}月${practice.practiceDate.day}日のバスケ',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -373,7 +373,7 @@ class PracticeHistoryCard extends StatelessWidget {
                 controller: memoController,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'この練習についてのメモを入力してください...',
+                  hintText: 'このバスケについてのメモを入力してください...',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(

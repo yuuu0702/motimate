@@ -251,7 +251,7 @@ class HomeScreen extends HookConsumerWidget {
                   isDarkMode: isDarkMode,
                 ),
 
-                // 練習履歴セクション
+                // バスケ履歴セクション
                 if (homeState.pastPractices.isNotEmpty) 
                   _buildPracticeHistorySection(homeState, isDarkMode, ref),
 
@@ -701,7 +701,7 @@ class HomeScreen extends HookConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    '練習履歴',
+                    'バスケ履歴',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
