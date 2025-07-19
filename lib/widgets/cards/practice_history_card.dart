@@ -164,7 +164,7 @@ class PracticeHistoryCard extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            '参加: ${practice.joinCount}人',
+            '実際の参加: ${practice.actualParticipants.length}人',
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.secondaryText(isDarkMode),
@@ -173,7 +173,7 @@ class PracticeHistoryCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            '見送り: ${practice.skipCount}人',
+            '回答参加: ${practice.joinCount}人',
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.secondaryText(isDarkMode),
@@ -479,6 +479,7 @@ class PracticeHistoryCard extends StatelessWidget {
     final ValueNotifier<List<String>> selectedParticipants = ValueNotifier(
       List<String>.from(practice.actualParticipants),
     );
+    final ValueNotifier<String> searchQuery = ValueNotifier('');
 
     showDialog(
       context: context,
@@ -507,7 +508,7 @@ class PracticeHistoryCard extends StatelessWidget {
           ),
           content: SizedBox(
             width: double.maxFinite,
-            height: 400,
+            height: 500,
             child: Column(
               children: [
                 // 日程情報
@@ -538,110 +539,246 @@ class PracticeHistoryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 
-                // 参加者検索
-                TextField(
-                  controller: searchController,
-                  decoration: InputDecoration(
-                    hintText: 'ユーザーIDを入力（例：user1）',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        final userId = searchController.text.trim();
-                        if (userId.isNotEmpty && !selectedParticipants.value.contains(userId)) {
-                          selectedParticipants.value = [...selectedParticipants.value, userId];
-                          searchController.clear();
-                        }
+                // メンバー検索フィールド
+                ValueListenableBuilder<String>(
+                  valueListenable: searchQuery,
+                  builder: (context, query, child) {
+                    return TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: 'メンバーを検索...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        searchQuery.value = value;
                       },
-                    ),
-                  ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 
-                // 選択された参加者リスト
+                // メンバー一覧と選択された参加者を表示
                 Expanded(
-                  child: ValueListenableBuilder<List<String>>(
-                    valueListenable: selectedParticipants,
-                    builder: (context, participants, child) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '参加者 (${participants.length}人)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryText(isDarkMode),
+                  child: Row(
+                    children: [
+                      // メンバー一覧（左側）
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'メンバー一覧',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryText(isDarkMode),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: participants.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      '参加者がいません',
-                                      style: TextStyle(
-                                        color: AppTheme.tertiaryText(isDarkMode),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('users')
+                                    .where('profileSetup', isEqualTo: true)
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  
+                                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                                    return Center(
+                                      child: Text(
+                                        'メンバーがいません',
+                                        style: TextStyle(
+                                          color: AppTheme.tertiaryText(isDarkMode),
+                                        ),
                                       ),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    itemCount: participants.length,
-                                    itemBuilder: (context, index) {
-                                      final userId = participants[index];
-                                      return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF10B981).withValues(alpha: 0.05),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.person,
-                                              size: 16,
-                                              color: Color(0xFF10B981),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                userId.startsWith('user') 
-                                                    ? 'ユーザー${userId.substring(4)}'
-                                                    : userId,
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: AppTheme.primaryText(isDarkMode),
+                                    );
+                                  }
+                                  
+                                  final users = snapshot.data!.docs;
+                                  
+                                  return ValueListenableBuilder<String>(
+                                    valueListenable: searchQuery,
+                                    builder: (context, query, child) {
+                                      // 検索フィルター
+                                      final filteredUsers = users.where((doc) {
+                                        final userData = doc.data() as Map<String, dynamic>;
+                                        final displayName = userData['displayName'] ?? '';
+                                        final username = userData['username'] ?? '';
+                                        final searchText = query.toLowerCase();
+                                        return displayName.toLowerCase().contains(searchText) ||
+                                               username.toLowerCase().contains(searchText);
+                                      }).toList();
+                                      
+                                      return ValueListenableBuilder<List<String>>(
+                                        valueListenable: selectedParticipants,
+                                        builder: (context, participants, child) {
+                                          return ListView.builder(
+                                            itemCount: filteredUsers.length,
+                                            itemBuilder: (context, index) {
+                                              final userDoc = filteredUsers[index];
+                                              final userData = userDoc.data() as Map<String, dynamic>;
+                                              final userId = userDoc.id;
+                                              final displayName = userData['displayName'] ?? 
+                                                                userData['username'] ?? 
+                                                                'ユーザー${userId.substring(0, 4)}';
+                                              final isSelected = participants.contains(userId);
+                                              
+                                              return Container(
+                                                margin: const EdgeInsets.only(bottom: 4),
+                                                child: ListTile(
+                                                  dense: true,
+                                                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                  leading: CircleAvatar(
+                                                    radius: 16,
+                                                    backgroundColor: isSelected 
+                                                        ? const Color(0xFF10B981) 
+                                                        : Colors.grey[400],
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      size: 16,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  title: Text(
+                                                    displayName,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                                      color: AppTheme.primaryText(isDarkMode),
+                                                    ),
+                                                  ),
+                                                  trailing: Icon(
+                                                    isSelected ? Icons.check_circle : Icons.add_circle_outline,
+                                                    color: isSelected ? const Color(0xFF10B981) : Colors.grey,
+                                                    size: 20,
+                                                  ),
+                                                  onTap: () {
+                                                    if (isSelected) {
+                                                      selectedParticipants.value = participants
+                                                          .where((p) => p != userId)
+                                                          .toList();
+                                                    } else {
+                                                      selectedParticipants.value = [...participants, userId];
+                                                    }
+                                                  },
                                                 ),
-                                              ),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.remove_circle_outline,
-                                                color: Colors.red,
-                                                size: 20,
-                                              ),
-                                              onPressed: () {
-                                                selectedParticipants.value = participants
-                                                    .where((p) => p != userId)
-                                                    .toList();
-                                              },
-                                            ),
-                                          ],
-                                        ),
+                                              );
+                                            },
+                                          );
+                                        },
                                       );
                                     },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(width: 16),
+                      
+                      // 選択された参加者リスト（右側）
+                      Expanded(
+                        flex: 1,
+                        child: ValueListenableBuilder<List<String>>(
+                          valueListenable: selectedParticipants,
+                          builder: (context, participants, child) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '参加者 (${participants.length}人)',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primaryText(isDarkMode),
                                   ),
-                          ),
-                        ],
-                      );
-                    },
+                                ),
+                                const SizedBox(height: 8),
+                                Expanded(
+                                  child: participants.isEmpty
+                                      ? Center(
+                                          child: Text(
+                                            '参加者なし',
+                                            style: TextStyle(
+                                              color: AppTheme.tertiaryText(isDarkMode),
+                                            ),
+                                          ),
+                                        )
+                                      : FutureBuilder<Map<String, String>>(
+                                          future: _getUserNames(participants),
+                                          builder: (context, snapshot) {
+                                            final userNames = snapshot.data ?? {};
+                                            
+                                            return ListView.builder(
+                                              itemCount: participants.length,
+                                              itemBuilder: (context, index) {
+                                                final userId = participants[index];
+                                                final displayName = userNames[userId] ?? 
+                                                                  'ユーザー${userId.substring(0, 4)}';
+                                                
+                                                return Container(
+                                                  margin: const EdgeInsets.only(bottom: 4),
+                                                  padding: const EdgeInsets.all(8),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFF10B981).withValues(alpha: 0.05),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                    border: Border.all(
+                                                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.person,
+                                                        size: 14,
+                                                        color: Color(0xFF10B981),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Expanded(
+                                                        child: Text(
+                                                          displayName,
+                                                          style: TextStyle(
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.w500,
+                                                            color: AppTheme.primaryText(isDarkMode),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          selectedParticipants.value = participants
+                                                              .where((p) => p != userId)
+                                                              .toList();
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.close,
+                                                          color: Colors.red,
+                                                          size: 16,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -693,18 +830,22 @@ class PracticeHistoryCard extends StatelessWidget {
   }
 
   void _showParticipantsDialog(BuildContext context) {
+    // 実際の参加者と回答状況を組み合わせて分類
+    final actualParticipants = practice.actualParticipants;
     final joinedUsers = <String>[];
     final skippedUsers = <String>[];
     final noResponseUsers = <String>[];
 
-    // 回答状況を分類
+    // 実際の参加者（actualParticipants）を基準に表示
+    // 1. 実際の参加者を「参加」に分類
+    joinedUsers.addAll(actualParticipants);
+
+    // 2. 回答で「見送り」した人を分類（実際の参加者に含まれていない場合のみ）
     for (final member in practice.availableMembers) {
       final response = practice.responses[member];
-      if (response == 'join') {
-        joinedUsers.add(member);
-      } else if (response == 'skip') {
+      if (response == 'skip' && !actualParticipants.contains(member)) {
         skippedUsers.add(member);
-      } else {
+      } else if (response == null && !actualParticipants.contains(member)) {
         noResponseUsers.add(member);
       }
     }
@@ -746,7 +887,7 @@ class PracticeHistoryCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '参加状況詳細（履歴）',
+                    '実際の参加状況詳細',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -792,7 +933,7 @@ class PracticeHistoryCard extends StatelessWidget {
                     // 参加者リスト
                     if (joinedUsers.isNotEmpty) ...[
                       _buildParticipantSectionWithNames(
-                        '参加 (${joinedUsers.length}人)',
+                        '実際に参加 (${joinedUsers.length}人)',
                         joinedUsers,
                         userNames,
                         const Color(0xFF10B981),
@@ -804,7 +945,7 @@ class PracticeHistoryCard extends StatelessWidget {
                     // 見送り者リスト
                     if (skippedUsers.isNotEmpty) ...[
                       _buildParticipantSectionWithNames(
-                        '見送り (${skippedUsers.length}人)',
+                        '回答で見送り (${skippedUsers.length}人)',
                         skippedUsers,
                         userNames,
                         const Color(0xFFFF6B6B),
@@ -816,7 +957,7 @@ class PracticeHistoryCard extends StatelessWidget {
                     // 未回答者リスト
                     if (noResponseUsers.isNotEmpty) ...[
                       _buildParticipantSectionWithNames(
-                        '未回答 (${noResponseUsers.length}人)',
+                        '回答なし (${noResponseUsers.length}人)',
                         noResponseUsers,
                         userNames,
                         const Color(0xFFFB923C),
