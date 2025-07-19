@@ -128,6 +128,7 @@ class PracticeService {
         'status': 'pending',
         'responses': <String, dynamic>{},
         'memo': null,
+        'actualParticipants': <String>[],
       };
       
       final docRef = _firestore.collection('practice_decisions').doc();
@@ -150,6 +151,16 @@ class PracticeService {
           'user5': i == 1 ? 'skip' : 'join',
         };
         
+        // 実際の参加者（回答とは別にランダムに設定）
+        final actualParticipants = <String>[];
+        if (i == 0) {
+          actualParticipants.addAll(['user1', 'user2', 'user4', 'user6']); // user6は手動追加された参加者
+        } else if (i == 1) {
+          actualParticipants.addAll(['user2', 'user3', 'user4', 'user5']);
+        } else {
+          actualParticipants.addAll(['user2', 'user4']);
+        }
+
         final pastPractice = {
           'decidedBy': user.uid,
           'decidedAt': Timestamp.fromDate(pastDate.subtract(const Duration(days: 1))),
@@ -158,7 +169,8 @@ class PracticeService {
           'availableMembers': ['user1', 'user2', 'user3', 'user4', 'user5'],
           'status': 'completed',
           'responses': testResponses,
-          'memo': i == 0 ? '良い練習でした！' : null,
+          'memo': i == 0 ? '良いバスケでした！' : null,
+          'actualParticipants': actualParticipants,
         };
         
         final pastDocRef = _firestore.collection('practice_decisions').doc();
@@ -209,6 +221,23 @@ class PracticeService {
       });
     } catch (e) {
       throw Exception('メモの更新に失敗しました: $e');
+    }
+  }
+
+  /// 実際の参加者を更新
+  Future<void> updateActualParticipants(String practiceId, List<String> participants) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+
+    try {
+      await _firestore
+          .collection('practice_decisions')
+          .doc(practiceId)
+          .update({
+        'actualParticipants': participants,
+      });
+    } catch (e) {
+      throw Exception('参加者の更新に失敗しました: $e');
     }
   }
 }

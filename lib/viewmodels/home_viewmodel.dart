@@ -167,6 +167,15 @@ class HomeViewModel extends StateNotifier<HomeState> {
     }
   }
 
+  Future<void> updateActualParticipants(String practiceId, List<String> participants) async {
+    try {
+      await _practiceService.updateActualParticipants(practiceId, participants);
+      await _loadPastPractices(); // 履歴を再読み込み
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
   void clearError() {
     state = state.copyWith(error: null);
   }

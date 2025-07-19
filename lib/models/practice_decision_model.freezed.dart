@@ -32,7 +32,8 @@ mixin _$PracticeDecisionModel {
   String get status =>
       throw _privateConstructorUsedError; // pending, confirmed, cancelled
   Map<String, String> get responses => throw _privateConstructorUsedError;
-  String? get memo => throw _privateConstructorUsedError;
+  String? get memo => throw _privateConstructorUsedError; // バスケに関するメモ（履歴で使用）
+  List<String> get actualParticipants => throw _privateConstructorUsedError;
 
   /// Serializes this PracticeDecisionModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -61,6 +62,7 @@ abstract class $PracticeDecisionModelCopyWith<$Res> {
     String status,
     Map<String, String> responses,
     String? memo,
+    List<String> actualParticipants,
   });
 }
 
@@ -91,6 +93,7 @@ class _$PracticeDecisionModelCopyWithImpl<
     Object? status = null,
     Object? responses = null,
     Object? memo = freezed,
+    Object? actualParticipants = null,
   }) {
     return _then(
       _value.copyWith(
@@ -130,6 +133,10 @@ class _$PracticeDecisionModelCopyWithImpl<
                 ? _value.memo
                 : memo // ignore: cast_nullable_to_non_nullable
                       as String?,
+            actualParticipants: null == actualParticipants
+                ? _value.actualParticipants
+                : actualParticipants // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
           )
           as $Val,
     );
@@ -155,6 +162,7 @@ abstract class _$$PracticeDecisionModelImplCopyWith<$Res>
     String status,
     Map<String, String> responses,
     String? memo,
+    List<String> actualParticipants,
   });
 }
 
@@ -182,6 +190,7 @@ class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
     Object? status = null,
     Object? responses = null,
     Object? memo = freezed,
+    Object? actualParticipants = null,
   }) {
     return _then(
       _$PracticeDecisionModelImpl(
@@ -221,6 +230,10 @@ class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
             ? _value.memo
             : memo // ignore: cast_nullable_to_non_nullable
                   as String?,
+        actualParticipants: null == actualParticipants
+            ? _value._actualParticipants
+            : actualParticipants // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
       ),
     );
   }
@@ -239,8 +252,10 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
     this.status = 'pending',
     final Map<String, String> responses = const <String, String>{},
     this.memo,
+    final List<String> actualParticipants = const <String>[],
   }) : _availableMembers = availableMembers,
-       _responses = responses;
+       _responses = responses,
+       _actualParticipants = actualParticipants;
 
   factory _$PracticeDecisionModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PracticeDecisionModelImplFromJson(json);
@@ -280,10 +295,21 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
 
   @override
   final String? memo;
+  // バスケに関するメモ（履歴で使用）
+  final List<String> _actualParticipants;
+  // バスケに関するメモ（履歴で使用）
+  @override
+  @JsonKey()
+  List<String> get actualParticipants {
+    if (_actualParticipants is EqualUnmodifiableListView)
+      return _actualParticipants;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_actualParticipants);
+  }
 
   @override
   String toString() {
-    return 'PracticeDecisionModel(id: $id, decidedBy: $decidedBy, decidedAt: $decidedAt, practiceDate: $practiceDate, dateKey: $dateKey, availableMembers: $availableMembers, status: $status, responses: $responses, memo: $memo)';
+    return 'PracticeDecisionModel(id: $id, decidedBy: $decidedBy, decidedAt: $decidedAt, practiceDate: $practiceDate, dateKey: $dateKey, availableMembers: $availableMembers, status: $status, responses: $responses, memo: $memo, actualParticipants: $actualParticipants)';
   }
 
   @override
@@ -308,7 +334,11 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
               other._responses,
               _responses,
             ) &&
-            (identical(other.memo, memo) || other.memo == memo));
+            (identical(other.memo, memo) || other.memo == memo) &&
+            const DeepCollectionEquality().equals(
+              other._actualParticipants,
+              _actualParticipants,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -324,6 +354,7 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
     status,
     const DeepCollectionEquality().hash(_responses),
     memo,
+    const DeepCollectionEquality().hash(_actualParticipants),
   );
 
   /// Create a copy of PracticeDecisionModel
@@ -355,6 +386,7 @@ abstract class _PracticeDecisionModel implements PracticeDecisionModel {
     final String status,
     final Map<String, String> responses,
     final String? memo,
+    final List<String> actualParticipants,
   }) = _$PracticeDecisionModelImpl;
 
   factory _PracticeDecisionModel.fromJson(Map<String, dynamic> json) =
@@ -377,7 +409,9 @@ abstract class _PracticeDecisionModel implements PracticeDecisionModel {
   @override
   Map<String, String> get responses;
   @override
-  String? get memo;
+  String? get memo; // バスケに関するメモ（履歴で使用）
+  @override
+  List<String> get actualParticipants;
 
   /// Create a copy of PracticeDecisionModel
   /// with the given fields replaced by the non-null parameter values.

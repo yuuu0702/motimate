@@ -182,38 +182,77 @@ class PracticeHistoryCard extends StatelessWidget {
           ),
           const Spacer(),
           Builder(
-            builder: (context) => GestureDetector(
-              onTap: () => _showParticipantsDialog(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF667eea).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: const Color(0xFF667eea).withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 12,
-                      color: Color(0xFF667eea),
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      '詳細',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF667eea),
-                        fontWeight: FontWeight.w600,
+            builder: (context) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () => _showParticipantsDialog(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: const Color(0xFF667eea).withValues(alpha: 0.3),
+                        width: 1,
                       ),
                     ),
-                  ],
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 12,
+                          color: Color(0xFF667eea),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          '詳細',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF667eea),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _showParticipantsEditDialog(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.edit,
+                          size: 12,
+                          color: Color(0xFF10B981),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          '編集',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF10B981),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -419,6 +458,225 @@ class PracticeHistoryCard extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF667eea),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                '保存',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showParticipantsEditDialog(BuildContext context) {
+    final TextEditingController searchController = TextEditingController();
+    final ValueNotifier<List<String>> selectedParticipants = ValueNotifier(
+      List<String>.from(practice.actualParticipants),
+    );
+    final ValueNotifier<String> searchQuery = ValueNotifier('');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.people,
+                color: Color(0xFF10B981),
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '参加者編集',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryText(isDarkMode),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: Column(
+              children: [
+                // 日程情報
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: Color(0xFF10B981),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${practice.practiceDate.year}年${practice.practiceDate.month}月${practice.practiceDate.day}日のバスケ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryText(isDarkMode),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // 参加者検索
+                TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    hintText: 'ユーザーIDを入力（例：user1）',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        final userId = searchController.text.trim();
+                        if (userId.isNotEmpty && !selectedParticipants.value.contains(userId)) {
+                          selectedParticipants.value = [...selectedParticipants.value, userId];
+                          searchController.clear();
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // 選択された参加者リスト
+                Expanded(
+                  child: ValueListenableBuilder<List<String>>(
+                    valueListenable: selectedParticipants,
+                    builder: (context, participants, child) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '参加者 (${participants.length}人)',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryText(isDarkMode),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: participants.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      '参加者がいません',
+                                      style: TextStyle(
+                                        color: AppTheme.tertiaryText(isDarkMode),
+                                      ),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    itemCount: participants.length,
+                                    itemBuilder: (context, index) {
+                                      final userId = participants[index];
+                                      return Container(
+                                        margin: const EdgeInsets.only(bottom: 8),
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF10B981).withValues(alpha: 0.05),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.person,
+                                              size: 16,
+                                              color: Color(0xFF10B981),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                userId.startsWith('user') 
+                                                    ? 'ユーザー${userId.substring(4)}'
+                                                    : userId,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  color: AppTheme.primaryText(isDarkMode),
+                                                ),
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.remove_circle_outline,
+                                                color: Colors.red,
+                                                size: 20,
+                                              ),
+                                              onPressed: () {
+                                                selectedParticipants.value = participants
+                                                    .where((p) => p != userId)
+                                                    .toList();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'キャンセル',
+                style: TextStyle(
+                  color: AppTheme.tertiaryText(isDarkMode),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await homeViewModel.updateActualParticipants(
+                  practice.id,
+                  selectedParticipants.value,
+                );
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('参加者を更新しました'),
+                      backgroundColor: Color(0xFF10B981),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
