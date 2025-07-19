@@ -52,10 +52,8 @@ class PracticeHistoryCard extends StatelessWidget {
           _buildHistoryHeader(dayName, userResponse),
           const SizedBox(height: 12),
           _buildParticipantsInfo(),
-          if (practice.memo != null && practice.memo!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            _buildMemoSection(),
-          ],
+          const SizedBox(height: 8),
+          _buildMemoSection(),
         ],
       ),
     );
@@ -222,14 +220,20 @@ class PracticeHistoryCard extends StatelessWidget {
   }
 
   Widget _buildMemoSection() {
+    final hasMemo = practice.memo != null && practice.memo!.isNotEmpty;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFEF3C7).withValues(alpha: 0.5),
+        color: hasMemo 
+            ? const Color(0xFFFEF3C7).withValues(alpha: 0.5)
+            : Colors.grey.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+          color: hasMemo 
+              ? const Color(0xFFF59E0B).withValues(alpha: 0.2)
+              : Colors.grey.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -238,10 +242,12 @@ class PracticeHistoryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.note_alt_outlined,
+              Icon(
+                hasMemo ? Icons.note_alt_outlined : Icons.note_add_outlined,
                 size: 14,
-                color: Color(0xFFF59E0B),
+                color: hasMemo 
+                    ? const Color(0xFFF59E0B)
+                    : AppTheme.secondaryText(isDarkMode),
               ),
               const SizedBox(width: 6),
               Text(
@@ -252,19 +258,178 @@ class PracticeHistoryCard extends StatelessWidget {
                   color: AppTheme.primaryText(isDarkMode),
                 ),
               ),
+              const Spacer(),
+              Builder(
+                builder: (context) => GestureDetector(
+                  onTap: () => _showMemoEditDialog(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      hasMemo ? '編集' : '追加',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF667eea),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            practice.memo!,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.secondaryText(isDarkMode),
-              height: 1.4,
+          if (hasMemo) ...[
+            const SizedBox(height: 6),
+            Text(
+              practice.memo!,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.secondaryText(isDarkMode),
+                height: 1.4,
+              ),
             ),
-          ),
+          ] else ...[
+            const SizedBox(height: 6),
+            Text(
+              'この練習についてメモを追加できます',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.tertiaryText(isDarkMode),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  void _showMemoEditDialog(BuildContext context) {
+    final TextEditingController memoController = TextEditingController(
+      text: practice.memo ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.edit_note,
+                color: Color(0xFF667eea),
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'メモの編集',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryText(isDarkMode),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF667eea).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: Color(0xFF667eea),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${practice.practiceDate.year}年${practice.practiceDate.month}月${practice.practiceDate.day}日の練習',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryText(isDarkMode),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: memoController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'この練習についてのメモを入力してください...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Colors.grey.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF667eea),
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'キャンセル',
+                style: TextStyle(
+                  color: AppTheme.tertiaryText(isDarkMode),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final memo = memoController.text.trim();
+                await homeViewModel.updatePracticeMemo(practice.id, memo);
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                  // スナックバーで完了通知
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(memo.isEmpty ? 'メモを削除しました' : 'メモを保存しました'),
+                      backgroundColor: const Color(0xFF10B981),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF667eea),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                '保存',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
