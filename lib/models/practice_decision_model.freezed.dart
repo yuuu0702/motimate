@@ -32,6 +32,7 @@ mixin _$PracticeDecisionModel {
   String get status =>
       throw _privateConstructorUsedError; // pending, confirmed, cancelled
   Map<String, String> get responses => throw _privateConstructorUsedError;
+  String? get memo => throw _privateConstructorUsedError;
 
   /// Serializes this PracticeDecisionModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -59,6 +60,7 @@ abstract class $PracticeDecisionModelCopyWith<$Res> {
     List<String> availableMembers,
     String status,
     Map<String, String> responses,
+    String? memo,
   });
 }
 
@@ -88,6 +90,7 @@ class _$PracticeDecisionModelCopyWithImpl<
     Object? availableMembers = null,
     Object? status = null,
     Object? responses = null,
+    Object? memo = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -123,6 +126,10 @@ class _$PracticeDecisionModelCopyWithImpl<
                 ? _value.responses
                 : responses // ignore: cast_nullable_to_non_nullable
                       as Map<String, String>,
+            memo: freezed == memo
+                ? _value.memo
+                : memo // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -147,6 +154,7 @@ abstract class _$$PracticeDecisionModelImplCopyWith<$Res>
     List<String> availableMembers,
     String status,
     Map<String, String> responses,
+    String? memo,
   });
 }
 
@@ -173,6 +181,7 @@ class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
     Object? availableMembers = null,
     Object? status = null,
     Object? responses = null,
+    Object? memo = freezed,
   }) {
     return _then(
       _$PracticeDecisionModelImpl(
@@ -208,6 +217,10 @@ class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
             ? _value._responses
             : responses // ignore: cast_nullable_to_non_nullable
                   as Map<String, String>,
+        memo: freezed == memo
+            ? _value.memo
+            : memo // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -225,6 +238,7 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
     required final List<String> availableMembers,
     this.status = 'pending',
     final Map<String, String> responses = const <String, String>{},
+    this.memo,
   }) : _availableMembers = availableMembers,
        _responses = responses;
 
@@ -265,8 +279,11 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
   }
 
   @override
+  final String? memo;
+
+  @override
   String toString() {
-    return 'PracticeDecisionModel(id: $id, decidedBy: $decidedBy, decidedAt: $decidedAt, practiceDate: $practiceDate, dateKey: $dateKey, availableMembers: $availableMembers, status: $status, responses: $responses)';
+    return 'PracticeDecisionModel(id: $id, decidedBy: $decidedBy, decidedAt: $decidedAt, practiceDate: $practiceDate, dateKey: $dateKey, availableMembers: $availableMembers, status: $status, responses: $responses, memo: $memo)';
   }
 
   @override
@@ -290,7 +307,8 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
             const DeepCollectionEquality().equals(
               other._responses,
               _responses,
-            ));
+            ) &&
+            (identical(other.memo, memo) || other.memo == memo));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -305,6 +323,7 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
     const DeepCollectionEquality().hash(_availableMembers),
     status,
     const DeepCollectionEquality().hash(_responses),
+    memo,
   );
 
   /// Create a copy of PracticeDecisionModel
@@ -335,6 +354,7 @@ abstract class _PracticeDecisionModel implements PracticeDecisionModel {
     required final List<String> availableMembers,
     final String status,
     final Map<String, String> responses,
+    final String? memo,
   }) = _$PracticeDecisionModelImpl;
 
   factory _PracticeDecisionModel.fromJson(Map<String, dynamic> json) =
@@ -356,6 +376,8 @@ abstract class _PracticeDecisionModel implements PracticeDecisionModel {
   String get status; // pending, confirmed, cancelled
   @override
   Map<String, String> get responses;
+  @override
+  String? get memo;
 
   /// Create a copy of PracticeDecisionModel
   /// with the given fields replaced by the non-null parameter values.

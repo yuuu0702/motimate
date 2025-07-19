@@ -15,6 +15,7 @@ class PracticeDecisionModel with _$PracticeDecisionModel {
     required List<String> availableMembers,
     @Default('pending') String status, // pending, confirmed, cancelled
     @Default(<String, String>{}) Map<String, String> responses,
+    String? memo, // 練習に関するメモ（履歴で使用）
   }) = _PracticeDecisionModel;
 
   factory PracticeDecisionModel.fromJson(Map<String, dynamic> json) =>
@@ -31,6 +32,7 @@ class PracticeDecisionModel with _$PracticeDecisionModel {
       availableMembers: List<String>.from(data['availableMembers'] ?? []),
       status: data['status'] ?? 'pending',
       responses: Map<String, String>.from(data['responses'] ?? {}),
+      memo: data['memo'],
     );
   }
 }
@@ -45,6 +47,7 @@ extension PracticeDecisionModelX on PracticeDecisionModel {
       'availableMembers': availableMembers,
       'status': status,
       'responses': responses,
+      'memo': memo,
     };
   }
 
