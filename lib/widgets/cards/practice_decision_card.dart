@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/practice_decision_model.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../themes/app_theme.dart';
-import '../../core/constants/app_constants.dart';
 
 /// 日程決定カードWidget
 /// 
@@ -59,7 +58,7 @@ class PracticeDecisionCard extends StatelessWidget {
                 ? const Color(0xFF667eea).withValues(alpha: 0.2)
                 : Colors.black.withValues(alpha: 0.05),
             blurRadius: isToday ? 12 : 8,
-            offset: const Offset(0, isToday ? 4 : 2),
+            offset: Offset(0, isToday ? 4 : 2),
           ),
         ],
       ),
@@ -191,7 +190,7 @@ class PracticeDecisionCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${practice.practiceDate.month}月${practice.practiceDate.day}日 (${dayName})',
+                '${practice.practiceDate.month}月${practice.practiceDate.day}日 ($dayName)',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.secondaryText(isDarkMode),
@@ -658,73 +657,4 @@ class PracticeDecisionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantSection(
-    String title,
-    List<String> userIds,
-    Color color,
-    IconData icon,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: color.withValues(alpha: 0.2),
-              width: 1,
-            ),
-          ),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: userIds.map((userId) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _getUserDisplayName(userId),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.primaryText(isDarkMode),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _getUserDisplayName(String userId) {
-    // 実際の実装では、Firestoreからユーザー名を取得する
-    // 今は簡易的にuserIdを表示
-    if (userId.startsWith('user')) {
-      return 'ユーザー${userId.substring(4)}';
-    }
-    return userId.substring(0, 8); // UIDの最初の8文字を表示
-  }
 }

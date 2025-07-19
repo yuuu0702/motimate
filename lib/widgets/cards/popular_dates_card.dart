@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/schedule_model.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../routing/app_router.dart';
-import '../../themes/app_theme.dart';
 
 /// 人気の日程表示カードWidget
 /// 

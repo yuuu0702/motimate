@@ -98,9 +98,9 @@ class ScheduleService {
           .get();
       
       final decidedDateKeys = practiceDecisionsSnapshot.docs
-          .map((doc) => (doc.data() as Map<String, dynamic>)['dateKey'] as String?)
+          .map((doc) => doc.data()['dateKey'] as String?)
           .where((dateKey) => dateKey != null)
-          .cast<String>()
+          .map((dateKey) => dateKey!)
           .toSet();
       
       // 決定済みでない日程のみを返す

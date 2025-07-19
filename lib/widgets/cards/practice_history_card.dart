@@ -114,7 +114,7 @@ class PracticeHistoryCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${practice.practiceDate.year}年${practice.practiceDate.month}月${practice.practiceDate.day}日 (${dayName})',
+                '${practice.practiceDate.year}年${practice.practiceDate.month}月${practice.practiceDate.day}日 ($dayName)',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppTheme.secondaryText(isDarkMode),

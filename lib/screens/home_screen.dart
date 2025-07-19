@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/providers.dart';
 import '../models/schedule_model.dart';
+import '../viewmodels/home_viewmodel.dart';
 import '../themes/app_theme.dart';
 import '../core/constants/app_constants.dart';
 import '../routing/app_router.dart';
@@ -252,7 +253,7 @@ class HomeScreen extends HookConsumerWidget {
 
                 // 練習履歴セクション
                 if (homeState.pastPractices.isNotEmpty) 
-                  _buildPracticeHistorySection(homeState, isDarkMode),
+                  _buildPracticeHistorySection(homeState, isDarkMode, ref),
 
                 // チーム全体のモチベーションとTOP3表示セクション
                 _buildTeamMotivationSection(isDarkMode),
@@ -664,7 +665,7 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildPracticeHistorySection(HomeState homeState, bool isDarkMode) {
+  Widget _buildPracticeHistorySection(HomeState homeState, bool isDarkMode, WidgetRef ref) {
     return Column(
       children: [
         Container(
