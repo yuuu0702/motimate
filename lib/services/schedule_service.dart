@@ -72,7 +72,7 @@ class ScheduleService {
     }
   }
   
-  /// 決定済みの日程を除外する
+  /// 決定済みの日程と過去の日程を除外する
   Future<List<ScheduleModel>> _filterAvailableSchedules(List<ScheduleModel> schedules) async {
     try {
       // 決定済みの日程キーを取得
@@ -86,8 +86,27 @@ class ScheduleService {
           .map((dateKey) => dateKey!)
           .toSet();
       
-      // 決定済みでない日程のみを返す
-      return schedules.where((schedule) => !decidedDateKeys.contains(schedule.id)).toList();
+      // 今日の日付を取得（時刻は除く）
+      final today = DateTime.now();
+      final todayOnly = DateTime(today.year, today.month, today.day);
+      
+      // 決定済みでない日程かつ今日以降の日程のみを返す
+      return schedules.where((schedule) {
+        // 決定済みチェック
+        if (decidedDateKeys.contains(schedule.id)) {
+          return false;
+        }
+        
+        // 過去の日付チェック
+        try {
+          final scheduleDate = DateTime.parse(schedule.id);
+          final scheduleDateOnly = DateTime(scheduleDate.year, scheduleDate.month, scheduleDate.day);
+          return !scheduleDateOnly.isBefore(todayOnly);
+        } catch (e) {
+          // 日付パースエラーの場合は除外
+          return false;
+        }
+      }).toList();
     } catch (e) {
       print('決定済み日程のフィルタリングエラー: $e');
       return schedules; // エラー時は全て返す
