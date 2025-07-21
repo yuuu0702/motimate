@@ -38,18 +38,34 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
       Set<DateTime> myDates = {};
 
       for (var doc in snapshot.docs) {
-        final docData = doc.data();
-        final members = docData['members'] as List? ?? [];
+        try {
+          final docData = doc.data();
+          
+          final membersData = docData['members'];
+          if (membersData == null) continue;
+          
+          final members = (membersData is List) ? List<String>.from(membersData) : <String>[];
 
-        // 参加者が1人以上いる場合のみデータに追加
-        if (members.isNotEmpty) {
-          data[doc.id] = {'available': members.length, 'members': members};
+          // 参加者が1人以上いる場合のみデータに追加
+          if (members.isNotEmpty) {
+            data[doc.id] = {
+              'available': members.length,
+              'members': members,
+            };
 
-          // Check if current user is in the members list
-          if (user != null && members.contains(user.uid)) {
-            final date = DateTime.parse(doc.id);
-            myDates.add(date);
+            // Check if current user is in the members list
+            if (user != null && members.contains(user.uid)) {
+              try {
+                final date = DateTime.parse(doc.id);
+                myDates.add(date);
+              } catch (e) {
+                print('日付パースエラー: ${doc.id}, エラー: $e');
+              }
+            }
           }
+        } catch (e) {
+          print('ドキュメント処理エラー: ${doc.id}, エラー: $e');
+          continue;
         }
       }
 
@@ -59,7 +75,10 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         isLoading = false;
       });
     } catch (e) {
+      print('スケジュールデータ読み込みエラー: $e');
       setState(() {
+        scheduleData = {};
+        myRegisteredDates = {};
         isLoading = false;
       });
     }
@@ -88,7 +107,26 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     return days;
   }
 
+  bool _isPastDate(DateTime date) {
+    final today = DateTime.now();
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    final todayOnly = DateTime(today.year, today.month, today.day);
+    return dateOnly.isBefore(todayOnly);
+  }
+
   void toggleDate(DateTime date) {
+    // 過去の日付は操作できない
+    if (_isPastDate(date)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('過去の日付は選択できません'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       // If already registered, remove from registration
       if (myRegisteredDates.contains(date)) {
@@ -408,6 +446,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                   final isMyRegistered = myRegisteredDates
                                       .contains(day);
                                   final dateInfo = getDateInfo(day);
+                                  final isPast = _isPastDate(day);
 
                                   // Determine the visual state
                                   Color? backgroundColor;
@@ -415,7 +454,11 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                   Color textColor = AppTheme.primaryText(isDarkMode);
                                   Widget? statusIcon;
 
-                                  if (isMyRegistered) {
+                                  if (isPast) {
+                                    // Past date - grayed out
+                                    backgroundColor = Colors.grey.withValues(alpha: 0.2);
+                                    textColor = Colors.grey.withValues(alpha: 0.5);
+                                  } else if (isMyRegistered) {
                                     // Already registered by me - green with checkmark
                                     backgroundColor = const Color(0xFF10B981);
                                     textColor = Colors.white;
@@ -468,17 +511,17 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                           ),
 
                                           // My registration checkmark
-                                          if (isMyRegistered)
+                                          if (isMyRegistered && statusIcon != null)
                                             Positioned(
                                               top: 2,
                                               right: 2,
-                                              child: statusIcon!,
+                                              child: statusIcon,
                                             ),
 
                                           // Others' availability count
                                           if (dateInfo != null &&
                                               !isMyRegistered &&
-                                              dateInfo['available'] > 0)
+                                              (dateInfo['available'] as int? ?? 0) > 0)
                                             Positioned(
                                               top: 2,
                                               right: 2,
@@ -491,7 +534,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                                 ),
                                                 child: Center(
                                                   child: Text(
-                                                    '${dateInfo['available']}',
+                                                    '${dateInfo['available'] as int? ?? 0}',
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: 10,
@@ -517,7 +560,17 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
 
                       // Popular Dates Card
                       if (scheduleData.isNotEmpty && 
-                          scheduleData.values.any((data) => data['available'] > 0))
+                          scheduleData.entries.any((entry) {
+                            if ((entry.value['available'] as int? ?? 0) <= 0) {
+                              return false;
+                            }
+                            try {
+                              final date = DateTime.parse(entry.key);
+                              return !_isPastDate(date);
+                            } catch (e) {
+                              return false;
+                            }
+                          }))
                         Card(
                           elevation: 8,
                           shape: RoundedRectangleBorder(
@@ -543,18 +596,32 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 ...(scheduleData.entries
-                                    .where((entry) => entry.value['available'] > 0)
+                                    .where((entry) {
+                                      // 参加者数チェック
+                                      if ((entry.value['available'] as int? ?? 0) <= 0) {
+                                        return false;
+                                      }
+                                      
+                                      // 過去日付チェック
+                                      try {
+                                        final date = DateTime.parse(entry.key);
+                                        return !_isPastDate(date);
+                                      } catch (e) {
+                                        return false; // 日付パースエラーの場合は除外
+                                      }
+                                    })
                                     .toList()..sort(
-                                      (a, b) => b.value['available'].compareTo(
-                                        a.value['available'],
+                                      (a, b) => (b.value['available'] as int? ?? 0).compareTo(
+                                        a.value['available'] as int? ?? 0,
                                       ),
                                     ))
                                     .take(3)
                                     .map((entry) {
-                                      final date = DateTime.parse(entry.key);
-                                      final info = entry.value;
-                                      final dayName =
-                                          daysOfWeek[date.weekday % 7];
+                                      try {
+                                        final date = DateTime.parse(entry.key);
+                                        final info = entry.value;
+                                        final dayName =
+                                            daysOfWeek[date.weekday % 7];
 
                                       return Container(
                                         margin: const EdgeInsets.symmetric(
@@ -606,7 +673,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                                           BorderRadius.circular(12),
                                                     ),
                                                     child: Text(
-                                                      '${info['available']}人参加可能',
+                                                      '${info['available'] as int? ?? 0}人参加可能',
                                                       style: TextStyle(
                                                         fontSize: 12,
                                                         color: Colors.green,
@@ -619,7 +686,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                                     onTap: () => _showParticipantsDialog(
                                                       context, 
                                                       date, 
-                                                      info['members'] as List<dynamic>,
+                                                      (info['members'] as List<dynamic>? ?? []),
                                                       isDarkMode
                                                     ),
                                                     child: Container(
@@ -659,7 +726,12 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                           ],
                                         ),
                                       );
-                                    }),
+                                      } catch (e) {
+                                        // 日付パースエラーやデータ構造エラーの場合はスキップ
+                                        return const SizedBox.shrink();
+                                      }
+                                    })
+                                    .where((widget) => widget.runtimeType != SizedBox),
                               ],
                             ),
                           ),

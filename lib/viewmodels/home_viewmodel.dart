@@ -16,10 +16,12 @@ class HomeState with _$HomeState {
     @Default(false) bool isLoadingMotivation,
     @Default(false) bool isLoadingSchedule,
     @Default(false) bool isLoadingPractices,
+    @Default(false) bool isLoadingPastPractices,
     @Default(3.0) double currentMotivation,
     @Default([]) List<DateTime> nextPlayDates,
     @Default([]) List<ScheduleModel> popularDates,
     @Default([]) List<PracticeDecisionModel> pendingPractices,
+    @Default([]) List<PracticeDecisionModel> pastPractices,
     String? error,
   }) = _HomeState;
 }
@@ -45,6 +47,7 @@ class HomeViewModel extends StateNotifier<HomeState> {
       _loadCurrentMotivation(),
       _loadPopularDates(),
       _loadPendingPractices(),
+      _loadPastPractices(),
     ]);
     
     state = state.copyWith(isLoading: false);
@@ -119,6 +122,23 @@ class HomeViewModel extends StateNotifier<HomeState> {
     }
   }
 
+  Future<void> _loadPastPractices() async {
+    state = state.copyWith(isLoadingPastPractices: true);
+
+    try {
+      final practices = await _practiceService.getPastPractices();
+      state = state.copyWith(
+        pastPractices: practices,
+        isLoadingPastPractices: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: e.toString(),
+        isLoadingPastPractices: false,
+      );
+    }
+  }
+
   Future<void> decidePracticeDate(ScheduleModel schedule) async {
     try {
       await _scheduleService.decidePracticeDate(schedule);
@@ -133,6 +153,24 @@ class HomeViewModel extends StateNotifier<HomeState> {
     try {
       await _practiceService.respondToPractice(docId, response);
       await _loadPendingPractices();
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> updatePracticeMemo(String practiceId, String memo) async {
+    try {
+      await _practiceService.updatePracticeMemo(practiceId, memo);
+      await _loadPastPractices(); // 履歴を再読み込み
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> updateActualParticipants(String practiceId, List<String> participants) async {
+    try {
+      await _practiceService.updateActualParticipants(practiceId, participants);
+      await _loadPastPractices(); // 履歴を再読み込み
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }

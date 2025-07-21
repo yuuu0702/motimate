@@ -52,25 +52,8 @@ class ScheduleService {
       print('取得したスケジュール数: ${schedulesSnapshot.docs.length}');
       
       if (schedulesSnapshot.docs.isEmpty) {
-        print('スケジュールデータがありません。テストデータを作成します。');
-        await _createTestScheduleData();
-        
-        // テストデータ作成後に再取得
-        final retrySnapshot = await _firestore
-            .collection('schedules')
-            .get();
-        
-        final schedules = retrySnapshot.docs.map((doc) {
-          return ScheduleModel.fromFirestore(doc);
-        }).toList();
-        
-        // 決定済みの日程を除外
-        final availableSchedules = await _filterAvailableSchedules(schedules);
-        
-        // クライアント側でソート（memberCount降順）
-        availableSchedules.sort((a, b) => b.memberCount.compareTo(a.memberCount));
-        
-        return availableSchedules;
+        print('スケジュールデータがありません。');
+        return <ScheduleModel>[];
       }
 
       final schedules = schedulesSnapshot.docs.map((doc) {
@@ -89,7 +72,7 @@ class ScheduleService {
     }
   }
   
-  /// 決定済みの日程を除外する
+  /// 決定済みの日程と過去の日程を除外する
   Future<List<ScheduleModel>> _filterAvailableSchedules(List<ScheduleModel> schedules) async {
     try {
       // 決定済みの日程キーを取得
@@ -98,69 +81,38 @@ class ScheduleService {
           .get();
       
       final decidedDateKeys = practiceDecisionsSnapshot.docs
-          .map((doc) => (doc.data() as Map<String, dynamic>)['dateKey'] as String?)
+          .map((doc) => doc.data()['dateKey'] as String?)
           .where((dateKey) => dateKey != null)
-          .cast<String>()
+          .map((dateKey) => dateKey!)
           .toSet();
       
-      // 決定済みでない日程のみを返す
-      return schedules.where((schedule) => !decidedDateKeys.contains(schedule.id)).toList();
+      // 今日の日付を取得（時刻は除く）
+      final today = DateTime.now();
+      final todayOnly = DateTime(today.year, today.month, today.day);
+      
+      // 決定済みでない日程かつ今日以降の日程のみを返す
+      return schedules.where((schedule) {
+        // 決定済みチェック
+        if (decidedDateKeys.contains(schedule.id)) {
+          return false;
+        }
+        
+        // 過去の日付チェック
+        try {
+          final scheduleDate = DateTime.parse(schedule.id);
+          final scheduleDateOnly = DateTime(scheduleDate.year, scheduleDate.month, scheduleDate.day);
+          return !scheduleDateOnly.isBefore(todayOnly);
+        } catch (e) {
+          // 日付パースエラーの場合は除外
+          return false;
+        }
+      }).toList();
     } catch (e) {
       print('決定済み日程のフィルタリングエラー: $e');
       return schedules; // エラー時は全て返す
     }
   }
   
-  /// テスト用のスケジュールデータを作成
-  Future<void> _createTestScheduleData() async {
-    try {
-      final now = DateTime.now();
-      final batch = _firestore.batch();
-      
-      // 今週末の土曜日
-      final saturday = now.add(Duration(days: (6 - now.weekday) % 7 + 1));
-      // 来週末の日曜日
-      final sunday = now.add(Duration(days: (7 - now.weekday) % 7 + 8));
-      // 再来週の土曜日
-      final nextSaturday = saturday.add(const Duration(days: 7));
-      
-      // yyyy-MM-dd形式の日付キーを生成
-      String formatDateKey(DateTime date) {
-        return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      }
-      
-      final testSchedules = [
-        {
-          'dateKey': formatDateKey(saturday),
-          'members': ['user1', 'user2', 'user3', 'user4', 'user5', 'user6', 'user7', 'user8'],
-          'createdAt': FieldValue.serverTimestamp(),
-        },
-        {
-          'dateKey': formatDateKey(sunday),
-          'members': ['user1', 'user2', 'user3', 'user4', 'user5', 'user6'],
-          'createdAt': FieldValue.serverTimestamp(),
-        },
-        {
-          'dateKey': formatDateKey(nextSaturday),
-          'members': ['user1', 'user2', 'user3', 'user4', 'user5', 'user6', 'user7', 'user8', 'user9', 'user10'],
-          'createdAt': FieldValue.serverTimestamp(),
-        },
-      ];
-      
-      for (final schedule in testSchedules) {
-        // ドキュメントIDを日付キーとして使用
-        final docRef = _firestore.collection('schedules').doc(schedule['dateKey'] as String);
-        final scheduleData = Map<String, dynamic>.from(schedule);
-        scheduleData.remove('dateKey'); // ドキュメントIDとして使うので削除
-        batch.set(docRef, scheduleData);
-      }
-      
-      await batch.commit();
-      print('テストスケジュールデータを作成しました');
-    } catch (e) {
-      print('テストデータ作成エラー: $e');
-    }
-  }
 
   /// 日程を決定
   Future<void> decidePracticeDate(ScheduleModel schedule) async {

@@ -5,11 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/practice_decision_model.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../themes/app_theme.dart';
-import '../../core/constants/app_constants.dart';
 
 /// 日程決定カードWidget
 /// 
-/// 練習日程が決定された際にユーザーに参加/見送りの回答を求めるカード
+/// バスケ日程が決定された際にユーザーに参加/見送りの回答を求めるカード
 class PracticeDecisionCard extends StatelessWidget {
   const PracticeDecisionCard({
     super.key,
@@ -28,33 +27,47 @@ class PracticeDecisionCard extends StatelessWidget {
     final dayName = daysOfWeek[practice.practiceDate.weekday % 7];
     final user = FirebaseAuth.instance.currentUser;
     final userResponse = user != null ? practice.responses[user.uid] : null;
-
+    
+    // 当日かどうかの判定
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final practiceDay = DateTime(practice.practiceDate.year, practice.practiceDate.month, practice.practiceDate.day);
+    final isToday = today == practiceDay;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isToday ? 20 : 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor(isDarkMode),
-        borderRadius: BorderRadius.circular(12),
+        color: isToday 
+            ? const Color(0xFF667eea).withValues(alpha: 0.05)
+            : AppTheme.cardColor(isDarkMode),
+        borderRadius: BorderRadius.circular(isToday ? 16 : 12),
         border: Border.all(
-          color: userResponse == null
-              ? const Color(0xFFFB923C).withValues(alpha: 0.3)
-              : userResponse == 'join'
-                  ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                  : const Color(0xFFFF6B6B).withValues(alpha: 0.3),
-          width: 1,
+          color: isToday 
+              ? const Color(0xFF667eea).withValues(alpha: 0.6)
+              : userResponse == null
+                  ? const Color(0xFFFB923C).withValues(alpha: 0.3)
+                  : userResponse == 'join'
+                      ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                      : const Color(0xFFFF6B6B).withValues(alpha: 0.3),
+          width: isToday ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: isToday 
+                ? const Color(0xFF667eea).withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.05),
+            blurRadius: isToday ? 12 : 8,
+            offset: Offset(0, isToday ? 4 : 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSimpleHeader(dayName, userResponse),
+          if (isToday) _buildTodayBadge(),
+          if (isToday) const SizedBox(height: 12),
+          _buildSimpleHeader(dayName, userResponse, isToday),
           const SizedBox(height: 12),
           _buildActionButtons(userResponse),
         ],
@@ -62,32 +75,90 @@ class PracticeDecisionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSimpleHeader(String dayName, String? userResponse) {
+  Widget _buildTodayBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF667eea).withValues(alpha: 0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.today,
+            color: Colors.white,
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          const Text(
+            '今日のバスケ',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimpleHeader(String dayName, String? userResponse, bool isToday) {
     return Row(
       children: [
         // 日付表示
         Container(
-          width: 60,
-          height: 60,
+          width: isToday ? 70 : 60,
+          height: isToday ? 70 : 60,
           decoration: BoxDecoration(
-            color: const Color(0xFF667eea),
-            borderRadius: BorderRadius.circular(12),
+            color: isToday 
+                ? const Color(0xFF667eea)
+                : const Color(0xFF667eea),
+            borderRadius: BorderRadius.circular(isToday ? 16 : 12),
+            boxShadow: isToday ? [
+              BoxShadow(
+                color: const Color(0xFF667eea).withValues(alpha: 0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ] : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '${practice.practiceDate.day}',
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: isToday ? 24 : 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               Text(
                 dayName,
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: isToday ? 14 : 12,
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
@@ -104,11 +175,13 @@ class PracticeDecisionCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    '日程決定',
+                    isToday ? '今日のバスケ決定' : '日程決定',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: isToday ? 18 : 16,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryText(isDarkMode),
+                      color: isToday 
+                          ? const Color(0xFF667eea)
+                          : AppTheme.primaryText(isDarkMode),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -117,7 +190,7 @@ class PracticeDecisionCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${practice.practiceDate.month}月${practice.practiceDate.day}日 (${dayName})',
+                '${practice.practiceDate.month}月${practice.practiceDate.day}日 ($dayName)',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.secondaryText(isDarkMode),
@@ -584,73 +657,4 @@ class PracticeDecisionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantSection(
-    String title,
-    List<String> userIds,
-    Color color,
-    IconData icon,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: color.withValues(alpha: 0.2),
-              width: 1,
-            ),
-          ),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: userIds.map((userId) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _getUserDisplayName(userId),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.primaryText(isDarkMode),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _getUserDisplayName(String userId) {
-    // 実際の実装では、Firestoreからユーザー名を取得する
-    // 今は簡易的にuserIdを表示
-    if (userId.startsWith('user')) {
-      return 'ユーザー${userId.substring(4)}';
-    }
-    return userId.substring(0, 8); // UIDの最初の8文字を表示
-  }
 }

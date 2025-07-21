@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/practice_decision_model.dart';
 
-/// 練習管理サービス
+/// バスケ管理サービス
 /// 
-/// 練習決定への回答、未回答練習の取得を担当
+/// バスケ決定への回答、未回答バスケの取得を担当
 class PracticeService {
   PracticeService({
     FirebaseAuth? auth,
@@ -16,39 +16,26 @@ class PracticeService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
 
-  /// 未回答の練習決定を取得
+  /// 未回答のバスケ決定を取得（現在・未来のもののみ）
   Future<List<PracticeDecisionModel>> getPendingPractices() async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('ユーザーがログインしていません');
 
     try {
-      // 全ての練習決定を取得
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      // 今日以降の練習決定を取得
       final snapshot = await _firestore
           .collection('practice_decisions')
+          .where('practiceDate', isGreaterThanOrEqualTo: Timestamp.fromDate(today))
           .get();
 
       print('取得した練習決定数: ${snapshot.docs.length}');
       
       if (snapshot.docs.isEmpty) {
-        print('練習決定データがありません。テストデータを作成します。');
-        await _createTestPracticeData();
-        
-        // テストデータ作成後に再取得
-        final retrySnapshot = await _firestore
-            .collection('practice_decisions')
-            .get();
-        
-        final practices = <PracticeDecisionModel>[];
-        
-        for (final doc in retrySnapshot.docs) {
-          final practice = PracticeDecisionModel.fromFirestore(doc);
-          practices.add(practice);
-        }
-        
-        // クライアント側でソート（decidedAt降順）
-        practices.sort((a, b) => b.decidedAt.compareTo(a.decidedAt));
-        
-        return practices;
+        print('練習決定データがありません。');
+        return <PracticeDecisionModel>[];
       }
 
       final practices = <PracticeDecisionModel>[];
@@ -66,45 +53,38 @@ class PracticeService {
       throw Exception('練習一覧の取得に失敗しました: $e');
     }
   }
-  
-  /// テスト用の練習決定データを作成
-  Future<void> _createTestPracticeData() async {
+
+  /// 過去のバスケ決定を取得（履歴用）
+  Future<List<PracticeDecisionModel>> getPastPractices() async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+
     try {
-      final user = _auth.currentUser;
-      if (user == null) return;
-      
       final now = DateTime.now();
-      final batch = _firestore.batch();
+      final today = DateTime(now.year, now.month, now.day);
       
-      // 今週末の土曜日の練習決定
-      final practiceDate = now.add(Duration(days: (6 - now.weekday) % 7 + 1));
+      // 昨日以前の練習決定を取得
+      final snapshot = await _firestore
+          .collection('practice_decisions')
+          .where('practiceDate', isLessThan: Timestamp.fromDate(today))
+          .orderBy('practiceDate', descending: true)
+          .limit(10) // 最新10件のみ
+          .get();
+
+      final practices = <PracticeDecisionModel>[];
       
-      // yyyy-MM-dd形式の日付キーを生成
-      String formatDateKey(DateTime date) {
-        return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      for (final doc in snapshot.docs) {
+        final practice = PracticeDecisionModel.fromFirestore(doc);
+        practices.add(practice);
       }
-      
-      final testPractice = {
-        'decidedBy': user.uid,
-        'decidedAt': FieldValue.serverTimestamp(),
-        'practiceDate': Timestamp.fromDate(practiceDate),
-        'dateKey': formatDateKey(practiceDate),
-        'availableMembers': ['user1', 'user2', 'user3', 'user4', 'user5'],
-        'status': 'pending',
-        'responses': <String, dynamic>{},
-      };
-      
-      final docRef = _firestore.collection('practice_decisions').doc();
-      batch.set(docRef, testPractice);
-      
-      await batch.commit();
-      print('テスト練習決定データを作成しました');
+
+      return practices;
     } catch (e) {
-      print('テスト練習決定データ作成エラー: $e');
+      throw Exception('過去の練習一覧の取得に失敗しました: $e');
     }
   }
 
-  /// 練習への参加回答を送信
+  /// バスケへの参加回答を送信
   Future<void> respondToPractice(String practiceId, String response) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('ユーザーがログインしていません');
@@ -124,6 +104,40 @@ class PracticeService {
       // 回答通知は将来的に実装予定
     } catch (e) {
       throw Exception('回答の送信に失敗しました: $e');
+    }
+  }
+
+  /// バスケにメモを追加
+  Future<void> updatePracticeMemo(String practiceId, String memo) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+
+    try {
+      await _firestore
+          .collection('practice_decisions')
+          .doc(practiceId)
+          .update({
+        'memo': memo.trim().isEmpty ? null : memo.trim(),
+      });
+    } catch (e) {
+      throw Exception('メモの更新に失敗しました: $e');
+    }
+  }
+
+  /// 実際の参加者を更新
+  Future<void> updateActualParticipants(String practiceId, List<String> participants) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('ユーザーがログインしていません');
+
+    try {
+      await _firestore
+          .collection('practice_decisions')
+          .doc(practiceId)
+          .update({
+        'actualParticipants': participants,
+      });
+    } catch (e) {
+      throw Exception('参加者の更新に失敗しました: $e');
     }
   }
 }

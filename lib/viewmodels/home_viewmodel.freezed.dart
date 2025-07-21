@@ -21,10 +21,13 @@ mixin _$HomeState {
   bool get isLoadingMotivation => throw _privateConstructorUsedError;
   bool get isLoadingSchedule => throw _privateConstructorUsedError;
   bool get isLoadingPractices => throw _privateConstructorUsedError;
+  bool get isLoadingPastPractices => throw _privateConstructorUsedError;
   double get currentMotivation => throw _privateConstructorUsedError;
-  List<DateTime?> get nextPlayDates => throw _privateConstructorUsedError;
+  List<DateTime> get nextPlayDates => throw _privateConstructorUsedError;
   List<ScheduleModel> get popularDates => throw _privateConstructorUsedError;
   List<PracticeDecisionModel> get pendingPractices =>
+      throw _privateConstructorUsedError;
+  List<PracticeDecisionModel> get pastPractices =>
       throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
 
@@ -45,10 +48,12 @@ abstract class $HomeStateCopyWith<$Res> {
     bool isLoadingMotivation,
     bool isLoadingSchedule,
     bool isLoadingPractices,
+    bool isLoadingPastPractices,
     double currentMotivation,
-    List<DateTime?> nextPlayDates,
+    List<DateTime> nextPlayDates,
     List<ScheduleModel> popularDates,
     List<PracticeDecisionModel> pendingPractices,
+    List<PracticeDecisionModel> pastPractices,
     String? error,
   });
 }
@@ -72,10 +77,12 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
     Object? isLoadingMotivation = null,
     Object? isLoadingSchedule = null,
     Object? isLoadingPractices = null,
+    Object? isLoadingPastPractices = null,
     Object? currentMotivation = null,
     Object? nextPlayDates = null,
     Object? popularDates = null,
     Object? pendingPractices = null,
+    Object? pastPractices = null,
     Object? error = freezed,
   }) {
     return _then(
@@ -96,6 +103,10 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
                 ? _value.isLoadingPractices
                 : isLoadingPractices // ignore: cast_nullable_to_non_nullable
                       as bool,
+            isLoadingPastPractices: null == isLoadingPastPractices
+                ? _value.isLoadingPastPractices
+                : isLoadingPastPractices // ignore: cast_nullable_to_non_nullable
+                      as bool,
             currentMotivation: null == currentMotivation
                 ? _value.currentMotivation
                 : currentMotivation // ignore: cast_nullable_to_non_nullable
@@ -103,7 +114,7 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
             nextPlayDates: null == nextPlayDates
                 ? _value.nextPlayDates
                 : nextPlayDates // ignore: cast_nullable_to_non_nullable
-                      as List<DateTime?>,
+                      as List<DateTime>,
             popularDates: null == popularDates
                 ? _value.popularDates
                 : popularDates // ignore: cast_nullable_to_non_nullable
@@ -111,6 +122,10 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
             pendingPractices: null == pendingPractices
                 ? _value.pendingPractices
                 : pendingPractices // ignore: cast_nullable_to_non_nullable
+                      as List<PracticeDecisionModel>,
+            pastPractices: null == pastPractices
+                ? _value.pastPractices
+                : pastPractices // ignore: cast_nullable_to_non_nullable
                       as List<PracticeDecisionModel>,
             error: freezed == error
                 ? _value.error
@@ -136,10 +151,12 @@ abstract class _$$HomeStateImplCopyWith<$Res>
     bool isLoadingMotivation,
     bool isLoadingSchedule,
     bool isLoadingPractices,
+    bool isLoadingPastPractices,
     double currentMotivation,
-    List<DateTime?> nextPlayDates,
+    List<DateTime> nextPlayDates,
     List<ScheduleModel> popularDates,
     List<PracticeDecisionModel> pendingPractices,
+    List<PracticeDecisionModel> pastPractices,
     String? error,
   });
 }
@@ -162,10 +179,12 @@ class __$$HomeStateImplCopyWithImpl<$Res>
     Object? isLoadingMotivation = null,
     Object? isLoadingSchedule = null,
     Object? isLoadingPractices = null,
+    Object? isLoadingPastPractices = null,
     Object? currentMotivation = null,
     Object? nextPlayDates = null,
     Object? popularDates = null,
     Object? pendingPractices = null,
+    Object? pastPractices = null,
     Object? error = freezed,
   }) {
     return _then(
@@ -186,6 +205,10 @@ class __$$HomeStateImplCopyWithImpl<$Res>
             ? _value.isLoadingPractices
             : isLoadingPractices // ignore: cast_nullable_to_non_nullable
                   as bool,
+        isLoadingPastPractices: null == isLoadingPastPractices
+            ? _value.isLoadingPastPractices
+            : isLoadingPastPractices // ignore: cast_nullable_to_non_nullable
+                  as bool,
         currentMotivation: null == currentMotivation
             ? _value.currentMotivation
             : currentMotivation // ignore: cast_nullable_to_non_nullable
@@ -193,7 +216,7 @@ class __$$HomeStateImplCopyWithImpl<$Res>
         nextPlayDates: null == nextPlayDates
             ? _value._nextPlayDates
             : nextPlayDates // ignore: cast_nullable_to_non_nullable
-                  as List<DateTime?>,
+                  as List<DateTime>,
         popularDates: null == popularDates
             ? _value._popularDates
             : popularDates // ignore: cast_nullable_to_non_nullable
@@ -201,6 +224,10 @@ class __$$HomeStateImplCopyWithImpl<$Res>
         pendingPractices: null == pendingPractices
             ? _value._pendingPractices
             : pendingPractices // ignore: cast_nullable_to_non_nullable
+                  as List<PracticeDecisionModel>,
+        pastPractices: null == pastPractices
+            ? _value._pastPractices
+            : pastPractices // ignore: cast_nullable_to_non_nullable
                   as List<PracticeDecisionModel>,
         error: freezed == error
             ? _value.error
@@ -219,14 +246,17 @@ class _$HomeStateImpl implements _HomeState {
     this.isLoadingMotivation = false,
     this.isLoadingSchedule = false,
     this.isLoadingPractices = false,
+    this.isLoadingPastPractices = false,
     this.currentMotivation = 3.0,
-    final List<DateTime?> nextPlayDates = const [],
+    final List<DateTime> nextPlayDates = const [],
     final List<ScheduleModel> popularDates = const [],
     final List<PracticeDecisionModel> pendingPractices = const [],
+    final List<PracticeDecisionModel> pastPractices = const [],
     this.error,
   }) : _nextPlayDates = nextPlayDates,
        _popularDates = popularDates,
-       _pendingPractices = pendingPractices;
+       _pendingPractices = pendingPractices,
+       _pastPractices = pastPractices;
 
   @override
   @JsonKey()
@@ -242,11 +272,14 @@ class _$HomeStateImpl implements _HomeState {
   final bool isLoadingPractices;
   @override
   @JsonKey()
-  final double currentMotivation;
-  final List<DateTime?> _nextPlayDates;
+  final bool isLoadingPastPractices;
   @override
   @JsonKey()
-  List<DateTime?> get nextPlayDates {
+  final double currentMotivation;
+  final List<DateTime> _nextPlayDates;
+  @override
+  @JsonKey()
+  List<DateTime> get nextPlayDates {
     if (_nextPlayDates is EqualUnmodifiableListView) return _nextPlayDates;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_nextPlayDates);
@@ -271,12 +304,21 @@ class _$HomeStateImpl implements _HomeState {
     return EqualUnmodifiableListView(_pendingPractices);
   }
 
+  final List<PracticeDecisionModel> _pastPractices;
+  @override
+  @JsonKey()
+  List<PracticeDecisionModel> get pastPractices {
+    if (_pastPractices is EqualUnmodifiableListView) return _pastPractices;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_pastPractices);
+  }
+
   @override
   final String? error;
 
   @override
   String toString() {
-    return 'HomeState(isLoading: $isLoading, isLoadingMotivation: $isLoadingMotivation, isLoadingSchedule: $isLoadingSchedule, isLoadingPractices: $isLoadingPractices, currentMotivation: $currentMotivation, nextPlayDates: $nextPlayDates, popularDates: $popularDates, pendingPractices: $pendingPractices, error: $error)';
+    return 'HomeState(isLoading: $isLoading, isLoadingMotivation: $isLoadingMotivation, isLoadingSchedule: $isLoadingSchedule, isLoadingPractices: $isLoadingPractices, isLoadingPastPractices: $isLoadingPastPractices, currentMotivation: $currentMotivation, nextPlayDates: $nextPlayDates, popularDates: $popularDates, pendingPractices: $pendingPractices, pastPractices: $pastPractices, error: $error)';
   }
 
   @override
@@ -292,6 +334,8 @@ class _$HomeStateImpl implements _HomeState {
                 other.isLoadingSchedule == isLoadingSchedule) &&
             (identical(other.isLoadingPractices, isLoadingPractices) ||
                 other.isLoadingPractices == isLoadingPractices) &&
+            (identical(other.isLoadingPastPractices, isLoadingPastPractices) ||
+                other.isLoadingPastPractices == isLoadingPastPractices) &&
             (identical(other.currentMotivation, currentMotivation) ||
                 other.currentMotivation == currentMotivation) &&
             const DeepCollectionEquality().equals(
@@ -306,6 +350,10 @@ class _$HomeStateImpl implements _HomeState {
               other._pendingPractices,
               _pendingPractices,
             ) &&
+            const DeepCollectionEquality().equals(
+              other._pastPractices,
+              _pastPractices,
+            ) &&
             (identical(other.error, error) || other.error == error));
   }
 
@@ -316,10 +364,12 @@ class _$HomeStateImpl implements _HomeState {
     isLoadingMotivation,
     isLoadingSchedule,
     isLoadingPractices,
+    isLoadingPastPractices,
     currentMotivation,
     const DeepCollectionEquality().hash(_nextPlayDates),
     const DeepCollectionEquality().hash(_popularDates),
     const DeepCollectionEquality().hash(_pendingPractices),
+    const DeepCollectionEquality().hash(_pastPractices),
     error,
   );
 
@@ -338,10 +388,12 @@ abstract class _HomeState implements HomeState {
     final bool isLoadingMotivation,
     final bool isLoadingSchedule,
     final bool isLoadingPractices,
+    final bool isLoadingPastPractices,
     final double currentMotivation,
-    final List<DateTime?> nextPlayDates,
+    final List<DateTime> nextPlayDates,
     final List<ScheduleModel> popularDates,
     final List<PracticeDecisionModel> pendingPractices,
+    final List<PracticeDecisionModel> pastPractices,
     final String? error,
   }) = _$HomeStateImpl;
 
@@ -354,13 +406,17 @@ abstract class _HomeState implements HomeState {
   @override
   bool get isLoadingPractices;
   @override
+  bool get isLoadingPastPractices;
+  @override
   double get currentMotivation;
   @override
-  List<DateTime?> get nextPlayDates;
+  List<DateTime> get nextPlayDates;
   @override
   List<ScheduleModel> get popularDates;
   @override
   List<PracticeDecisionModel> get pendingPractices;
+  @override
+  List<PracticeDecisionModel> get pastPractices;
   @override
   String? get error;
 

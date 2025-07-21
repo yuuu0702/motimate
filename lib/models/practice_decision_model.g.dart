@@ -23,6 +23,12 @@ _$PracticeDecisionModelImpl _$$PracticeDecisionModelImplFromJson(
         (k, e) => MapEntry(k, e as String),
       ) ??
       const <String, String>{},
+  memo: json['memo'] as String?,
+  actualParticipants:
+      (json['actualParticipants'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const <String>[],
 );
 
 Map<String, dynamic> _$$PracticeDecisionModelImplToJson(
@@ -36,4 +42,6 @@ Map<String, dynamic> _$$PracticeDecisionModelImplToJson(
   'availableMembers': instance.availableMembers,
   'status': instance.status,
   'responses': instance.responses,
+  'memo': instance.memo,
+  'actualParticipants': instance.actualParticipants,
 };

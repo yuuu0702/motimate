@@ -202,6 +202,8 @@ class HomeScreen extends HookConsumerWidget {
                     ],
                   ),
                   const Spacer(),
+                  _buildHistoryButton(context),
+                  const SizedBox(width: 8),
                   _buildNotificationBell(context, ref),
                 ],
               ),
@@ -249,12 +251,29 @@ class HomeScreen extends HookConsumerWidget {
                   isDarkMode: isDarkMode,
                 ),
 
+
                 // チーム全体のモチベーションとTOP3表示セクション
                 _buildTeamMotivationSection(isDarkMode),
               ]),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        context.go(AppRoutes.basketballHistory);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: Icon(
+          Icons.history,
+          size: 24,
+          color: Theme.of(context).appBarTheme.foregroundColor,
+        ),
       ),
     );
   }
@@ -658,4 +677,5 @@ class HomeScreen extends HookConsumerWidget {
       },
     );
   }
+
 }
