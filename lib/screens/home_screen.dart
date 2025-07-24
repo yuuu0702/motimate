@@ -212,7 +212,7 @@ class HomeScreen extends HookConsumerWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [],
+                    colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
                   ),
                 ),
               ),

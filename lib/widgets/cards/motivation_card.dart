@@ -78,15 +78,16 @@ class MotivationCard extends StatelessWidget {
   }
 
   Widget _buildCurrentMotivationDisplay() {
-    final currentLevel = motivationLevels[state.currentMotivation.round() - 1];
+    final index = (state.currentMotivation.round() - 1).clamp(0, motivationLevels.length - 1);
+    final currentLevel = motivationLevels[index];
     
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(currentLevel['color'][0]),
-            Color(currentLevel['color'][1]),
+            Color(currentLevel['color'][0] as int),
+            Color(currentLevel['color'][1] as int),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
@@ -160,16 +161,17 @@ class MotivationCard extends StatelessWidget {
   }
 
   Widget _buildSlider(BuildContext context) {
-    final currentLevel = motivationLevels[state.currentMotivation.round() - 1];
+    final index = (state.currentMotivation.round() - 1).clamp(0, motivationLevels.length - 1);
+    final currentLevel = motivationLevels[index];
     
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
-        activeTrackColor: Color(currentLevel['color'][0]),
+        activeTrackColor: Color(currentLevel['color'][0] as int),
         inactiveTrackColor: isDarkMode 
             ? const Color(0xFF4B5563) 
             : const Color(0xFFE2E8F0),
-        thumbColor: Color(currentLevel['color'][1]),
-        overlayColor: Color(currentLevel['color'][0]).withValues(alpha: 0.2),
+        thumbColor: Color(currentLevel['color'][1] as int),
+        overlayColor: Color(currentLevel['color'][0] as int).withValues(alpha: 0.2),
         thumbShape: const RoundSliderThumbShape(
           enabledThumbRadius: 10,
         ),
