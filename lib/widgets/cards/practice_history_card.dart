@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../models/practice_decision_model.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../themes/app_theme.dart';
+import '../../providers/providers.dart';
 
 /// バスケ履歴カードWidget
 /// 
 /// 過去のバスケ日程の履歴を表示し、メモの追加・編集機能を提供
-class PracticeHistoryCard extends StatelessWidget {
+class PracticeHistoryCard extends ConsumerWidget {
   const PracticeHistoryCard({
     super.key,
     required this.practice,
@@ -22,7 +24,7 @@ class PracticeHistoryCard extends StatelessWidget {
   final bool isDarkMode;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
     final dayName = daysOfWeek[practice.practiceDate.weekday % 7];
     final user = FirebaseAuth.instance.currentUser;
@@ -51,7 +53,7 @@ class PracticeHistoryCard extends StatelessWidget {
         children: [
           _buildHistoryHeader(dayName, userResponse),
           const SizedBox(height: 12),
-          _buildParticipantsInfo(),
+          _buildParticipantsInfo(context, ref),
           const SizedBox(height: 8),
           _buildMemoSection(),
         ],
@@ -148,7 +150,7 @@ class PracticeHistoryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantsInfo() {
+  Widget _buildParticipantsInfo(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -181,12 +183,11 @@ class PracticeHistoryCard extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          Builder(
-            builder: (context) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onTap: () => _showParticipantsDialog(context),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () => _showParticipantsDialog(context, ref),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -219,8 +220,8 @@ class PracticeHistoryCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => _showParticipantsEditDialog(context),
+              GestureDetector(
+                onTap: () => _showParticipantsEditDialog(context, ref),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -254,7 +255,6 @@ class PracticeHistoryCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
         ],
       ),
     );
@@ -474,7 +474,7 @@ class PracticeHistoryCard extends StatelessWidget {
     );
   }
 
-  void _showParticipantsEditDialog(BuildContext context) {
+  void _showParticipantsEditDialog(BuildContext context, WidgetRef ref) {
     final TextEditingController searchController = TextEditingController();
     final ValueNotifier<List<String>> selectedParticipants = ValueNotifier(
       List<String>.from(practice.actualParticipants),
@@ -714,7 +714,7 @@ class PracticeHistoryCard extends StatelessWidget {
                                           ),
                                         )
                                       : FutureBuilder<Map<String, String>>(
-                                          future: _getUserNames(participants),
+                                          future: _getUserNamesFromRef(participants, ref),
                                           builder: (context, snapshot) {
                                             final userNames = snapshot.data ?? {};
                                             
@@ -829,7 +829,7 @@ class PracticeHistoryCard extends StatelessWidget {
     );
   }
 
-  void _showParticipantsDialog(BuildContext context) {
+  void _showParticipantsDialog(BuildContext context, WidgetRef ref) {
     // 実際の参加者と回答状況を組み合わせて分類
     final actualParticipants = practice.actualParticipants;
     final joinedUsers = <String>[];
@@ -854,7 +854,7 @@ class PracticeHistoryCard extends StatelessWidget {
       context: context,
       builder: (BuildContext dialogContext) {
         return FutureBuilder<Map<String, String>>(
-          future: _getUserNames([...joinedUsers, ...skippedUsers, ...noResponseUsers]),
+          future: _getUserNamesFromRef([...joinedUsers, ...skippedUsers, ...noResponseUsers], ref),
           builder: (context, snapshot) {
             final userNames = snapshot.data ?? {};
             
@@ -984,6 +984,18 @@ class PracticeHistoryCard extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<Map<String, String>> _getUserNamesFromRef(List<String> userIds, WidgetRef ref) async {
+    if (userIds.isEmpty) return {};
+    
+    try {
+      final userCacheService = ref.read(userCacheServiceProvider);
+      return await userCacheService.getUserNames(userIds);
+    } catch (e) {
+      // エラー時のフォールバック - 直接Firestoreから取得
+      return await _getUserNames(userIds);
+    }
   }
 
   Future<Map<String, String>> _getUserNames(List<String> userIds) async {

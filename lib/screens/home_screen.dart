@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +11,7 @@ import '../routing/app_router.dart';
 import '../widgets/cards/practice_decision_card.dart';
 import '../widgets/cards/motivation_card.dart';
 import '../widgets/cards/popular_dates_card.dart';
+import '../widgets/sections/team_motivation_section.dart';
 
 class HomeScreen extends HookConsumerWidget {
   const HomeScreen({super.key});
@@ -188,7 +188,7 @@ class HomeScreen extends HookConsumerWidget {
                     children: [
                       Icon(
                         Icons.sports_basketball_outlined,
-                        color: Theme.of(context).appBarTheme.foregroundColor,
+                        color: AppTheme.primaryText(isDarkMode),
                         size: 20,
                       ),
                       const SizedBox(width: 8),
@@ -196,23 +196,31 @@ class HomeScreen extends HookConsumerWidget {
                         'motimate',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).appBarTheme.foregroundColor,
+                          color: AppTheme.primaryText(isDarkMode),
                         ),
                       ),
                     ],
                   ),
                   const Spacer(),
-                  _buildHistoryButton(context),
+                  _buildHistoryButton(context, isDarkMode),
                   const SizedBox(width: 8),
-                  _buildNotificationBell(context, ref),
+                  _buildNotificationBell(context, ref, isDarkMode),
                 ],
               ),
               background: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [],
+                    colors: isDarkMode 
+                        ? [
+                            const Color(0xFF1E293B),
+                            const Color(0xFF0F172A),
+                          ]
+                        : [
+                            const Color(0xFFF8FAFC),
+                            const Color(0xFFE2E8F0),
+                          ],
                   ),
                 ),
               ),
@@ -253,7 +261,7 @@ class HomeScreen extends HookConsumerWidget {
 
 
                 // チーム全体のモチベーションとTOP3表示セクション
-                _buildTeamMotivationSection(isDarkMode),
+                const TeamMotivationSection(),
               ]),
             ),
           ),
@@ -262,7 +270,7 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildHistoryButton(BuildContext context) {
+  Widget _buildHistoryButton(BuildContext context, bool isDarkMode) {
     return GestureDetector(
       onTap: () {
         context.go(AppRoutes.basketballHistory);
@@ -272,28 +280,30 @@ class HomeScreen extends HookConsumerWidget {
         child: Icon(
           Icons.history,
           size: 24,
-          color: Theme.of(context).appBarTheme.foregroundColor,
+          color: AppTheme.primaryText(isDarkMode),
         ),
       ),
     );
   }
 
-  Widget _buildNotificationBell(BuildContext context, WidgetRef ref) {
+  Widget _buildNotificationBell(BuildContext context, WidgetRef ref, bool isDarkMode) {
     final unreadCountAsync = ref.watch(unreadNotificationCountProvider);
     
     return unreadCountAsync.when(
       loading: () => Container(
         padding: const EdgeInsets.all(8),
-        child: const Icon(
+        child: Icon(
           Icons.notifications_outlined,
           size: 24,
+          color: AppTheme.primaryText(isDarkMode),
         ),
       ),
       error: (error, stackTrace) => Container(
         padding: const EdgeInsets.all(8),
-        child: const Icon(
+        child: Icon(
           Icons.notifications_outlined,
           size: 24,
+          color: AppTheme.primaryText(isDarkMode),
         ),
       ),
       data: (unreadCount) => GestureDetector(
@@ -304,9 +314,10 @@ class HomeScreen extends HookConsumerWidget {
           padding: const EdgeInsets.all(8),
           child: Stack(
             children: [
-              const Icon(
+              Icon(
                 Icons.notifications_outlined,
                 size: 24,
+                color: AppTheme.primaryText(isDarkMode),
               ),
               if (unreadCount > 0)
                 Positioned(
@@ -393,289 +404,5 @@ class HomeScreen extends HookConsumerWidget {
 
 
 
-  Widget _buildTeamMotivationSection(bool isDarkMode) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('users')
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          return Center(child: Text('エラー: ${snapshot.error}'));
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('まだモチベーションが登録されていません。'));
-        }
-
-        final List<Map<String, dynamic>> allMotivations = [];
-        for (var doc in snapshot.data!.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          if (data.containsKey('latestMotivationLevel') &&
-              data.containsKey('latestMotivationTimestamp')) {
-            allMotivations.add({
-              'userId': doc.id,
-              'displayName':
-                  data['displayName'] ??
-                  data['username'] ??
-                  'Unknown',
-              'username': data['username'] ?? '',
-              'department': data['department'] ?? '',
-              'group': data['group'] ?? '',
-              'level': data['latestMotivationLevel'],
-              'comment': data['latestMotivationComment'] ?? '',
-              'timestamp': data['latestMotivationTimestamp'],
-            });
-          }
-        }
-
-        if (allMotivations.isEmpty) {
-          return const Center(child: Text('まだモチベーションが登録されていません。'));
-        }
-
-        // Calculate average motivation
-        double totalMotivation = 0;
-        for (var m in allMotivations) {
-          totalMotivation += m['level'];
-        }
-        final averageMotivation = totalMotivation / allMotivations.length;
-
-        // Get top 3 motivations (sorted by level, then by timestamp)
-        allMotivations.sort((a, b) {
-          int levelComparison = b['level'].compareTo(a['level']);
-          if (levelComparison != 0) return levelComparison;
-          return (b['timestamp'] as Timestamp).compareTo(
-            a['timestamp'] as Timestamp,
-          );
-        });
-        final top3Motivations = allMotivations.take(3).toList();
-
-        return Column(
-          children: [
-            // チーム平均モチベーション
-            Container(
-              margin: const EdgeInsets.only(bottom: 20),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardColor(isDarkMode),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF667eea).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.trending_up_rounded,
-                          color: Color(0xFF667eea),
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'チーム平均やる気',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.secondaryText(isDarkMode),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        averageMotivation.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF667eea),
-                        ),
-                      ),
-                      Text(
-                        ' / 5.0',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: AppTheme.tertiaryText(isDarkMode),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // TOP3 セクション
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardColor(isDarkMode),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFB923C).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.emoji_events_rounded,
-                          color: Color(0xFFFB923C),
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'やる気ランキング TOP3',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryText(isDarkMode),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  ...top3Motivations.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final motivation = entry.value;
-                    final rankColors = [
-                      const Color(0xFFFFD700), // Gold
-                      const Color(0xFFC0C0C0), // Silver
-                      const Color(0xFFCD7F32), // Bronze
-                    ];
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.containerBackground(isDarkMode),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: rankColors[index].withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: rankColors[index],
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${index + 1}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  motivation['displayName'] ?? 'Unknown User',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.primaryText(isDarkMode),
-                                  ),
-                                ),
-                                if (motivation['department']?.isNotEmpty == true ||
-                                    motivation['group']?.isNotEmpty == true)
-                                  Text(
-                                    [
-                                          motivation['department'],
-                                          motivation['group'],
-                                        ]
-                                        .where((s) => s?.isNotEmpty == true)
-                                        .join(' / '),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: AppTheme.tertiaryText(isDarkMode),
-                                    ),
-                                  ),
-                                if (motivation['comment'] != null &&
-                                    motivation['comment'].isNotEmpty)
-                                  Text(
-                                    motivation['comment'],
-                                    style: TextStyle(
-                                      color: AppTheme.tertiaryText(isDarkMode),
-                                      fontSize: 12,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF667eea).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              '${motivation['level']}',
-                              style: const TextStyle(
-                                color: Color(0xFF667eea),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
 }
