@@ -2,15 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../themes/app_theme.dart';
+import '../providers/providers.dart';
 
-class FeedbackScreen extends StatefulWidget {
+class FeedbackScreen extends HookConsumerWidget {
   const FeedbackScreen({super.key});
 
   @override
-  State<FeedbackScreen> createState() => _FeedbackScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(themeProvider);
+    
+    return _FeedbackScreenContent(isDarkMode: isDarkMode);
+  }
 }
 
-class _FeedbackScreenState extends State<FeedbackScreen> {
+class _FeedbackScreenContent extends StatefulWidget {
+  const _FeedbackScreenContent({required this.isDarkMode});
+  
+  final bool isDarkMode;
+
+  @override
+  State<_FeedbackScreenContent> createState() => _FeedbackScreenContentState();
+}
+
+class _FeedbackScreenContentState extends State<_FeedbackScreenContent> {
   final _feedbackController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
@@ -32,10 +48,16 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppTheme.scaffoldBackground(widget.isDarkMode),
       appBar: AppBar(
-        title: const Text('フィードバック'),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        title: Text(
+          'フィードバック',
+          style: TextStyle(
+            color: AppTheme.primaryText(widget.isDarkMode),
+          ),
+        ),
+        backgroundColor: AppTheme.cardColor(widget.isDarkMode),
+        foregroundColor: AppTheme.primaryText(widget.isDarkMode),
         elevation: 0,
       ),
       body: SingleChildScrollView(

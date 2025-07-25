@@ -2,28 +2,42 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/notification_model.dart';
+import '../themes/app_theme.dart';
+import '../providers/providers.dart';
 
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = ref.watch(themeProvider);
+    
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
       appBar: AppBar(
-        title: const Text('通知'),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        title: Text(
+          '通知',
+          style: TextStyle(
+            color: AppTheme.primaryText(isDarkMode),
+          ),
+        ),
+        backgroundColor: AppTheme.cardColor(isDarkMode),
+        foregroundColor: AppTheme.primaryText(isDarkMode),
         elevation: 0,
         actions: [
           IconButton(
             onPressed: _markAllAsRead,
-            icon: const Icon(Icons.done_all),
+            icon: Icon(
+              Icons.done_all,
+              color: AppTheme.primaryText(isDarkMode),
+            ),
             tooltip: 'すべて既読にする',
           ),
         ],
