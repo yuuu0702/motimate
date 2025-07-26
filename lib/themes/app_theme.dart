@@ -4,6 +4,7 @@ class AppTheme {
   static const String fontFamily = 'MPLUSRounded1c';
   
   static const Color primaryColor = Color(0xFF667eea);
+  static const Color accentColor = Color(0xFF667eea);
   static const Color lightScaffoldBackground = Color(0xFFF8FAFC);
   static const Color darkScaffoldBackground = Color(0xFF0F172A);
   static const Color lightCardBackground = Colors.white;
@@ -131,4 +132,7 @@ class AppTheme {
 
   static Color scaffoldBackground(bool isDarkMode) =>
       isDarkMode ? darkScaffoldBackground : lightScaffoldBackground;
+
+  static Color cardBackground(bool isDarkMode) =>
+      isDarkMode ? darkCardBackground : lightCardBackground;
 }

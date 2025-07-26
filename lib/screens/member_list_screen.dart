@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/providers.dart';
 import '../themes/app_theme.dart';
+import '../widgets/cards/member_card.dart';
 
-class MemberListScreen extends ConsumerWidget {
+enum SortOption {
+  name,
+  motivation,
+  lastUpdate,
+}
+
+class MemberListScreen extends HookConsumerWidget {
   const MemberListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(themeProvider);
+    final searchQuery = useState('');
+    final sortOption = useState(SortOption.name);
+    
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
       body: Container(
@@ -25,18 +36,94 @@ class MemberListScreen extends ConsumerWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Header
+              // Header with search
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: Column(
                   children: [
-                    const SizedBox(width: 16),
-                    Text(
-                      'メンバー一覧',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryText(isDarkMode),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'メンバー一覧',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryText(isDarkMode),
+                            ),
+                          ),
+                        ),
+                        PopupMenuButton<SortOption>(
+                          icon: Icon(
+                            Icons.sort,
+                            color: AppTheme.primaryText(isDarkMode),
+                          ),
+                          onSelected: (option) => sortOption.value = option,
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: SortOption.name,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.sort_by_alpha),
+                                  SizedBox(width: 8),
+                                  Text('名前順'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: SortOption.motivation,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.favorite),
+                                  SizedBox(width: 8),
+                                  Text('モチベーション順'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: SortOption.lastUpdate,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.access_time),
+                                  SizedBox(width: 8),
+                                  Text('更新順'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Search bar
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardBackground(isDarkMode),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        onChanged: (value) => searchQuery.value = value,
+                        style: TextStyle(color: AppTheme.primaryText(isDarkMode)),
+                        decoration: InputDecoration(
+                          hintText: 'メンバーを検索...',
+                          hintStyle: TextStyle(color: AppTheme.tertiaryText(isDarkMode)),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: AppTheme.tertiaryText(isDarkMode),
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -65,204 +152,97 @@ class MemberListScreen extends ConsumerWidget {
                     }
 
                     // Filter users who have completed profile setup
-                    final users = snapshot.data!.docs.where((doc) {
+                    var users = snapshot.data!.docs.where((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       return data['profileSetup'] == true;
                     }).toList();
 
+                    // Apply search filter
+                    if (searchQuery.value.isNotEmpty) {
+                      users = users.where((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final name = (data['displayName'] ?? data['username'] ?? '').toString().toLowerCase();
+                        final department = (data['department'] ?? '').toString().toLowerCase();
+                        final group = (data['group'] ?? '').toString().toLowerCase();
+                        final query = searchQuery.value.toLowerCase();
+                        
+                        return name.contains(query) || 
+                               department.contains(query) || 
+                               group.contains(query);
+                      }).toList();
+                    }
+
+                    // Apply sorting
+                    switch (sortOption.value) {
+                      case SortOption.name:
+                        users.sort((a, b) {
+                          final aData = a.data() as Map<String, dynamic>;
+                          final bData = b.data() as Map<String, dynamic>;
+                          final aName = aData['displayName'] ?? aData['username'] ?? '';
+                          final bName = bData['displayName'] ?? bData['username'] ?? '';
+                          return aName.toString().compareTo(bName.toString());
+                        });
+                        break;
+                      case SortOption.motivation:
+                        users.sort((a, b) {
+                          final aData = a.data() as Map<String, dynamic>;
+                          final bData = b.data() as Map<String, dynamic>;
+                          final aLevel = aData['latestMotivationLevel'] ?? 0;
+                          final bLevel = bData['latestMotivationLevel'] ?? 0;
+                          return bLevel.compareTo(aLevel); // Descending
+                        });
+                        break;
+                      case SortOption.lastUpdate:
+                        users.sort((a, b) {
+                          final aData = a.data() as Map<String, dynamic>;
+                          final bData = b.data() as Map<String, dynamic>;
+                          final aTime = aData['latestMotivationTimestamp'] as Timestamp?;
+                          final bTime = bData['latestMotivationTimestamp'] as Timestamp?;
+                          
+                          if (aTime == null && bTime == null) return 0;
+                          if (aTime == null) return 1;
+                          if (bTime == null) return -1;
+                          
+                          return bTime.compareTo(aTime); // Descending
+                        });
+                        break;
+                    }
+
                     if (users.isEmpty) {
-                      return const Center(child: Text('まだメンバー情報がありません。'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: AppTheme.tertiaryText(isDarkMode),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              searchQuery.value.isNotEmpty 
+                                  ? '検索結果が見つかりません'
+                                  : 'まだメンバー情報がありません。',
+                              style: TextStyle(
+                                color: AppTheme.tertiaryText(isDarkMode),
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.only(bottom: 16),
                       itemCount: users.length,
                       itemBuilder: (context, index) {
                         final userDoc = users[index];
                         final userData = userDoc.data() as Map<String, dynamic>;
-
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: Card(
-                            elevation: 8,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // User header
-                                  Row(
-                                    children: [
-                                      Container(
-                                        width: 48,
-                                        height: 48,
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              Color(0xFF667eea),
-                                              Color(0xFF764ba2),
-                                            ],
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.person,
-                                          color: Colors.white,
-                                          size: 24,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              userData['displayName'] ??
-                                                  userData['username'] ??
-                                                  'Unknown User',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.primaryText(isDarkMode),
-                                              ),
-                                            ),
-                                            Text(
-                                              userData['department']
-                                                              ?.isNotEmpty ==
-                                                          true ||
-                                                      userData['group']
-                                                              ?.isNotEmpty ==
-                                                          true
-                                                  ? [
-                                                          userData['department'],
-                                                          userData['group'],
-                                                        ]
-                                                        .where(
-                                                          (s) =>
-                                                              s?.isNotEmpty ==
-                                                              true,
-                                                        )
-                                                        .join(' / ')
-                                                  : 'メンバー',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: AppTheme.tertiaryText(isDarkMode),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // Motivation section
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.containerBackground(isDarkMode),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.sentiment_satisfied,
-                                              color: Color(0xFF667eea),
-                                              size: 20,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'モチベーション',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppTheme.secondaryText(isDarkMode),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          userData['latestMotivationLevel'] !=
-                                                  null
-                                              ? '${userData['latestMotivationLevel']}/5'
-                                              : '未登録',
-                                          style: TextStyle(
-                                            color: AppTheme.tertiaryText(isDarkMode),
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        if (userData['latestMotivationTimestamp'] !=
-                                            null)
-                                          Text(
-                                            '最終更新: ${_formatTimestamp(userData['latestMotivationTimestamp'] as Timestamp)}',
-                                            style: TextStyle(
-                                              color: AppTheme.tertiaryText(isDarkMode),
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 16),
-
-                                  // Bio section (if available)
-                                  if (userData['bio']?.isNotEmpty == true)
-                                    Container(
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.containerBackground(isDarkMode),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.chat_bubble_outline,
-                                                color: Color(0xFF667eea),
-                                                size: 20,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                '自己紹介',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppTheme.secondaryText(isDarkMode),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            userData['bio'],
-                                            style: TextStyle(
-                                              color: AppTheme.tertiaryText(isDarkMode),
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
+                        
+                        return MemberCard(
+                          userData: userData,
+                          isDarkMode: isDarkMode,
                         );
                       },
                     );
@@ -274,21 +254,5 @@ class MemberListScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _formatTimestamp(Timestamp timestamp) {
-    final date = timestamp.toDate();
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return '今日 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays == 1) {
-      return '昨日';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}日前';
-    } else {
-      return '${date.month}/${date.day}';
-    }
   }
 }
