@@ -332,43 +332,79 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_today,
-                                        color: Colors.blue,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        currentMonthText,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.primaryText(isDarkMode),
+                              Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Month display with icon
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            AppTheme.accentColor.withValues(alpha: 0.1),
+                                            AppTheme.accentColor.withValues(alpha: 0.05),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppTheme.accentColor.withValues(alpha: 0.2),
+                                          width: 1,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.arrow_back_ios, size: 20),
-                                        onPressed: currentDate.month == DateTime.now().month && currentDate.year == DateTime.now().year
-                                            ? null
-                                            : _goToPreviousMonth,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.accentColor.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Icon(
+                                              Icons.calendar_today,
+                                              color: AppTheme.accentColor,
+                                              size: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            currentMonthText,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.primaryText(isDarkMode),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                                        onPressed: currentDate.month == DateTime.now().month && currentDate.year == DateTime.now().year
-                                            ? _goToNextMonth
-                                            : null,
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                    
+                                    // Navigation buttons
+                                    Row(
+                                      children: [
+                                        _buildNavigationButton(
+                                          icon: Icons.arrow_back_ios_rounded,
+                                          onPressed: currentDate.month == DateTime.now().month && currentDate.year == DateTime.now().year
+                                              ? null
+                                              : _goToPreviousMonth,
+                                          tooltip: '前の月',
+                                          isDarkMode: isDarkMode,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        _buildNavigationButton(
+                                          icon: Icons.arrow_forward_ios_rounded,
+                                          onPressed: currentDate.month == DateTime.now().month && currentDate.year == DateTime.now().year
+                                              ? _goToNextMonth
+                                              : null,
+                                          tooltip: '次の月',
+                                          isDarkMode: isDarkMode,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -379,27 +415,50 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  // Legend
-                                  _buildLegendItem(
-                                    Colors.green,
-                                    '登録済み',
-                                    Icons.check_circle,
-                                    isDarkMode,
+                              // Compact Legend
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.containerBackground(isDarkMode).withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: AppTheme.tertiaryText(isDarkMode).withValues(alpha: 0.15),
+                                    width: 1,
                                   ),
-                                  const SizedBox(width: 16),
-                                  _buildLegendItem(
-                                    const Color(0xFF667eea),
-                                    '選択中',
-                                    null,
-                                    isDarkMode,
-                                  ),
-                                  const SizedBox(width: 16),
-                                  _buildLegendItem(Colors.orange, '他の人', null, isDarkMode),
-                                ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 10,
+                                      color: AppTheme.tertiaryText(isDarkMode),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    _buildLegendItem(
+                                      Colors.green,
+                                      '登録済み',
+                                      Icons.check_circle,
+                                      isDarkMode,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    _buildLegendItem(
+                                      const Color(0xFF667eea),
+                                      '選択中',
+                                      null,
+                                      isDarkMode,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    _buildLegendItem(
+                                      Colors.orange, 
+                                      '他の人', 
+                                      null, 
+                                      isDarkMode
+                                    ),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 16),
 
                               // Days of week header
                               Row(
@@ -737,35 +796,77 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                           ),
                         ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
 
-                      // Submit Button
-                      if (selectedDates.isNotEmpty)
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _updateAvailability,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 4,
+              // Fixed Update Button at bottom - 画面下部に固定
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Semantics(
+                  button: true,
+                  enabled: selectedDates.isNotEmpty,
+                  label: selectedDates.isNotEmpty 
+                      ? '空き状況を更新, ${selectedDates.length}日選択中'
+                      : '空き状況更新ボタン, 日付を選択してください',
+                  hint: selectedDates.isNotEmpty 
+                      ? 'タップして選択した日付の空き状況を更新'
+                      : 'まず日付を選択してから更新できます',
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: selectedDates.isNotEmpty
+                            ? LinearGradient(
+                                colors: [AppTheme.accentColor, AppTheme.accentColor.withValues(alpha: 0.8)],
+                              )
+                            : null,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: selectedDates.isNotEmpty
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.accentColor.withValues(alpha: 0.3),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: ElevatedButton(
+                        onPressed: selectedDates.isNotEmpty ? _updateAvailability : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedDates.isNotEmpty ? Colors.transparent : AppTheme.tertiaryText(isDarkMode).withValues(alpha: 0.3),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: AppTheme.tertiaryText(isDarkMode),
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              selectedDates.isNotEmpty ? Icons.update : Icons.calendar_today,
+                              size: 20,
                             ),
-                            child: Text(
-                              '空き状況を更新する (${selectedDates.length}日選択中)',
-                              style: TextStyle(
+                            const SizedBox(width: 8),
+                            Text(
+                              selectedDates.isNotEmpty 
+                                  ? '空き状況を更新する (${selectedDates.length}日選択中)'
+                                  : '日付を選択してください',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
+                          ],
                         ),
-
-                      const SizedBox(height: 32),
-                    ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -783,13 +884,22 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: icon != null ? Icon(icon, color: Colors.white, size: 8) : null,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+          child: icon != null 
+              ? Icon(icon, color: Colors.white, size: 8)
+              : null,
         ),
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: AppTheme.tertiaryText(isDarkMode)),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.secondaryText(isDarkMode),
+          ),
         ),
       ],
     );
@@ -1010,6 +1120,58 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNavigationButton({
+    required IconData icon,
+    required VoidCallback? onPressed,
+    required String tooltip,
+    required bool isDarkMode,
+  }) {
+    final isEnabled = onPressed != null;
+    
+    return Semantics(
+      label: tooltip,
+      hint: isEnabled ? 'タップして$tooltip' : '${tooltip}は無効です',
+      button: true,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(8),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isEnabled 
+                  ? AppTheme.cardBackground(isDarkMode)
+                  : AppTheme.containerBackground(isDarkMode),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isEnabled 
+                    ? AppTheme.accentColor.withValues(alpha: 0.2)
+                    : AppTheme.tertiaryText(isDarkMode).withValues(alpha: 0.1),
+                width: 1,
+              ),
+              boxShadow: isEnabled ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDarkMode ? 0.2 : 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ] : null,
+            ),
+            child: Icon(
+              icon,
+              size: 16,
+              color: isEnabled 
+                  ? AppTheme.primaryText(isDarkMode)
+                  : AppTheme.tertiaryText(isDarkMode),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
