@@ -135,4 +135,22 @@ class AppTheme {
 
   static Color cardBackground(bool isDarkMode) =>
       isDarkMode ? darkCardBackground : lightCardBackground;
+
+  static Color background(bool isDarkMode) =>
+      isDarkMode ? darkScaffoldBackground : lightScaffoldBackground;
+
+  static List<Color> backgroundGradient(bool isDarkMode) =>
+      isDarkMode 
+          ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+          : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)];
+
+  static Color surfaceColor(bool isDarkMode) =>
+      isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB);
+
+  static Color borderColor(bool isDarkMode) =>
+      isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0);
+
+  static Color get successColor => const Color(0xFF10B981);
+  static Color get warningColor => Colors.orange;
+  static Color get errorColor => Colors.red;
 }
