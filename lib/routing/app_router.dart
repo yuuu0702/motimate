@@ -8,7 +8,6 @@ import '../screens/schedule_screen.dart';
 import '../screens/member_list_screen.dart';
 import '../screens/motivation_screen.dart';
 import '../screens/notifications_screen.dart';
-import '../screens/feedback_screen.dart';
 import '../screens/user_settings_screen.dart';
 import '../screens/basketball_history_screen.dart';
 import '../screens/splash_screen.dart';
@@ -26,7 +25,6 @@ abstract class AppRoutes {
   static const String memberList = '/member-list';
   static const String motivation = '/motivation';
   static const String notifications = '/notifications';
-  static const String feedback = '/feedback';
   static const String settings = '/settings';
   static const String basketballHistory = '/basketball-history';
 }
@@ -109,11 +107,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.notifications,
             name: 'notifications',
             builder: (context, state) => const NotificationsScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.feedback,
-            name: 'feedback',
-            builder: (context, state) => const FeedbackScreen(),
           ),
           GoRoute(
             path: AppRoutes.settings,
