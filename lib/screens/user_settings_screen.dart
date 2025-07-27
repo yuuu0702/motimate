@@ -1,163 +1,230 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import '../services/notification_service.dart';
 import '../core/theme/theme_controller.dart';
+import '../themes/app_theme.dart';
+import '../providers/providers.dart';
 
-class UserSettingsScreen extends ConsumerStatefulWidget {
+class UserSettingsScreen extends HookConsumerWidget {
   const UserSettingsScreen({super.key});
 
   @override
-  ConsumerState<UserSettingsScreen> createState() => _UserSettingsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(themeProvider);
+    final displayNameController = useTextEditingController();
+    final departmentController = useTextEditingController();
+    final groupController = useTextEditingController();
+    final bioController = useTextEditingController();
+    
+    final isLoading = useState(true);
+    final isSaving = useState(false);
+    final notificationsEnabled = useState(false);
+    final userData = useState<Map<String, dynamic>?>(null);
 
-class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
-  final _displayNameController = TextEditingController();
-  final _departmentController = TextEditingController();
-  final _groupController = TextEditingController();
-  final _bioController = TextEditingController();
-  
-  bool _isLoading = true;
-  bool _isSaving = false;
-  bool _notificationsEnabled = false;
-  Map<String, dynamic>? _userData;
+    // Load user data on mount
+    useEffect(() {
+      Future<void> loadUserData() async {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) return;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-    _loadNotificationStatus();
-  }
-
-
-  @override
-  void dispose() {
-    _displayNameController.dispose();
-    _departmentController.dispose();
-    _groupController.dispose();
-    _bioController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadUserData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      
-      if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>;
-        setState(() {
-          _userData = data;
-          _displayNameController.text = data['displayName'] ?? '';
-          _departmentController.text = data['department'] ?? '';
-          _groupController.text = data['group'] ?? '';
-          _bioController.text = data['bio'] ?? '';
-          _isLoading = false;
-        });
+        try {
+          final doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+          
+          if (doc.exists) {
+            final data = doc.data() as Map<String, dynamic>;
+            userData.value = data;
+            displayNameController.text = data['displayName'] ?? '';
+            departmentController.text = data['department'] ?? '';
+            groupController.text = data['group'] ?? '';
+            bioController.text = data['bio'] ?? '';
+            isLoading.value = false;
+          }
+        } catch (e) {
+          isLoading.value = false;
+        }
       }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
 
-  Future<void> _loadNotificationStatus() async {
-    try {
-      final isEnabled = await NotificationService.isNotificationEnabled();
-      setState(() {
-        _notificationsEnabled = isEnabled;
-      });
-    } catch (e) {
-      setState(() {
-        _notificationsEnabled = false;
-      });
-    }
-  }
+      Future<void> loadNotificationStatus() async {
+        try {
+          final isEnabled = await NotificationService.isNotificationEnabled();
+          notificationsEnabled.value = isEnabled;
+        } catch (e) {
+          notificationsEnabled.value = false;
+        }
+      }
 
-  Future<void> _toggleNotifications(bool value) async {
-    if (value) {
-      // 通知を有効にする
-      final granted = await NotificationService.requestNotificationPermission();
-      setState(() {
-        _notificationsEnabled = granted;
-      });
-      
-      if (granted) {
-        if (mounted) {
+      loadUserData();
+      loadNotificationStatus();
+      return null;
+    }, []);
+
+    Future<void> toggleNotifications(bool value) async {
+      if (value) {
+        // 通知を有効にする
+        final granted = await NotificationService.requestNotificationPermission();
+        notificationsEnabled.value = granted;
+        
+        if (granted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('通知が有効になりました'),
-              backgroundColor: Color(0xFF10B981),
+            SnackBar(
+              content: const Text('通知が有効になりました'),
+              backgroundColor: AppTheme.successColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('通知の許可が拒否されました'),
+              backgroundColor: AppTheme.warningColor,
               behavior: SnackBarBehavior.floating,
             ),
           );
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('通知の許可が拒否されました'),
-              backgroundColor: Colors.orange,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
+        // 通知を無効にする（設定画面に案内）
+        showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              backgroundColor: AppTheme.cardBackground(isDarkMode),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                '通知設定',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryText(isDarkMode),
+                ),
+              ),
+              content: Text(
+                '通知を無効にするには、端末の設定画面から変更してください。',
+                style: TextStyle(
+                  color: AppTheme.secondaryText(isDarkMode),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(
+                    'キャンセル',
+                    style: TextStyle(color: AppTheme.tertiaryText(isDarkMode)),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(dialogContext).pop();
+                    await NotificationService.openSettings();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '設定を開く',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
       }
-    } else {
-      // 通知を無効にする（設定画面に案内）
+    }
+
+    Future<void> saveProfile() async {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      isSaving.value = true;
+
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
+          'displayName': displayNameController.text.trim(),
+          'department': departmentController.text.trim(),
+          'group': groupController.text.trim(),
+          'bio': bioController.text.trim(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('プロフィールを更新しました'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('更新に失敗しました: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } finally {
+        isSaving.value = false;
+      }
+    }
+
+    Future<void> signOut() async {
       showDialog(
         context: context,
-        builder: (BuildContext context) {
-          final isDarkMode = ref.read(isDarkModeProvider);
+        builder: (BuildContext dialogContext) {
           return AlertDialog(
-            backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+            backgroundColor: AppTheme.cardBackground(isDarkMode),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
             title: Text(
-              '通知設定',
+              'ログアウト',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                color: AppTheme.primaryText(isDarkMode),
               ),
             ),
             content: Text(
-              '通知を無効にするには、端末の設定画面から変更してください。',
+              'ログアウトしてもよろしいですか？',
               style: TextStyle(
-                color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
+                color: AppTheme.secondaryText(isDarkMode),
               ),
             ),
             actions: [
               TextButton(
-                onPressed: () => context.pop(),
+                onPressed: () => Navigator.of(dialogContext).pop(),
                 child: Text(
                   'キャンセル',
-                  style: TextStyle(color: isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
+                  style: TextStyle(color: AppTheme.tertiaryText(isDarkMode)),
                 ),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  context.pop();
-                  await NotificationService.openSettings();
+                  Navigator.of(dialogContext).pop();
+                  await FirebaseAuth.instance.signOut();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF667eea),
+                  backgroundColor: AppTheme.errorColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: const Text(
-                  '設定を開く',
+                  'ログアウト',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -166,149 +233,79 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
         },
       );
     }
-  }
 
-  Future<void> _saveProfile() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    setState(() {
-      _isSaving = true;
-    });
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .update({
-        'displayName': _displayNameController.text.trim(),
-        'department': _departmentController.text.trim(),
-        'group': _groupController.text.trim(),
-        'bio': _bioController.text.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('プロフィールを更新しました'),
-            backgroundColor: Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('更新に失敗しました: $e'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      setState(() {
-        _isSaving = false;
-      });
-    }
-  }
-
-  Future<void> _signOut() async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        final isDarkMode = ref.read(isDarkModeProvider);
-        return AlertDialog(
-          backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'ログアウト',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
-            ),
-          ),
-          content: Text(
-            'ログアウトしてもよろしいですか？',
-            style: TextStyle(
-              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF374151),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: Text(
-                'キャンセル',
-                style: TextStyle(color: isDarkMode ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                context.pop();
-                await FirebaseAuth.instance.signOut();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'ログアウト',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
-    
-    if (_isLoading) {
+    if (isLoading.value) {
       return Scaffold(
-        backgroundColor: isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: AppTheme.background(isDarkMode),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppTheme.accentColor,
+          ),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.background(isDarkMode),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDarkMode 
-                ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+            colors: AppTheme.backgroundGradient(isDarkMode),
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Header (追加)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    Text(
-                      '設定',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+              // Modern Header
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.accentColor.withValues(alpha: 0.1), Colors.transparent],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Semantics(
+                  header: true,
+                  label: '設定画面',
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [AppTheme.accentColor, AppTheme.accentColor.withValues(alpha: 0.8)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentColor.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 16),
+                      Text(
+                        '設定',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryText(isDarkMode),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -321,6 +318,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                       // Profile Section
                       Card(
                         elevation: 8,
+                        color: AppTheme.cardBackground(isDarkMode),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -331,9 +329,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.edit,
-                                    color: Color(0xFF667eea),
+                                    color: AppTheme.accentColor,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -342,7 +340,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: AppTheme.primaryText(isDarkMode),
                                     ),
                                   ),
                                 ],
@@ -353,7 +351,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: AppTheme.surfaceColor(isDarkMode),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Column(
@@ -364,23 +362,23 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: isDarkMode ? Colors.white : const Color(0xFF374151),
+                                        color: AppTheme.primaryText(isDarkMode),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.alternate_email,
-                                          color: Color(0xFF94A3B8),
+                                          color: AppTheme.tertiaryText(isDarkMode),
                                           size: 16,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          _userData?['username'] ?? 'Unknown',
+                                          userData.value?['username'] ?? 'Unknown',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                            color: AppTheme.secondaryText(isDarkMode),
                                           ),
                                         ),
                                       ],
@@ -393,7 +391,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
 
                               // Display Name
                               _buildTextField(
-                                controller: _displayNameController,
+                                controller: displayNameController,
                                 label: '表示名',
                                 hint: '田中 太郎',
                                 icon: Icons.person_outline,
@@ -404,7 +402,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
 
                               // Department
                               _buildTextField(
-                                controller: _departmentController,
+                                controller: departmentController,
                                 label: '部署',
                                 hint: '営業部',
                                 icon: Icons.business,
@@ -415,7 +413,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
 
                               // Group
                               _buildTextField(
-                                controller: _groupController,
+                                controller: groupController,
                                 label: '所属グループ',
                                 hint: '第1営業課',
                                 icon: Icons.groups,
@@ -426,7 +424,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
 
                               // Bio
                               _buildTextField(
-                                controller: _bioController,
+                                controller: bioController,
                                 label: '自己紹介',
                                 hint: 'バスケが大好きです！一緒に頑張りましょう🏀',
                                 icon: Icons.chat_bubble_outline,
@@ -443,6 +441,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                       // Theme Settings
                       Card(
                         elevation: 8,
+                        color: AppTheme.cardBackground(isDarkMode),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -453,9 +452,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.palette,
-                                    color: Color(0xFF667eea),
+                                    color: AppTheme.accentColor,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -464,7 +463,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: AppTheme.primaryText(isDarkMode),
                                     ),
                                   ),
                                 ],
@@ -474,14 +473,14 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: AppTheme.surfaceColor(isDarkMode),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
                                       isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                                      color: const Color(0xFF667eea),
+                                      color: AppTheme.accentColor,
                                       size: 24,
                                     ),
                                     const SizedBox(width: 16),
@@ -494,14 +493,14 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: isDarkMode ? Colors.white : const Color(0xFF374151),
+                                              color: AppTheme.primaryText(isDarkMode),
                                             ),
                                           ),
                                           Text(
                                             isDarkMode ? 'ダークモードで表示しています' : 'ライトモードで表示しています',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                              color: AppTheme.secondaryText(isDarkMode),
                                             ),
                                           ),
                                         ],
@@ -512,7 +511,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                       onChanged: (value) async {
                                         await ref.read(themeControllerProvider.notifier).toggleTheme();
                                       },
-                                      activeColor: const Color(0xFF667eea),
+                                      activeColor: AppTheme.accentColor,
                                     ),
                                   ],
                                 ),
@@ -527,6 +526,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                       // Notification Settings
                       Card(
                         elevation: 8,
+                        color: AppTheme.cardBackground(isDarkMode),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -537,9 +537,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.notifications,
-                                    color: Color(0xFF667eea),
+                                    color: AppTheme.accentColor,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -548,7 +548,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: AppTheme.primaryText(isDarkMode),
                                     ),
                                   ),
                                 ],
@@ -558,16 +558,16 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: AppTheme.surfaceColor(isDarkMode),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
                                   children: [
                                     Icon(
-                                      _notificationsEnabled 
+                                      notificationsEnabled.value 
                                           ? Icons.notifications_active 
                                           : Icons.notifications_off,
-                                      color: const Color(0xFF667eea),
+                                      color: AppTheme.accentColor,
                                       size: 24,
                                     ),
                                     const SizedBox(width: 16),
@@ -576,29 +576,29 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            _notificationsEnabled ? 'プッシュ通知が有効' : 'プッシュ通知が無効',
+                                            notificationsEnabled.value ? 'プッシュ通知が有効' : 'プッシュ通知が無効',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
-                                              color: isDarkMode ? Colors.white : const Color(0xFF374151),
+                                              color: AppTheme.primaryText(isDarkMode),
                                             ),
                                           ),
                                           Text(
-                                            _notificationsEnabled 
-                                                ? '練習日決定などの重要な通知を受け取ります' 
+                                            notificationsEnabled.value 
+                                                ? 'バスケ日決定などの重要な通知を受け取ります' 
                                                 : '通知を受け取りません',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                              color: AppTheme.secondaryText(isDarkMode),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Switch(
-                                      value: _notificationsEnabled,
-                                      onChanged: _toggleNotifications,
-                                      activeColor: const Color(0xFF667eea),
+                                      value: notificationsEnabled.value,
+                                      onChanged: toggleNotifications,
+                                      activeColor: AppTheme.accentColor,
                                     ),
                                   ],
                                 ),
@@ -613,6 +613,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                       // Account Actions
                       Card(
                         elevation: 8,
+                        color: AppTheme.cardBackground(isDarkMode),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -623,9 +624,9 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.account_circle,
-                                    color: Color(0xFF667eea),
+                                    color: AppTheme.accentColor,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -634,7 +635,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+                                      color: AppTheme.primaryText(isDarkMode),
                                     ),
                                   ),
                                 ],
@@ -645,14 +646,14 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: isDarkMode ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
+                                  color: AppTheme.surfaceColor(isDarkMode),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.email,
-                                      color: Color(0xFF94A3B8),
+                                      color: AppTheme.tertiaryText(isDarkMode),
                                       size: 20,
                                     ),
                                     const SizedBox(width: 12),
@@ -665,14 +666,14 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: isDarkMode ? Colors.white : const Color(0xFF374151),
+                                              color: AppTheme.primaryText(isDarkMode),
                                             ),
                                           ),
                                           Text(
                                             FirebaseAuth.instance.currentUser?.email ?? 'Unknown',
                                             style: TextStyle(
                                               fontSize: 14,
-                                              color: isDarkMode ? const Color(0xFFD1D5DB) : const Color(0xFF6B7280),
+                                              color: AppTheme.secondaryText(isDarkMode),
                                             ),
                                           ),
                                         ],
@@ -688,7 +689,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
-                                  onPressed: _signOut,
+                                  onPressed: signOut,
                                   icon: const Icon(Icons.logout, size: 20),
                                   label: const Text(
                                     'ログアウト',
@@ -698,7 +699,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
+                                    backgroundColor: AppTheme.errorColor,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
@@ -720,7 +721,7 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
                           '© 2025 WATANABE YUDAI',
                           style: TextStyle(
                             fontSize: 12,
-                            color: isDarkMode ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                            color: AppTheme.tertiaryText(isDarkMode),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -735,49 +736,52 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
               // Save Button
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        // 白に設定
-                        colors: [Color(0xFF667eea), Color(0xFF667eea)],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF667eea).withValues(alpha: 0.3),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
+                child: Semantics(
+                  button: true,
+                  label: isSaving.value ? '保存中' : 'プロフィールを保存',
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppTheme.accentColor, AppTheme.accentColor.withValues(alpha: 0.8)],
                         ),
-                      ],
-                    ),
-                    child: ElevatedButton.icon(
-                      onPressed: _isSaving ? null : _saveProfile,
-                      icon: _isSaving
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Icon(Icons.save, size: 20),
-                      label: Text(
-                        _isSaving ? '保存中...' : 'プロフィールを保存',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.accentColor.withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                      child: ElevatedButton.icon(
+                        onPressed: isSaving.value ? null : saveProfile,
+                        icon: isSaving.value
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.save, size: 20),
+                        label: Text(
+                          isSaving.value ? '保存中...' : 'プロフィールを保存',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                       ),
                     ),
@@ -807,15 +811,15 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: isDarkMode ? Colors.white : const Color(0xFF374151),
+            color: AppTheme.primaryText(isDarkMode),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: isDarkMode ? const Color(0xFF374151) : Colors.white,
+            color: AppTheme.surfaceColor(isDarkMode),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDarkMode ? const Color(0xFF4B5563) : const Color(0xFFE2E8F0)),
+            border: Border.all(color: AppTheme.borderColor(isDarkMode)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
@@ -828,13 +832,13 @@ class _UserSettingsScreenState extends ConsumerState<UserSettingsScreen> {
             controller: controller,
             maxLines: maxLines,
             style: TextStyle(
-              color: isDarkMode ? Colors.white : const Color(0xFF1F2937),
+              color: AppTheme.primaryText(isDarkMode),
               fontSize: 16,
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF)),
-              prefixIcon: Icon(icon, color: isDarkMode ? const Color(0xFF6B7280) : const Color(0xFF94A3B8)),
+              hintStyle: TextStyle(color: AppTheme.tertiaryText(isDarkMode)),
+              prefixIcon: Icon(icon, color: AppTheme.tertiaryText(isDarkMode)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),
