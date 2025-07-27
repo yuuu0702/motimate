@@ -230,9 +230,6 @@ class HomeScreen extends HookConsumerWidget {
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // フィードバック告知バナー
-                _buildFeedbackBanner(context),
-                const SizedBox(height: 16),
                 
                 // 日程が決定されました！セクション
                 if (homeState.pendingPractices.isNotEmpty) ...[
@@ -275,12 +272,20 @@ class HomeScreen extends HookConsumerWidget {
       onTap: () {
         context.go(AppRoutes.basketballHistory);
       },
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        child: Icon(
-          Icons.history,
-          size: 24,
-          color: AppTheme.primaryText(isDarkMode),
+      child: Semantics(
+        label: 'バスケ履歴',
+        hint: 'タップしてバスケ履歴画面に移動',
+        button: true,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.history,
+            size: 24,
+            color: AppTheme.primaryText(isDarkMode),
+          ),
         ),
       ),
     );
@@ -310,96 +315,87 @@ class HomeScreen extends HookConsumerWidget {
         onTap: () {
           context.go(AppRoutes.notifications);
         },
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          child: Stack(
-            children: [
-              Icon(
-                Icons.notifications_outlined,
-                size: 24,
-                color: AppTheme.primaryText(isDarkMode),
-              ),
-              if (unreadCount > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white, width: 1),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
-                    ),
-                    child: Text(
-                      unreadCount > 99 ? '99+' : unreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+        child: Semantics(
+          label: '通知',
+          hint: unreadCount > 0 
+              ? '${unreadCount}件の未読通知があります。タップして通知画面に移動'
+              : 'タップして通知画面に移動',
+          button: true,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: unreadCount > 0 
+                        ? AppTheme.accentColor.withValues(alpha: 0.1)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    unreadCount > 0 
+                        ? Icons.notifications
+                        : Icons.notifications_outlined,
+                    size: 22,
+                    color: unreadCount > 0 
+                        ? AppTheme.accentColor 
+                        : AppTheme.primaryText(isDarkMode),
                   ),
                 ),
-            ],
+                if (unreadCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.elasticOut,
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFFF6B6B),
+                            Color(0xFFFF5252),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.cardBackground(isDarkMode), 
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFF6B6B).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
+                      ),
+                      child: Text(
+                        unreadCount > 99 ? '99+' : unreadCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFeedbackBanner(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        context.go(AppRoutes.feedback);
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: const Row(
-          children: [
-            Icon(
-              Icons.feedback_outlined,
-              color: Color(0xFF667eea),
-              size: 20,
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'フィードバック求む！',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF374151),
-                ),
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Color(0xFF9CA3AF),
-              size: 16,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 
 
