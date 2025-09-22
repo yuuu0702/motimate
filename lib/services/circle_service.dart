@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/circle_model.dart';
 import '../models/circle_member_model.dart';
-import '../models/user_model.dart';
 import 'permission_service.dart';
 
 /// サークル管理サービス
@@ -65,7 +64,7 @@ class CircleService {
 
       // 作成者をメンバーとして追加
       final creatorMember = CircleMemberModel(
-        id: CircleMemberModel.generateId(circleId, userId),
+        id: CircleMemberModelX.generateId(circleId, userId),
         circleId: circleId,
         userId: userId,
         role: MemberRole.creator,

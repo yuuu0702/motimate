@@ -25,7 +25,7 @@ class PermissionService {
     if (userId == null) return null;
 
     try {
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
       final doc = await _firestore
           .collection('circle_members')
           .doc(memberId)
@@ -46,7 +46,7 @@ class PermissionService {
     if (userId == null) return null;
 
     try {
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
       final doc = await _firestore
           .collection('circle_members')
           .doc(memberId)

@@ -19,7 +19,8 @@
       "Bash(flutter analyze:*)",
       "Bash(flutter run:*)",
       "Bash(flutter clean:*)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Edit"
     ],
     "deny": []
   }

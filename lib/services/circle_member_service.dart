@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../models/circle_model.dart';
 import '../models/circle_member_model.dart';
 import '../models/user_model.dart';
 import 'permission_service.dart';
@@ -60,7 +59,7 @@ class CircleMemberService {
       }
 
       final now = DateTime.now();
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
 
       // 承認が必要かどうかを判断
       final requiresApproval = circle.privacy.requiresApproval;
@@ -100,7 +99,7 @@ class CircleMemberService {
     await _permissionService.requirePermission(circleId, Permission.manageMembers);
 
     try {
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
       final approverId = currentUserId!;
 
       await _firestore
@@ -125,7 +124,7 @@ class CircleMemberService {
     await _permissionService.requirePermission(circleId, Permission.manageMembers);
 
     try {
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
 
       await _firestore
           .collection('circle_members')
@@ -145,7 +144,7 @@ class CircleMemberService {
     }
 
     try {
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
 
       await _firestore
           .collection('circle_members')
@@ -169,7 +168,7 @@ class CircleMemberService {
     }
 
     try {
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
 
       await _firestore
           .collection('circle_members')
@@ -198,7 +197,7 @@ class CircleMemberService {
     }
 
     try {
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
 
       await _firestore
           .collection('circle_members')
@@ -317,7 +316,7 @@ class CircleMemberService {
       // モチベーション平均を計算（実装は後で追加）
       const motivationAverage = 0.0; // TODO: モチベーション履歴から計算
 
-      final memberId = CircleMemberModel.generateId(circleId, userId);
+      final memberId = CircleMemberModelX.generateId(circleId, userId);
 
       await _firestore
           .collection('circle_members')

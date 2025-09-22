@@ -4,11 +4,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/circle_model.dart';
-import '../models/user_model.dart';
 import '../providers/providers.dart';
 import '../themes/app_theme.dart';
 import '../routing/app_router.dart';
-import '../core/constants/app_constants.dart';
 
 /// サークル選択・切り替え画面
 ///
@@ -19,7 +17,6 @@ class CircleSelectionScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final circleService = ref.watch(circleServiceProvider);
     final userCirclesAsync = ref.watch(userCirclesProvider);
     final isDarkMode = ref.watch(themeProvider);
     final isLoading = useState(false);
