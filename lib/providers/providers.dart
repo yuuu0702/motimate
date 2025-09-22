@@ -12,6 +12,11 @@ import '../services/cached_motivation_service.dart';
 import '../services/cached_notification_service.dart';
 import '../services/optimized_schedule_service.dart';
 import '../services/image_cache_service.dart';
+// マルチサークル対応サービス
+import '../services/permission_service.dart';
+import '../services/circle_service.dart';
+import '../services/circle_member_service.dart';
+import '../services/activity_service.dart';
 import '../core/cache/cache_manager.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -52,6 +57,39 @@ final practiceServiceProvider = Provider<PracticeService>((ref) {
   return PracticeService(
     auth: ref.watch(firebaseAuthProvider),
     firestore: ref.watch(firestoreProvider),
+  );
+});
+
+// マルチサークル対応サービス
+final permissionServiceProvider = Provider<PermissionService>((ref) {
+  return PermissionService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+  );
+});
+
+final circleServiceProvider = Provider<CircleService>((ref) {
+  return CircleService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+    permissionService: ref.watch(permissionServiceProvider),
+  );
+});
+
+final circleMemberServiceProvider = Provider<CircleMemberService>((ref) {
+  return CircleMemberService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+    permissionService: ref.watch(permissionServiceProvider),
+    circleService: ref.watch(circleServiceProvider),
+  );
+});
+
+final activityServiceProvider = Provider<ActivityService>((ref) {
+  return ActivityService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+    permissionService: ref.watch(permissionServiceProvider),
   );
 });
 
