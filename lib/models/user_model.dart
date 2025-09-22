@@ -20,6 +20,10 @@ class UserModel with _$UserModel {
     DateTime? lastLogin,
     String? fcmToken,
     @Default(false) bool notificationsEnabled,
+    // マルチサークル対応フィールド
+    @Default(<String>[]) List<String> circleIds,
+    String? currentCircleId,
+    @Default(<String, DateTime>{}) Map<String, DateTime> lastAccessByCircle,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
@@ -49,6 +53,16 @@ class UserModel with _$UserModel {
           : null,
       fcmToken: data['fcmToken'],
       notificationsEnabled: data['notificationsEnabled'] ?? false,
+      // マルチサークル対応フィールド
+      circleIds: List<String>.from(data['circleIds'] ?? []),
+      currentCircleId: data['currentCircleId'],
+      lastAccessByCircle: data['lastAccessByCircle'] != null
+          ? Map<String, DateTime>.from(
+              (data['lastAccessByCircle'] as Map<String, dynamic>).map(
+                (key, value) => MapEntry(key, (value as Timestamp).toDate()),
+              ),
+            )
+          : <String, DateTime>{},
     );
   }
 }
@@ -74,6 +88,23 @@ extension UserModelX on UserModel {
           : null,
       'fcmToken': fcmToken,
       'notificationsEnabled': notificationsEnabled,
+      // マルチサークル対応フィールド
+      'circleIds': circleIds,
+      'currentCircleId': currentCircleId,
+      'lastAccessByCircle': lastAccessByCircle.map(
+        (key, value) => MapEntry(key, Timestamp.fromDate(value)),
+      ),
     };
   }
+
+  /// 特定のサークルに参加しているかどうか
+  bool isJoinedCircle(String circleId) {
+    return circleIds.contains(circleId);
+  }
+
+  /// 現在アクティブなサークルがあるかどうか
+  bool get hasActiveCircle => currentCircleId != null;
+
+  /// サークル参加数
+  int get circleCount => circleIds.length;
 }
