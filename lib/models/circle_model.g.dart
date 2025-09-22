@@ -44,6 +44,8 @@ _$CircleSettingsImpl _$$CircleSettingsImplFromJson(Map<String, dynamic> json) =>
       iconType: json['iconType'] as String? ?? 'groups',
       colorTheme: json['colorTheme'] as String? ?? 'blue',
       activityName: json['activityName'] as String? ?? '活動',
+      allowInvites: json['allowInvites'] as bool? ?? true,
+      enableNotifications: json['enableNotifications'] as bool? ?? true,
       customSettings:
           json['customSettings'] as Map<String, dynamic>? ??
           const <String, dynamic>{},
@@ -55,6 +57,8 @@ Map<String, dynamic> _$$CircleSettingsImplToJson(
   'iconType': instance.iconType,
   'colorTheme': instance.colorTheme,
   'activityName': instance.activityName,
+  'allowInvites': instance.allowInvites,
+  'enableNotifications': instance.enableNotifications,
   'customSettings': instance.customSettings,
 };
 

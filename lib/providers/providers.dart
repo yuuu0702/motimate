@@ -24,6 +24,8 @@ import '../viewmodels/notification_viewmodel.dart';
 import '../core/theme/theme_controller.dart';
 import '../core/error/error_handler.dart';
 import '../core/cache/cache_invalidation_controller.dart';
+import '../models/circle_model.dart';
+import '../models/user_model.dart';
 
 // Firebase instances
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
@@ -190,4 +192,55 @@ final cacheLifecycleProvider = Provider<void>((ref) {
 final themeProvider = Provider<bool>((ref) {
   final theme = ref.watch(themeControllerProvider);
   return theme == ThemeMode.dark;
+});
+
+// マルチサークル関連プロバイダー
+// 現在のユーザー情報を監視
+final currentUserProvider = StreamProvider<UserModel?>((ref) {
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return Stream.value(null);
+
+  return ref.watch(firestoreProvider)
+    .collection('users')
+    .doc(user.uid)
+    .snapshots()
+    .map((doc) => doc.exists ? UserModel.fromFirestore(doc) : null);
+});
+
+// 現在のサークル情報を監視
+final currentCircleProvider = StreamProvider<CircleModel?>((ref) {
+  final user = ref.watch(currentUserProvider).value;
+  if (user?.currentCircleId == null) return Stream.value(null);
+
+  return ref.watch(firestoreProvider)
+    .collection('circles')
+    .doc(user!.currentCircleId!)
+    .snapshots()
+    .map((doc) => doc.exists ? CircleModel.fromFirestore(doc) : null);
+});
+
+// ユーザーが参加しているサークル一覧を監視
+final userCirclesProvider = StreamProvider<List<CircleModel>>((ref) async* {
+  final user = ref.watch(currentUserProvider).value;
+  if (user == null || user.circleIds.isEmpty) {
+    yield <CircleModel>[];
+    return;
+  }
+
+  final firestore = ref.watch(firestoreProvider);
+  final circles = <CircleModel>[];
+
+  for (final circleId in user.circleIds) {
+    try {
+      final doc = await firestore.collection('circles').doc(circleId).get();
+      if (doc.exists) {
+        circles.add(CircleModel.fromFirestore(doc));
+      }
+    } catch (e) {
+      // エラーが発生したサークルはスキップ
+      continue;
+    }
+  }
+
+  yield circles;
 });

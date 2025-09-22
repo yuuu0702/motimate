@@ -471,6 +471,8 @@ mixin _$CircleSettings {
   String get iconType => throw _privateConstructorUsedError;
   String get colorTheme => throw _privateConstructorUsedError;
   String get activityName => throw _privateConstructorUsedError;
+  bool get allowInvites => throw _privateConstructorUsedError;
+  bool get enableNotifications => throw _privateConstructorUsedError;
   Map<String, dynamic> get customSettings => throw _privateConstructorUsedError;
 
   /// Serializes this CircleSettings to a JSON map.
@@ -494,6 +496,8 @@ abstract class $CircleSettingsCopyWith<$Res> {
     String iconType,
     String colorTheme,
     String activityName,
+    bool allowInvites,
+    bool enableNotifications,
     Map<String, dynamic> customSettings,
   });
 }
@@ -516,6 +520,8 @@ class _$CircleSettingsCopyWithImpl<$Res, $Val extends CircleSettings>
     Object? iconType = null,
     Object? colorTheme = null,
     Object? activityName = null,
+    Object? allowInvites = null,
+    Object? enableNotifications = null,
     Object? customSettings = null,
   }) {
     return _then(
@@ -532,6 +538,14 @@ class _$CircleSettingsCopyWithImpl<$Res, $Val extends CircleSettings>
                 ? _value.activityName
                 : activityName // ignore: cast_nullable_to_non_nullable
                       as String,
+            allowInvites: null == allowInvites
+                ? _value.allowInvites
+                : allowInvites // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            enableNotifications: null == enableNotifications
+                ? _value.enableNotifications
+                : enableNotifications // ignore: cast_nullable_to_non_nullable
+                      as bool,
             customSettings: null == customSettings
                 ? _value.customSettings
                 : customSettings // ignore: cast_nullable_to_non_nullable
@@ -555,6 +569,8 @@ abstract class _$$CircleSettingsImplCopyWith<$Res>
     String iconType,
     String colorTheme,
     String activityName,
+    bool allowInvites,
+    bool enableNotifications,
     Map<String, dynamic> customSettings,
   });
 }
@@ -576,6 +592,8 @@ class __$$CircleSettingsImplCopyWithImpl<$Res>
     Object? iconType = null,
     Object? colorTheme = null,
     Object? activityName = null,
+    Object? allowInvites = null,
+    Object? enableNotifications = null,
     Object? customSettings = null,
   }) {
     return _then(
@@ -592,6 +610,14 @@ class __$$CircleSettingsImplCopyWithImpl<$Res>
             ? _value.activityName
             : activityName // ignore: cast_nullable_to_non_nullable
                   as String,
+        allowInvites: null == allowInvites
+            ? _value.allowInvites
+            : allowInvites // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        enableNotifications: null == enableNotifications
+            ? _value.enableNotifications
+            : enableNotifications // ignore: cast_nullable_to_non_nullable
+                  as bool,
         customSettings: null == customSettings
             ? _value._customSettings
             : customSettings // ignore: cast_nullable_to_non_nullable
@@ -608,6 +634,8 @@ class _$CircleSettingsImpl implements _CircleSettings {
     this.iconType = 'groups',
     this.colorTheme = 'blue',
     this.activityName = '活動',
+    this.allowInvites = true,
+    this.enableNotifications = true,
     final Map<String, dynamic> customSettings = const <String, dynamic>{},
   }) : _customSettings = customSettings;
 
@@ -623,6 +651,12 @@ class _$CircleSettingsImpl implements _CircleSettings {
   @override
   @JsonKey()
   final String activityName;
+  @override
+  @JsonKey()
+  final bool allowInvites;
+  @override
+  @JsonKey()
+  final bool enableNotifications;
   final Map<String, dynamic> _customSettings;
   @override
   @JsonKey()
@@ -634,7 +668,7 @@ class _$CircleSettingsImpl implements _CircleSettings {
 
   @override
   String toString() {
-    return 'CircleSettings(iconType: $iconType, colorTheme: $colorTheme, activityName: $activityName, customSettings: $customSettings)';
+    return 'CircleSettings(iconType: $iconType, colorTheme: $colorTheme, activityName: $activityName, allowInvites: $allowInvites, enableNotifications: $enableNotifications, customSettings: $customSettings)';
   }
 
   @override
@@ -648,6 +682,10 @@ class _$CircleSettingsImpl implements _CircleSettings {
                 other.colorTheme == colorTheme) &&
             (identical(other.activityName, activityName) ||
                 other.activityName == activityName) &&
+            (identical(other.allowInvites, allowInvites) ||
+                other.allowInvites == allowInvites) &&
+            (identical(other.enableNotifications, enableNotifications) ||
+                other.enableNotifications == enableNotifications) &&
             const DeepCollectionEquality().equals(
               other._customSettings,
               _customSettings,
@@ -661,6 +699,8 @@ class _$CircleSettingsImpl implements _CircleSettings {
     iconType,
     colorTheme,
     activityName,
+    allowInvites,
+    enableNotifications,
     const DeepCollectionEquality().hash(_customSettings),
   );
 
@@ -686,6 +726,8 @@ abstract class _CircleSettings implements CircleSettings {
     final String iconType,
     final String colorTheme,
     final String activityName,
+    final bool allowInvites,
+    final bool enableNotifications,
     final Map<String, dynamic> customSettings,
   }) = _$CircleSettingsImpl;
 
@@ -698,6 +740,10 @@ abstract class _CircleSettings implements CircleSettings {
   String get colorTheme;
   @override
   String get activityName;
+  @override
+  bool get allowInvites;
+  @override
+  bool get enableNotifications;
   @override
   Map<String, dynamic> get customSettings;
 

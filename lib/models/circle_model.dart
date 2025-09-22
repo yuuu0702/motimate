@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'circle_model.freezed.dart';
@@ -67,11 +68,18 @@ class CircleSettings with _$CircleSettings {
     @Default('groups') String iconType,
     @Default('blue') String colorTheme,
     @Default('活動') String activityName,
+    @Default(true) bool allowInvites,
+    @Default(true) bool enableNotifications,
     @Default(<String, dynamic>{}) Map<String, dynamic> customSettings,
   }) = _CircleSettings;
 
   factory CircleSettings.fromJson(Map<String, dynamic> json) =>
       _$CircleSettingsFromJson(json);
+}
+
+extension CircleSettingsX on CircleSettings {
+  IconType get iconTypeEnum => IconType.fromId(iconType);
+  ColorTheme get colorThemeEnum => ColorTheme.fromId(colorTheme);
 }
 
 @freezed
@@ -114,15 +122,42 @@ enum CircleCategory {
   volunteer('volunteer', 'ボランティア', '🤝'),
   other('other', 'その他', '📋');
 
-  const CircleCategory(this.id, this.displayName, this.emoji);
+  const CircleCategory(this.value, this.displayName, this.emoji);
 
-  final String id;
+  final String value;
   final String displayName;
   final String emoji;
 
+  IconData get icon {
+    switch (this) {
+      case CircleCategory.sports:
+        return Icons.sports;
+      case CircleCategory.culture:
+        return Icons.palette;
+      case CircleCategory.study:
+        return Icons.school;
+      case CircleCategory.music:
+        return Icons.music_note;
+      case CircleCategory.cooking:
+        return Icons.restaurant;
+      case CircleCategory.travel:
+        return Icons.flight;
+      case CircleCategory.games:
+        return Icons.games;
+      case CircleCategory.tech:
+        return Icons.computer;
+      case CircleCategory.business:
+        return Icons.business;
+      case CircleCategory.volunteer:
+        return Icons.volunteer_activism;
+      case CircleCategory.other:
+        return Icons.category;
+    }
+  }
+
   static CircleCategory fromId(String id) {
     return CircleCategory.values.firstWhere(
-      (category) => category.id == id,
+      (category) => category.value == id,
       orElse: () => CircleCategory.other,
     );
   }
@@ -149,6 +184,68 @@ enum IconType {
   final String id;
   final String emoji;
 
+  IconData get iconData {
+    switch (this) {
+      case IconType.sports:
+        return Icons.sports;
+      case IconType.basketball:
+        return Icons.sports_basketball;
+      case IconType.tennis:
+        return Icons.sports_tennis;
+      case IconType.soccer:
+        return Icons.sports_soccer;
+      case IconType.baseball:
+        return Icons.sports_baseball;
+      case IconType.music:
+        return Icons.music_note;
+      case IconType.art:
+        return Icons.palette;
+      case IconType.book:
+        return Icons.book;
+      case IconType.cooking:
+        return Icons.restaurant;
+      case IconType.tech:
+        return Icons.computer;
+      case IconType.business:
+        return Icons.business;
+      case IconType.groups:
+        return Icons.group;
+      case IconType.other:
+        return Icons.category;
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case IconType.sports:
+        return 'スポーツ';
+      case IconType.basketball:
+        return 'バスケットボール';
+      case IconType.tennis:
+        return 'テニス';
+      case IconType.soccer:
+        return 'サッカー';
+      case IconType.baseball:
+        return '野球';
+      case IconType.music:
+        return '音楽';
+      case IconType.art:
+        return 'アート';
+      case IconType.book:
+        return '本・読書';
+      case IconType.cooking:
+        return '料理';
+      case IconType.tech:
+        return 'テクノロジー';
+      case IconType.business:
+        return 'ビジネス';
+      case IconType.groups:
+        return 'グループ';
+      case IconType.other:
+        return 'その他';
+    }
+  }
+
   static IconType fromId(String id) {
     return IconType.values.firstWhere(
       (iconType) => iconType.id == id,
@@ -173,6 +270,8 @@ enum ColorTheme {
   final String id;
   final String displayName;
   final int colorValue;
+
+  Color get primaryColor => Color(colorValue);
 
   static ColorTheme fromId(String id) {
     return ColorTheme.values.firstWhere(
