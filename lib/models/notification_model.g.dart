@@ -17,6 +17,8 @@ _$NotificationModelImpl _$$NotificationModelImplFromJson(
   createdAt: DateTime.parse(json['createdAt'] as String),
   isRead: json['isRead'] as bool? ?? false,
   imageUrl: json['imageUrl'] as String?,
+  circleId: json['circleId'] as String?,
+  userId: json['userId'] as String?,
 );
 
 Map<String, dynamic> _$$NotificationModelImplToJson(
@@ -30,4 +32,6 @@ Map<String, dynamic> _$$NotificationModelImplToJson(
   'createdAt': instance.createdAt.toIso8601String(),
   'isRead': instance.isRead,
   'imageUrl': instance.imageUrl,
+  'circleId': instance.circleId,
+  'userId': instance.userId,
 };

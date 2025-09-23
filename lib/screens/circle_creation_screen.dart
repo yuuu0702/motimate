@@ -16,7 +16,6 @@ class CircleCreationScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final circleService = ref.watch(circleServiceProvider);
     final isDarkMode = ref.watch(themeProvider);
     final isLoading = useState(false);
 
@@ -40,6 +39,10 @@ class CircleCreationScreen extends HookConsumerWidget {
 
       isLoading.value = true;
       try {
+        final circleService = ref.read(circleServiceProvider);
+        final circleSwitcher = ref.read(circleSwitcherServiceProvider);
+
+        // サークルを作成
         final settings = CircleSettings(
           iconType: selectedIconType.value.id,
           colorTheme: selectedColorTheme.value.id,
@@ -54,30 +57,37 @@ class CircleCreationScreen extends HookConsumerWidget {
           showActivity: true,
         );
 
-        await circleService.createCircle(
+        final circleId = await circleService.createCircle(
           name: nameController.text.trim(),
-          description: descriptionController.text.trim(),
+          description: descriptionController.text.trim().isEmpty
+              ? ''
+              : descriptionController.text.trim(),
           category: selectedCategory.value.value,
           settings: settings,
           privacy: privacy,
         );
 
+        // 作成したサークルに自動的に切り替え
+        await circleSwitcher.switchCircle(circleId);
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('サークルを作成しました！'),
-              backgroundColor: Color(0xFF10B981),
+            SnackBar(
+              content: const Text('サークルを作成しました！'),
+              backgroundColor: AppTheme.successColor,
+              behavior: SnackBarBehavior.floating,
             ),
           );
-          // サークル選択画面に戻る
-          context.go('/circle-selection');
+          // ホーム画面に戻る
+          context.go('/');
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('エラーが発生しました: $e'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }

@@ -27,6 +27,7 @@ mixin _$ScheduleModel {
   List<String> get members => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
+  String? get circleId => throw _privateConstructorUsedError;
 
   /// Serializes this ScheduleModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,6 +52,7 @@ abstract class $ScheduleModelCopyWith<$Res> {
     List<String> members,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? circleId,
   });
 }
 
@@ -74,6 +76,7 @@ class _$ScheduleModelCopyWithImpl<$Res, $Val extends ScheduleModel>
     Object? members = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
+    Object? circleId = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -97,6 +100,10 @@ class _$ScheduleModelCopyWithImpl<$Res, $Val extends ScheduleModel>
                 ? _value.updatedAt
                 : updatedAt // ignore: cast_nullable_to_non_nullable
                       as DateTime?,
+            circleId: freezed == circleId
+                ? _value.circleId
+                : circleId // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -118,6 +125,7 @@ abstract class _$$ScheduleModelImplCopyWith<$Res>
     List<String> members,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? circleId,
   });
 }
 
@@ -140,6 +148,7 @@ class __$$ScheduleModelImplCopyWithImpl<$Res>
     Object? members = null,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
+    Object? circleId = freezed,
   }) {
     return _then(
       _$ScheduleModelImpl(
@@ -163,6 +172,10 @@ class __$$ScheduleModelImplCopyWithImpl<$Res>
             ? _value.updatedAt
             : updatedAt // ignore: cast_nullable_to_non_nullable
                   as DateTime?,
+        circleId: freezed == circleId
+            ? _value.circleId
+            : circleId // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -177,6 +190,7 @@ class _$ScheduleModelImpl implements _ScheduleModel {
     required final List<String> members,
     this.createdAt,
     this.updatedAt,
+    this.circleId,
   }) : _members = members;
 
   factory _$ScheduleModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -199,10 +213,12 @@ class _$ScheduleModelImpl implements _ScheduleModel {
   final DateTime? createdAt;
   @override
   final DateTime? updatedAt;
+  @override
+  final String? circleId;
 
   @override
   String toString() {
-    return 'ScheduleModel(id: $id, date: $date, members: $members, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'ScheduleModel(id: $id, date: $date, members: $members, createdAt: $createdAt, updatedAt: $updatedAt, circleId: $circleId)';
   }
 
   @override
@@ -216,7 +232,9 @@ class _$ScheduleModelImpl implements _ScheduleModel {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.circleId, circleId) ||
+                other.circleId == circleId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -228,6 +246,7 @@ class _$ScheduleModelImpl implements _ScheduleModel {
     const DeepCollectionEquality().hash(_members),
     createdAt,
     updatedAt,
+    circleId,
   );
 
   /// Create a copy of ScheduleModel
@@ -251,6 +270,7 @@ abstract class _ScheduleModel implements ScheduleModel {
     required final List<String> members,
     final DateTime? createdAt,
     final DateTime? updatedAt,
+    final String? circleId,
   }) = _$ScheduleModelImpl;
 
   factory _ScheduleModel.fromJson(Map<String, dynamic> json) =
@@ -266,6 +286,8 @@ abstract class _ScheduleModel implements ScheduleModel {
   DateTime? get createdAt;
   @override
   DateTime? get updatedAt;
+  @override
+  String? get circleId;
 
   /// Create a copy of ScheduleModel
   /// with the given fields replaced by the non-null parameter values.

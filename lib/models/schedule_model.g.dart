@@ -19,6 +19,7 @@ _$ScheduleModelImpl _$$ScheduleModelImplFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
+      circleId: json['circleId'] as String?,
     );
 
 Map<String, dynamic> _$$ScheduleModelImplToJson(_$ScheduleModelImpl instance) =>
@@ -28,4 +29,5 @@ Map<String, dynamic> _$$ScheduleModelImplToJson(_$ScheduleModelImpl instance) =>
       'members': instance.members,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
+      'circleId': instance.circleId,
     };

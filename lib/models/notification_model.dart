@@ -16,6 +16,8 @@ class NotificationModel with _$NotificationModel {
     required DateTime createdAt,
     @Default(false) bool isRead,
     String? imageUrl,
+    String? circleId, // マルチサークル対応
+    String? userId, // 通知の対象ユーザー
   }) = _NotificationModel;
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) =>
@@ -32,6 +34,8 @@ class NotificationModel with _$NotificationModel {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       isRead: data['isRead'] ?? false,
       imageUrl: data['imageUrl'],
+      circleId: data['circleId'],
+      userId: data['userId'],
     );
   }
 }
@@ -46,6 +50,8 @@ extension NotificationModelX on NotificationModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'isRead': isRead,
       'imageUrl': imageUrl,
+      'circleId': circleId,
+      'userId': userId,
     };
   }
 

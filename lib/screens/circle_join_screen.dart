@@ -18,8 +18,6 @@ class CircleJoinScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final circleService = ref.watch(circleServiceProvider);
-    final circleMemberService = ref.watch(circleMemberServiceProvider);
     final isDarkMode = ref.watch(themeProvider);
 
     final isLoading = useState(false);
@@ -34,7 +32,7 @@ class CircleJoinScreen extends HookConsumerWidget {
     // 初期検索実行
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _performSearch(circleService, searchResults, isSearching, null, null);
+        _performSearch(ref, searchResults, isSearching, null, null);
       });
       return null;
     }, []);
@@ -53,10 +51,18 @@ class CircleJoinScreen extends HookConsumerWidget {
 
       isLoading.value = true;
       try {
+        final circleMemberService = ref.read(circleMemberServiceProvider);
+        final circleSwitcher = ref.read(circleSwitcherServiceProvider);
+
         await circleMemberService.joinCircle(
           circleId: circle.id,
           joinMessage: 'よろしくお願いします！',
         );
+
+        // 参加成功時は自動的にそのサークルに切り替え
+        if (circle.privacy.isPublic && !circle.privacy.requiresApproval) {
+          await circleSwitcher.switchCircle(circle.id);
+        }
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -66,17 +72,25 @@ class CircleJoinScreen extends HookConsumerWidget {
                     ? '参加申請を送信しました'
                     : 'サークルに参加しました！',
               ),
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: AppTheme.successColor,
+              behavior: SnackBarBehavior.floating,
             ),
           );
-          context.go('/circle-selection');
+
+          // 参加成功時はホーム画面に移動
+          if (!circle.privacy.requiresApproval) {
+            context.go('/');
+          } else {
+            context.pop();
+          }
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('エラーが発生しました: $e'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -89,9 +103,10 @@ class CircleJoinScreen extends HookConsumerWidget {
       final code = inviteCodeController.text.trim().toUpperCase();
       if (code.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('招待コードを入力してください'),
-            backgroundColor: Colors.orange,
+          SnackBar(
+            content: const Text('招待コードを入力してください'),
+            backgroundColor: AppTheme.warningColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         return;
@@ -99,13 +114,18 @@ class CircleJoinScreen extends HookConsumerWidget {
 
       isLoading.value = true;
       try {
+        final circleService = ref.read(circleServiceProvider);
+        final circleMemberService = ref.read(circleMemberServiceProvider);
+        final circleSwitcher = ref.read(circleSwitcherServiceProvider);
+
         final circle = await circleService.findByInviteCode(code);
         if (circle == null) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('招待コードが無効です'),
-                backgroundColor: Colors.red,
+              SnackBar(
+                content: const Text('招待コードが無効です'),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
               ),
             );
           }
@@ -118,21 +138,27 @@ class CircleJoinScreen extends HookConsumerWidget {
           joinMessage: '招待コードで参加しました',
         );
 
+        // 招待コードでの参加は即座に有効なので、サークルを切り替え
+        await circleSwitcher.switchCircle(circle.id);
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${circle.name}に参加しました！'),
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: AppTheme.successColor,
+              behavior: SnackBarBehavior.floating,
             ),
           );
-          context.go('/circle-selection');
+          // ホーム画面に移動
+          context.go('/');
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('エラーが発生しました: $e'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -173,7 +199,7 @@ class CircleJoinScreen extends HookConsumerWidget {
                       searchResults,
                       selectedCategory,
                       isSearching,
-                      circleService,
+                      ref,
                       onJoinCircle,
                       isLoading.value,
                       isDarkMode,
@@ -201,7 +227,7 @@ class CircleJoinScreen extends HookConsumerWidget {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             icon: const Icon(Icons.arrow_back_ios),
             style: IconButton.styleFrom(
               backgroundColor: AppTheme.cardBackground(isDarkMode),
@@ -263,7 +289,7 @@ class CircleJoinScreen extends HookConsumerWidget {
     ValueNotifier<List<CircleModel>> searchResults,
     ValueNotifier<String?> selectedCategory,
     ValueNotifier<bool> isSearching,
-    dynamic circleService,
+    WidgetRef ref,
     Function(CircleModel) onJoinCircle,
     bool isLoading,
     bool isDarkMode,
@@ -277,7 +303,7 @@ class CircleJoinScreen extends HookConsumerWidget {
           _buildSearchBar(
             searchController,
             () => _performSearch(
-              circleService,
+              ref,
               searchResults,
               isSearching,
               searchController.text,
@@ -288,7 +314,7 @@ class CircleJoinScreen extends HookConsumerWidget {
           const SizedBox(height: 16),
 
           // Category filter
-          _buildCategoryFilter(selectedCategory, circleService, searchResults, isSearching, searchController.text, isDarkMode),
+          _buildCategoryFilter(selectedCategory, ref, searchResults, isSearching, searchController.text, isDarkMode),
           const SizedBox(height: 20),
 
           // Search results
@@ -342,7 +368,7 @@ class CircleJoinScreen extends HookConsumerWidget {
 
   Widget _buildCategoryFilter(
     ValueNotifier<String?> selectedCategory,
-    dynamic circleService,
+    WidgetRef ref,
     ValueNotifier<List<CircleModel>> searchResults,
     ValueNotifier<bool> isSearching,
     String searchQuery,
@@ -357,7 +383,7 @@ class CircleJoinScreen extends HookConsumerWidget {
             selectedCategory.value == null,
             () {
               selectedCategory.value = null;
-              _performSearch(circleService, searchResults, isSearching, searchQuery, null);
+              _performSearch(ref, searchResults, isSearching, searchQuery, null);
             },
             isDarkMode,
           ),
@@ -367,7 +393,7 @@ class CircleJoinScreen extends HookConsumerWidget {
               selectedCategory.value == category.value,
               () {
                 selectedCategory.value = category.value;
-                _performSearch(circleService, searchResults, isSearching, searchQuery, category.value);
+                _performSearch(ref, searchResults, isSearching, searchQuery, category.value);
               },
               isDarkMode,
             ),
@@ -854,7 +880,7 @@ class CircleJoinScreen extends HookConsumerWidget {
   }
 
   Future<void> _performSearch(
-    dynamic circleService,
+    WidgetRef ref,
     ValueNotifier<List<CircleModel>> searchResults,
     ValueNotifier<bool> isSearching,
     String? keyword,
@@ -862,6 +888,7 @@ class CircleJoinScreen extends HookConsumerWidget {
   ) async {
     isSearching.value = true;
     try {
+      final circleService = ref.read(circleServiceProvider);
       final results = await circleService.searchCircles(
         keyword: keyword,
         category: category,

@@ -29,6 +29,7 @@ _$PracticeDecisionModelImpl _$$PracticeDecisionModelImplFromJson(
           ?.map((e) => e as String)
           .toList() ??
       const <String>[],
+  circleId: json['circleId'] as String?,
 );
 
 Map<String, dynamic> _$$PracticeDecisionModelImplToJson(
@@ -44,4 +45,5 @@ Map<String, dynamic> _$$PracticeDecisionModelImplToJson(
   'responses': instance.responses,
   'memo': instance.memo,
   'actualParticipants': instance.actualParticipants,
+  'circleId': instance.circleId,
 };

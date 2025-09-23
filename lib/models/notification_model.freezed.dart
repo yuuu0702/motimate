@@ -30,6 +30,8 @@ mixin _$NotificationModel {
   DateTime get createdAt => throw _privateConstructorUsedError;
   bool get isRead => throw _privateConstructorUsedError;
   String? get imageUrl => throw _privateConstructorUsedError;
+  String? get circleId => throw _privateConstructorUsedError; // マルチサークル対応
+  String? get userId => throw _privateConstructorUsedError;
 
   /// Serializes this NotificationModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -57,6 +59,8 @@ abstract class $NotificationModelCopyWith<$Res> {
     DateTime createdAt,
     bool isRead,
     String? imageUrl,
+    String? circleId,
+    String? userId,
   });
 }
 
@@ -83,6 +87,8 @@ class _$NotificationModelCopyWithImpl<$Res, $Val extends NotificationModel>
     Object? createdAt = null,
     Object? isRead = null,
     Object? imageUrl = freezed,
+    Object? circleId = freezed,
+    Object? userId = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -118,6 +124,14 @@ class _$NotificationModelCopyWithImpl<$Res, $Val extends NotificationModel>
                 ? _value.imageUrl
                 : imageUrl // ignore: cast_nullable_to_non_nullable
                       as String?,
+            circleId: freezed == circleId
+                ? _value.circleId
+                : circleId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            userId: freezed == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -142,6 +156,8 @@ abstract class _$$NotificationModelImplCopyWith<$Res>
     DateTime createdAt,
     bool isRead,
     String? imageUrl,
+    String? circleId,
+    String? userId,
   });
 }
 
@@ -167,6 +183,8 @@ class __$$NotificationModelImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? isRead = null,
     Object? imageUrl = freezed,
+    Object? circleId = freezed,
+    Object? userId = freezed,
   }) {
     return _then(
       _$NotificationModelImpl(
@@ -202,6 +220,14 @@ class __$$NotificationModelImplCopyWithImpl<$Res>
             ? _value.imageUrl
             : imageUrl // ignore: cast_nullable_to_non_nullable
                   as String?,
+        circleId: freezed == circleId
+            ? _value.circleId
+            : circleId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        userId: freezed == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -219,6 +245,8 @@ class _$NotificationModelImpl implements _NotificationModel {
     required this.createdAt,
     this.isRead = false,
     this.imageUrl,
+    this.circleId,
+    this.userId,
   }) : _data = data;
 
   factory _$NotificationModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -251,10 +279,15 @@ class _$NotificationModelImpl implements _NotificationModel {
   final bool isRead;
   @override
   final String? imageUrl;
+  @override
+  final String? circleId;
+  // マルチサークル対応
+  @override
+  final String? userId;
 
   @override
   String toString() {
-    return 'NotificationModel(id: $id, title: $title, body: $body, type: $type, data: $data, createdAt: $createdAt, isRead: $isRead, imageUrl: $imageUrl)';
+    return 'NotificationModel(id: $id, title: $title, body: $body, type: $type, data: $data, createdAt: $createdAt, isRead: $isRead, imageUrl: $imageUrl, circleId: $circleId, userId: $userId)';
   }
 
   @override
@@ -271,7 +304,10 @@ class _$NotificationModelImpl implements _NotificationModel {
                 other.createdAt == createdAt) &&
             (identical(other.isRead, isRead) || other.isRead == isRead) &&
             (identical(other.imageUrl, imageUrl) ||
-                other.imageUrl == imageUrl));
+                other.imageUrl == imageUrl) &&
+            (identical(other.circleId, circleId) ||
+                other.circleId == circleId) &&
+            (identical(other.userId, userId) || other.userId == userId));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -286,6 +322,8 @@ class _$NotificationModelImpl implements _NotificationModel {
     createdAt,
     isRead,
     imageUrl,
+    circleId,
+    userId,
   );
 
   /// Create a copy of NotificationModel
@@ -315,6 +353,8 @@ abstract class _NotificationModel implements NotificationModel {
     required final DateTime createdAt,
     final bool isRead,
     final String? imageUrl,
+    final String? circleId,
+    final String? userId,
   }) = _$NotificationModelImpl;
 
   factory _NotificationModel.fromJson(Map<String, dynamic> json) =
@@ -336,6 +376,10 @@ abstract class _NotificationModel implements NotificationModel {
   bool get isRead;
   @override
   String? get imageUrl;
+  @override
+  String? get circleId; // マルチサークル対応
+  @override
+  String? get userId;
 
   /// Create a copy of NotificationModel
   /// with the given fields replaced by the non-null parameter values.
