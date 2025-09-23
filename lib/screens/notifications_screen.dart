@@ -13,11 +13,24 @@ class NotificationsScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(themeProvider);
+    final currentCircle = ref.watch(currentCircleProvider);
     final searchQuery = useState('');
     final selectedFilter = useState('all'); // all, unread, read
     
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
+      appBar: AppBar(
+        title: currentCircle.when(
+          loading: () => const Text('通知'),
+          error: (error, stack) => const Text('通知'),
+          data: (circle) => Text(
+            circle != null ? '${circle.name} - 通知' : '通知',
+          ),
+        ),
+        backgroundColor: AppTheme.cardColor(isDarkMode),
+        foregroundColor: AppTheme.primaryText(isDarkMode),
+        elevation: 0,
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -31,8 +44,6 @@ class NotificationsScreen extends HookConsumerWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Modern Header
-              _buildModernHeader(isDarkMode, context, ref),
               
               // Search and Filter Bar
               _buildSearchAndFilterBar(searchQuery, selectedFilter, isDarkMode),
@@ -45,9 +56,13 @@ class NotificationsScreen extends HookConsumerWidget {
                   },
                   backgroundColor: AppTheme.cardBackground(isDarkMode),
                   color: AppTheme.accentColor,
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: _getNotificationsStream(),
-                    builder: (context, snapshot) {
+                  child: currentCircle.when(
+                    loading: () => _buildLoadingState(isDarkMode),
+                    error: (error, stack) => _buildErrorState(isDarkMode, 'サークル情報の取得エラー: $error'),
+                    data: (circle) {
+                      return StreamBuilder<QuerySnapshot>(
+                        stream: _getNotificationsStream(circle?.id),
+                        builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return _buildLoadingState(isDarkMode);
                       }
@@ -77,6 +92,8 @@ class NotificationsScreen extends HookConsumerWidget {
                       }
 
                       return _buildNotificationsList(filteredNotifications, isDarkMode);
+                        },
+                      );
                     },
                   ),
                 ),
@@ -120,7 +137,7 @@ class NotificationsScreen extends HookConsumerWidget {
   }
 
   Widget _buildModernHeader(bool isDarkMode, BuildContext context, WidgetRef ref) {
-    final notificationsStream = _getNotificationsStream();
+    // Note: This method is no longer used but kept for potential future use
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -179,7 +196,7 @@ class NotificationsScreen extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 StreamBuilder<QuerySnapshot>(
-                  stream: notificationsStream,
+                  stream: _getNotificationsStream(null),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       final notifications = snapshot.data!.docs
@@ -736,17 +753,22 @@ class NotificationsScreen extends HookConsumerWidget {
     );
   }
 
-  Stream<QuerySnapshot> _getNotificationsStream() {
+  Stream<QuerySnapshot> _getNotificationsStream(String? circleId) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return const Stream.empty();
     }
 
-    return FirebaseFirestore.instance
+    var query = FirebaseFirestore.instance
         .collection('notifications')
-        .where('userId', isEqualTo: user.uid)
-        .limit(50)
-        .snapshots();
+        .where('userId', isEqualTo: user.uid);
+
+    // サークルIDがある場合はフィルタリング（マルチサークル対応）
+    if (circleId != null) {
+      query = query.where('circleId', isEqualTo: circleId);
+    }
+
+    return query.limit(50).snapshots();
   }
 
 
