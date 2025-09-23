@@ -80,6 +80,15 @@ class App extends ConsumerWidget {
               ),
               _buildNavItem(
                 context,
+                icon: Icons.groups_outlined,
+                activeIcon: Icons.groups,
+                label: 'サークル',
+                route: AppRoutes.circleSelection,
+                isActive: _isCircleRoute(currentLocation),
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                context,
                 icon: Icons.settings_outlined,
                 activeIcon: Icons.settings,
                 label: '設定',
@@ -92,6 +101,15 @@ class App extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// サークル関連ルートかどうかを判定
+  bool _isCircleRoute(String location) {
+    return location == AppRoutes.circleSelection ||
+        location == AppRoutes.circleCreation ||
+        location == AppRoutes.circleJoin ||
+        location == AppRoutes.circleSettings ||
+        location == AppRoutes.memberManagement;
   }
 
   Widget _buildNavItem(
@@ -112,7 +130,7 @@ class App extends ConsumerWidget {
     return GestureDetector(
       onTap: () => context.go(route),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
           color: isActive
               ? const Color(0xFF667eea).withValues(alpha: 0.1)
@@ -132,7 +150,7 @@ class App extends ConsumerWidget {
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
