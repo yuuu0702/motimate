@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/providers.dart';
 import '../models/schedule_model.dart';
 import '../models/circle_model.dart';
+import '../services/circle_switcher_service.dart';
 import '../themes/app_theme.dart';
 import '../core/constants/app_constants.dart';
 import '../routing/app_router.dart';
@@ -23,7 +24,6 @@ class HomeScreen extends HookConsumerWidget {
     final homeViewModel = ref.watch(homeViewModelProvider.notifier);
     final isDarkMode = ref.watch(themeProvider);
     final currentCircle = ref.watch(currentCircleProvider);
-    final userCircles = ref.watch(userCirclesProvider);
     
     final motivationLevels = useMemoized(() => AppConstants.motivationLevels
         .asMap()
@@ -540,93 +540,207 @@ class HomeScreen extends HookConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'サークルを選択',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
+      builder: (context) => Consumer(
+        builder: (context, ref, child) {
+          final circleSwitcher = ref.watch(circleSwitcherServiceProvider);
+
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.6,
+              minChildSize: 0.4,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                return Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 4,
                             decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(2),
                             ),
-                            child: const Icon(Icons.add, color: Colors.green),
                           ),
-                          title: const Text('新しいサークルを作成'),
-                          subtitle: const Text('新しいサークルを作成します'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.go(AppRoutes.circleCreation);
-                          },
-                        ),
-                        ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
+                          const SizedBox(height: 16),
+                          Text(
+                            'サークルを選択',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            child: const Icon(Icons.search, color: Colors.blue),
                           ),
-                          title: const Text('サークルに参加'),
-                          subtitle: const Text('既存のサークルに参加します'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.go(AppRoutes.circleJoin);
-                          },
-                        ),
-                        const Divider(),
-                        // TODO: ユーザーのサークル一覧を表示
-                        const ListTile(
-                          title: Text('参加中のサークル'),
-                          subtitle: Text('実装中...'),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.add, color: Colors.green),
+                              ),
+                              title: const Text('新しいサークルを作成'),
+                              subtitle: const Text('新しいサークルを作成します'),
+                              onTap: () {
+                                Navigator.pop(context);
+                                context.go(AppRoutes.circleCreation);
+                              },
+                            ),
+                            ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.search, color: Colors.blue),
+                              ),
+                              title: const Text('サークルに参加'),
+                              subtitle: const Text('既存のサークルに参加します'),
+                              onTap: () {
+                                Navigator.pop(context);
+                                context.go(AppRoutes.circleJoin);
+                              },
+                            ),
+                            const Divider(),
+                            // ユーザーのサークル一覧を表示
+                            FutureBuilder<List<Map<String, dynamic>>>(
+                              future: circleSwitcher.getUserCirclesWithInfo(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(20),
+                                    child: Center(child: CircularProgressIndicator()),
+                                  );
+                                }
+
+                                if (snapshot.hasError) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Text('エラー: ${snapshot.error}'),
+                                  );
+                                }
+
+                                final circles = snapshot.data ?? [];
+
+                                if (circles.isEmpty) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(20),
+                                    child: Text('参加中のサークルはありません'),
+                                  );
+                                }
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text(
+                                        '参加中のサークル',
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ...circles.map((circle) => _buildCircleListTile(
+                                      context,
+                                      circle,
+                                      circleSwitcher,
+                                    )),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          );
+        },
       ),
+    );
+  }
+
+  /// サークル一覧のListTileを作成
+  Widget _buildCircleListTile(
+    BuildContext context,
+    Map<String, dynamic> circle,
+    CircleSwitcherService circleSwitcher,
+  ) {
+    final iconType = IconType.fromId(circle['iconType'] ?? 'groups');
+    final colorTheme = ColorTheme.fromId(circle['colorTheme'] ?? 'blue');
+
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: colorTheme.primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(iconType.iconData, color: colorTheme.primaryColor),
+      ),
+      title: Text(circle['circleName']),
+      subtitle: Text('${circle['memberCount']}人のメンバー'),
+      trailing: circle['memberRole'] == 'creator'
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                '作成者',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.orange,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
+      onTap: () async {
+        try {
+          await circleSwitcher.switchCircle(circle['circleId']);
+          if (context.mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${circle['circleName']}に切り替えました'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('切り替えに失敗しました: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      },
     );
   }
 

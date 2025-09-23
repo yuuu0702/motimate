@@ -17,6 +17,7 @@ import '../services/permission_service.dart';
 import '../services/circle_service.dart';
 import '../services/circle_member_service.dart';
 import '../services/activity_service.dart';
+import '../services/circle_switcher_service.dart';
 import '../core/cache/cache_manager.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -92,6 +93,13 @@ final activityServiceProvider = Provider<ActivityService>((ref) {
     auth: ref.watch(firebaseAuthProvider),
     firestore: ref.watch(firestoreProvider),
     permissionService: ref.watch(permissionServiceProvider),
+  );
+});
+
+final circleSwitcherServiceProvider = Provider<CircleSwitcherService>((ref) {
+  return CircleSwitcherService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
   );
 });
 
