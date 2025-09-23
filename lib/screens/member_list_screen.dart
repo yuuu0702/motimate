@@ -18,11 +18,24 @@ class MemberListScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(themeProvider);
+    final currentCircle = ref.watch(currentCircleProvider);
     final searchQuery = useState('');
     final sortOption = useState(SortOption.name);
     
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
+      appBar: AppBar(
+        title: currentCircle.when(
+          loading: () => const Text('メンバー一覧'),
+          error: (error, stack) => const Text('メンバー一覧'),
+          data: (circle) => Text(
+            circle != null ? '${circle.name} - メンバー' : 'メンバー一覧',
+          ),
+        ),
+        backgroundColor: AppTheme.cardColor(isDarkMode),
+        foregroundColor: AppTheme.primaryText(isDarkMode),
+        elevation: 0,
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -132,11 +145,50 @@ class MemberListScreen extends HookConsumerWidget {
 
               // Content
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .snapshots(),
-                  builder: (context, snapshot) {
+                child: currentCircle.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => Center(
+                    child: Text('サークル情報の取得エラー: $error'),
+                  ),
+                  data: (circle) {
+                    if (circle == null) {
+                      return const Center(
+                        child: Text('サークルが選択されていません'),
+                      );
+                    }
+
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('circle_members')
+                          .where('circleId', isEqualTo: circle.id)
+                          .where('status', isEqualTo: 'active')
+                          .snapshots(),
+                      builder: (context, memberSnapshot) {
+                        if (memberSnapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        if (memberSnapshot.hasError) {
+                          return Center(
+                            child: Text('メンバーデータの取得エラー: ${memberSnapshot.error}'),
+                          );
+                        }
+
+                        if (!memberSnapshot.hasData || memberSnapshot.data!.docs.isEmpty) {
+                          return const Center(child: Text('このサークルにはまだメンバーがいません。'));
+                        }
+
+                        // メンバーのユーザーIDを取得
+                        final memberUserIds = memberSnapshot.data!.docs
+                            .map((doc) => (doc.data() as Map<String, dynamic>)['userId'] as String)
+                            .toList();
+
+                        return StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('users')
+                              .where(FieldPath.documentId, whereIn: memberUserIds)
+                              .snapshots(),
+                          builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -243,6 +295,10 @@ class MemberListScreen extends HookConsumerWidget {
                         return MemberCard(
                           userData: userData,
                           isDarkMode: isDarkMode,
+                        );
+                      },
+                    );
+                          },
                         );
                       },
                     );
