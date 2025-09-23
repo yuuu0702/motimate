@@ -30,9 +30,25 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   Future<void> _loadScheduleData() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      final snapshot = await FirebaseFirestore.instance
-          .collection('schedules')
+      if (user == null) return;
+
+      // 現在のサークルIDを取得
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
           .get();
+
+      final currentCircleId = userDoc.data()?['currentCircleId'] as String?;
+
+      // サークルIDがない場合は既存のロジックを使用（後方互換性）
+      Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection('schedules');
+
+      if (currentCircleId != null) {
+        // マルチサークル対応: 現在のサークルのスケジュールのみ取得
+        query = query.where('circleId', isEqualTo: currentCircleId);
+      }
+
+      final snapshot = await query.get();
 
       Map<String, Map<String, dynamic>> data = {};
       Set<DateTime> myDates = {};
@@ -214,6 +230,14 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     if (user == null) return;
 
     try {
+      // 現在のサークルIDを一度だけ取得
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      final currentCircleId = userDoc.data()?['currentCircleId'] as String?;
+
       final batch = FirebaseFirestore.instance.batch();
 
       for (DateTime date in selectedDates) {
@@ -222,9 +246,16 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
             .collection('schedules')
             .doc(dateKey);
 
-        batch.set(docRef, {
+        final scheduleData = <String, dynamic>{
           'members': FieldValue.arrayUnion([user.uid]),
-        }, SetOptions(merge: true));
+        };
+
+        // サークルIDがある場合は追加
+        if (currentCircleId != null) {
+          scheduleData['circleId'] = currentCircleId;
+        }
+
+        batch.set(docRef, scheduleData, SetOptions(merge: true));
       }
 
       await batch.commit();
@@ -279,6 +310,23 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBackground(isDarkMode),
+      appBar: AppBar(
+        title: Consumer(
+          builder: (context, ref, child) {
+            final currentCircle = ref.watch(currentCircleProvider);
+            return currentCircle.when(
+              loading: () => const Text('スケジュール'),
+              error: (error, stack) => const Text('スケジュール'),
+              data: (circle) => Text(
+                circle != null ? '${circle.name} - スケジュール' : 'スケジュール',
+              ),
+            );
+          },
+        ),
+        backgroundColor: AppTheme.cardColor(isDarkMode),
+        foregroundColor: AppTheme.primaryText(isDarkMode),
+        elevation: 0,
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
