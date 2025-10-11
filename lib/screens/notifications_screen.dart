@@ -136,115 +136,6 @@ class NotificationsScreen extends HookConsumerWidget {
     return filtered;
   }
 
-  Widget _buildModernHeader(bool isDarkMode, BuildContext context, WidgetRef ref) {
-    // Note: This method is no longer used but kept for potential future use
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.accentColor.withValues(alpha: 0.1),
-            AppTheme.accentColor.withValues(alpha: 0.05),
-          ],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
-      child: Row(
-        children: [
-          Semantics(
-            label: '戻るボタン',
-            hint: 'タップして前の画面に戻る',
-            button: true,
-            child: IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.arrow_back_ios),
-              style: IconButton.styleFrom(
-                backgroundColor: AppTheme.cardBackground(isDarkMode),
-                foregroundColor: AppTheme.primaryText(isDarkMode),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notifications,
-                      color: AppTheme.primaryText(isDarkMode),
-                      size: 28,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '通知',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryText(isDarkMode),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                StreamBuilder<QuerySnapshot>(
-                  stream: _getNotificationsStream(null),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final notifications = snapshot.data!.docs
-                          .map((doc) => NotificationModel.fromFirestore(doc))
-                          .toList();
-                      final unreadCount = notifications.where((n) => !n.isRead).length;
-                      return Text(
-                        unreadCount > 0 
-                            ? '$unreadCount件の未読通知があります'
-                            : 'すべて既読済み',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.secondaryText(isDarkMode),
-                        ),
-                      );
-                    }
-                    return Text(
-                      '通知を確認',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppTheme.secondaryText(isDarkMode),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          Semantics(
-            label: 'すべて既読にする',
-            hint: 'タップしてすべての通知を既読にする',
-            button: true,
-            child: IconButton(
-              onPressed: () => _markAllAsRead(context, ref),
-              icon: const Icon(Icons.done_all),
-              style: IconButton.styleFrom(
-                backgroundColor: AppTheme.accentColor.withValues(alpha: 0.1),
-                foregroundColor: AppTheme.accentColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSearchAndFilterBar(ValueNotifier<String> searchQuery, ValueNotifier<String> selectedFilter, bool isDarkMode) {
     return Padding(
@@ -562,7 +453,7 @@ class NotificationsScreen extends HookConsumerWidget {
               )
             else
               Text(
-                '${filterText}通知が見つかりませんでした',
+                '$filterText通知が見つかりませんでした',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.secondaryText(isDarkMode),
@@ -787,39 +678,4 @@ class NotificationsScreen extends HookConsumerWidget {
     }
   }
 
-  Future<void> _markAllAsRead(BuildContext context, WidgetRef ref) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      final batch = FirebaseFirestore.instance.batch();
-      final unreadNotifications = await FirebaseFirestore.instance
-          .collection('notifications')
-          .where('userId', isEqualTo: user.uid)
-          .where('isRead', isEqualTo: false)
-          .get();
-
-      for (final doc in unreadNotifications.docs) {
-        batch.update(doc.reference, {'isRead': true});
-      }
-
-      await batch.commit();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('すべての通知を既読にしました'),
-          backgroundColor: AppTheme.successColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('エラーが発生しました: $e'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
 }

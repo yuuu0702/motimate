@@ -21,7 +21,8 @@
       "Bash(flutter clean:*)",
       "Bash(flutter build:*)",
       "Edit",
-      "Bash(dart format:*)"
+      "Bash(dart format:*)",
+      "Bash(flutter:*)"
     ],
     "deny": []
   }

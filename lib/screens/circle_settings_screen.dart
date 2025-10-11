@@ -275,7 +275,7 @@ class CircleSettingsScreen extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedCategory.value.isEmpty ? null : selectedCategory.value,
+                    initialValue: selectedCategory.value.isEmpty ? null : selectedCategory.value,
                     decoration: const InputDecoration(
                       labelText: 'カテゴリー',
                       border: OutlineInputBorder(),
@@ -305,7 +305,7 @@ class CircleSettingsScreen extends HookConsumerWidget {
                 title: '見た目設定',
                 children: [
                   DropdownButtonFormField<IconType>(
-                    value: selectedIcon.value,
+                    initialValue: selectedIcon.value,
                     decoration: const InputDecoration(
                       labelText: 'アイコン',
                       border: OutlineInputBorder(),
@@ -326,7 +326,7 @@ class CircleSettingsScreen extends HookConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<ColorTheme>(
-                    value: selectedColor.value,
+                    initialValue: selectedColor.value,
                     decoration: const InputDecoration(
                       labelText: 'カラーテーマ',
                       border: OutlineInputBorder(),
@@ -446,7 +446,7 @@ class CircleSettingsScreen extends HookConsumerWidget {
         ),
           if (isLoading.value)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),

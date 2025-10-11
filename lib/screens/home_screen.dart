@@ -306,7 +306,7 @@ class HomeScreen extends HookConsumerWidget {
         child: Semantics(
           label: '通知',
           hint: unreadCount > 0 
-              ? '${unreadCount}件の未読通知があります。タップして通知画面に移動'
+              ? '$unreadCount件の未読通知があります。タップして通知画面に移動'
               : 'タップして通知画面に移動',
           button: true,
           child: Container(

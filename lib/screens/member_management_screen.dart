@@ -589,8 +589,8 @@ class MemberManagementScreen extends HookConsumerWidget {
               ),
               child: Center(
                 child: Text(
-                  user.displayName?.isNotEmpty == true
-                      ? user.displayName!.substring(0, 1).toUpperCase()
+                  user.displayName.isNotEmpty
+                      ? user.displayName.substring(0, 1).toUpperCase()
                       : user.username.substring(0, 1).toUpperCase(),
                   style: const TextStyle(
                     color: Colors.white,
@@ -608,7 +608,7 @@ class MemberManagementScreen extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.displayName?.isNotEmpty == true ? user.displayName! : user.username,
+                    user.displayName.isNotEmpty ? user.displayName : user.username,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -633,10 +633,10 @@ class MemberManagementScreen extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      if (user.department?.isNotEmpty == true) ...[
+                      if (user.department.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Text(
-                          user.department!,
+                          user.department,
                           style: TextStyle(
                             fontSize: 12,
                             color: AppTheme.tertiaryText(isDarkMode),
@@ -660,20 +660,20 @@ class MemberManagementScreen extends HookConsumerWidget {
                   case 'remove':
                     removeMember(
                       user.uid,
-                      user.displayName?.isNotEmpty == true ? user.displayName! : user.username,
+                      user.displayName.isNotEmpty ? user.displayName : user.username,
                     );
                     break;
                   case 'promote':
                     changeRole(
                       user.uid,
-                      user.displayName?.isNotEmpty == true ? user.displayName! : user.username,
+                      user.displayName.isNotEmpty ? user.displayName : user.username,
                       MemberRole.admin,
                     );
                     break;
                   case 'demote':
                     changeRole(
                       user.uid,
-                      user.displayName?.isNotEmpty == true ? user.displayName! : user.username,
+                      user.displayName.isNotEmpty ? user.displayName : user.username,
                       MemberRole.member,
                     );
                     break;

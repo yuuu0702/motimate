@@ -286,7 +286,6 @@ class DataMigrationScript {
 
     for (final userDoc in usersSnapshot.docs) {
       final userId = userDoc.id;
-      final userData = userDoc.data();
 
       // サークルメンバーのドキュメントID生成
       final memberDocRef = firestore.collection('circle_members').doc();

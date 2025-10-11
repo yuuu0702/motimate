@@ -473,7 +473,7 @@ class MotivationScreen extends HookConsumerWidget {
                       ]
                     : null,
               ),
-              transform: Matrix4.identity()..scale(isSelected ? 1.02 : 1.0),
+              transform: Matrix4.identity()..scale(isSelected ? 1.02 : 1.0, isSelected ? 1.02 : 1.0, 1.0),
               child: Row(
                 children: [
                   Text(

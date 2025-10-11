@@ -70,7 +70,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
             };
 
             // Check if current user is in the members list
-            if (user != null && members.contains(user.uid)) {
+            if (members.contains(user.uid)) {
               try {
                 final date = DateTime.parse(doc.id);
                 myDates.add(date);
@@ -1181,7 +1181,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     
     return Semantics(
       label: tooltip,
-      hint: isEnabled ? 'タップして$tooltip' : '${tooltip}は無効です',
+      hint: isEnabled ? 'タップして$tooltip' : '$tooltipは無効です',
       button: true,
       child: Material(
         color: Colors.transparent,
