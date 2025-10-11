@@ -33,7 +33,12 @@ mixin _$UserModel {
   List<DateTime>? get nextPlayDates => throw _privateConstructorUsedError;
   DateTime? get lastLogin => throw _privateConstructorUsedError;
   String? get fcmToken => throw _privateConstructorUsedError;
-  bool get notificationsEnabled => throw _privateConstructorUsedError;
+  bool get notificationsEnabled =>
+      throw _privateConstructorUsedError; // マルチサークル対応フィールド
+  List<String> get circleIds => throw _privateConstructorUsedError;
+  String? get currentCircleId => throw _privateConstructorUsedError;
+  Map<String, DateTime> get lastAccessByCircle =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -64,6 +69,9 @@ abstract class $UserModelCopyWith<$Res> {
     DateTime? lastLogin,
     String? fcmToken,
     bool notificationsEnabled,
+    List<String> circleIds,
+    String? currentCircleId,
+    Map<String, DateTime> lastAccessByCircle,
   });
 }
 
@@ -95,6 +103,9 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? lastLogin = freezed,
     Object? fcmToken = freezed,
     Object? notificationsEnabled = null,
+    Object? circleIds = null,
+    Object? currentCircleId = freezed,
+    Object? lastAccessByCircle = null,
   }) {
     return _then(
       _value.copyWith(
@@ -150,6 +161,18 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.notificationsEnabled
                 : notificationsEnabled // ignore: cast_nullable_to_non_nullable
                       as bool,
+            circleIds: null == circleIds
+                ? _value.circleIds
+                : circleIds // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
+            currentCircleId: freezed == currentCircleId
+                ? _value.currentCircleId
+                : currentCircleId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            lastAccessByCircle: null == lastAccessByCircle
+                ? _value.lastAccessByCircle
+                : lastAccessByCircle // ignore: cast_nullable_to_non_nullable
+                      as Map<String, DateTime>,
           )
           as $Val,
     );
@@ -179,6 +202,9 @@ abstract class _$$UserModelImplCopyWith<$Res>
     DateTime? lastLogin,
     String? fcmToken,
     bool notificationsEnabled,
+    List<String> circleIds,
+    String? currentCircleId,
+    Map<String, DateTime> lastAccessByCircle,
   });
 }
 
@@ -209,6 +235,9 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? lastLogin = freezed,
     Object? fcmToken = freezed,
     Object? notificationsEnabled = null,
+    Object? circleIds = null,
+    Object? currentCircleId = freezed,
+    Object? lastAccessByCircle = null,
   }) {
     return _then(
       _$UserModelImpl(
@@ -264,6 +293,18 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.notificationsEnabled
             : notificationsEnabled // ignore: cast_nullable_to_non_nullable
                   as bool,
+        circleIds: null == circleIds
+            ? _value._circleIds
+            : circleIds // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        currentCircleId: freezed == currentCircleId
+            ? _value.currentCircleId
+            : currentCircleId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        lastAccessByCircle: null == lastAccessByCircle
+            ? _value._lastAccessByCircle
+            : lastAccessByCircle // ignore: cast_nullable_to_non_nullable
+                  as Map<String, DateTime>,
       ),
     );
   }
@@ -286,7 +327,12 @@ class _$UserModelImpl implements _UserModel {
     this.lastLogin,
     this.fcmToken,
     this.notificationsEnabled = false,
-  }) : _nextPlayDates = nextPlayDates;
+    final List<String> circleIds = const <String>[],
+    this.currentCircleId,
+    final Map<String, DateTime> lastAccessByCircle = const <String, DateTime>{},
+  }) : _nextPlayDates = nextPlayDates,
+       _circleIds = circleIds,
+       _lastAccessByCircle = lastAccessByCircle;
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserModelImplFromJson(json);
@@ -328,10 +374,32 @@ class _$UserModelImpl implements _UserModel {
   @override
   @JsonKey()
   final bool notificationsEnabled;
+  // マルチサークル対応フィールド
+  final List<String> _circleIds;
+  // マルチサークル対応フィールド
+  @override
+  @JsonKey()
+  List<String> get circleIds {
+    if (_circleIds is EqualUnmodifiableListView) return _circleIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_circleIds);
+  }
+
+  @override
+  final String? currentCircleId;
+  final Map<String, DateTime> _lastAccessByCircle;
+  @override
+  @JsonKey()
+  Map<String, DateTime> get lastAccessByCircle {
+    if (_lastAccessByCircle is EqualUnmodifiableMapView)
+      return _lastAccessByCircle;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_lastAccessByCircle);
+  }
 
   @override
   String toString() {
-    return 'UserModel(uid: $uid, username: $username, displayName: $displayName, department: $department, group: $group, profileSetup: $profileSetup, latestMotivationLevel: $latestMotivationLevel, latestMotivationTimestamp: $latestMotivationTimestamp, latestMotivationComment: $latestMotivationComment, nextPlayDates: $nextPlayDates, lastLogin: $lastLogin, fcmToken: $fcmToken, notificationsEnabled: $notificationsEnabled)';
+    return 'UserModel(uid: $uid, username: $username, displayName: $displayName, department: $department, group: $group, profileSetup: $profileSetup, latestMotivationLevel: $latestMotivationLevel, latestMotivationTimestamp: $latestMotivationTimestamp, latestMotivationComment: $latestMotivationComment, nextPlayDates: $nextPlayDates, lastLogin: $lastLogin, fcmToken: $fcmToken, notificationsEnabled: $notificationsEnabled, circleIds: $circleIds, currentCircleId: $currentCircleId, lastAccessByCircle: $lastAccessByCircle)';
   }
 
   @override
@@ -370,7 +438,17 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.fcmToken, fcmToken) ||
                 other.fcmToken == fcmToken) &&
             (identical(other.notificationsEnabled, notificationsEnabled) ||
-                other.notificationsEnabled == notificationsEnabled));
+                other.notificationsEnabled == notificationsEnabled) &&
+            const DeepCollectionEquality().equals(
+              other._circleIds,
+              _circleIds,
+            ) &&
+            (identical(other.currentCircleId, currentCircleId) ||
+                other.currentCircleId == currentCircleId) &&
+            const DeepCollectionEquality().equals(
+              other._lastAccessByCircle,
+              _lastAccessByCircle,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -390,6 +468,9 @@ class _$UserModelImpl implements _UserModel {
     lastLogin,
     fcmToken,
     notificationsEnabled,
+    const DeepCollectionEquality().hash(_circleIds),
+    currentCircleId,
+    const DeepCollectionEquality().hash(_lastAccessByCircle),
   );
 
   /// Create a copy of UserModel
@@ -421,6 +502,9 @@ abstract class _UserModel implements UserModel {
     final DateTime? lastLogin,
     final String? fcmToken,
     final bool notificationsEnabled,
+    final List<String> circleIds,
+    final String? currentCircleId,
+    final Map<String, DateTime> lastAccessByCircle,
   }) = _$UserModelImpl;
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
@@ -451,7 +535,13 @@ abstract class _UserModel implements UserModel {
   @override
   String? get fcmToken;
   @override
-  bool get notificationsEnabled;
+  bool get notificationsEnabled; // マルチサークル対応フィールド
+  @override
+  List<String> get circleIds;
+  @override
+  String? get currentCircleId;
+  @override
+  Map<String, DateTime> get lastAccessByCircle;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.

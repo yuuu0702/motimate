@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'practice_decision_model.dart';
+part of 'activity_decision_model.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -15,96 +15,99 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-PracticeDecisionModel _$PracticeDecisionModelFromJson(
+ActivityDecisionModel _$ActivityDecisionModelFromJson(
   Map<String, dynamic> json,
 ) {
-  return _PracticeDecisionModel.fromJson(json);
+  return _ActivityDecisionModel.fromJson(json);
 }
 
 /// @nodoc
-mixin _$PracticeDecisionModel {
+mixin _$ActivityDecisionModel {
   String get id => throw _privateConstructorUsedError;
+  String get circleId => throw _privateConstructorUsedError; // 新規追加: サークルID
   String get decidedBy => throw _privateConstructorUsedError;
   DateTime get decidedAt => throw _privateConstructorUsedError;
-  DateTime get practiceDate => throw _privateConstructorUsedError;
+  DateTime get activityDate =>
+      throw _privateConstructorUsedError; // practiceDate から変更
   String get dateKey => throw _privateConstructorUsedError;
   List<String> get availableMembers => throw _privateConstructorUsedError;
   String get status =>
       throw _privateConstructorUsedError; // pending, confirmed, cancelled
   Map<String, String> get responses => throw _privateConstructorUsedError;
-  String? get memo =>
-      throw _privateConstructorUsedError; // アクティビティに関するメモ（履歴で使用）
-  List<String> get actualParticipants =>
-      throw _privateConstructorUsedError; // 実際に参加した人のリスト
-  String? get circleId => throw _privateConstructorUsedError;
+  String? get memo => throw _privateConstructorUsedError; // 活動に関するメモ
+  List<String> get actualParticipants => throw _privateConstructorUsedError;
 
-  /// Serializes this PracticeDecisionModel to a JSON map.
+  /// Serializes this ActivityDecisionModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of PracticeDecisionModel
+  /// Create a copy of ActivityDecisionModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PracticeDecisionModelCopyWith<PracticeDecisionModel> get copyWith =>
+  $ActivityDecisionModelCopyWith<ActivityDecisionModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PracticeDecisionModelCopyWith<$Res> {
-  factory $PracticeDecisionModelCopyWith(
-    PracticeDecisionModel value,
-    $Res Function(PracticeDecisionModel) then,
-  ) = _$PracticeDecisionModelCopyWithImpl<$Res, PracticeDecisionModel>;
+abstract class $ActivityDecisionModelCopyWith<$Res> {
+  factory $ActivityDecisionModelCopyWith(
+    ActivityDecisionModel value,
+    $Res Function(ActivityDecisionModel) then,
+  ) = _$ActivityDecisionModelCopyWithImpl<$Res, ActivityDecisionModel>;
   @useResult
   $Res call({
     String id,
+    String circleId,
     String decidedBy,
     DateTime decidedAt,
-    DateTime practiceDate,
+    DateTime activityDate,
     String dateKey,
     List<String> availableMembers,
     String status,
     Map<String, String> responses,
     String? memo,
     List<String> actualParticipants,
-    String? circleId,
   });
 }
 
 /// @nodoc
-class _$PracticeDecisionModelCopyWithImpl<
+class _$ActivityDecisionModelCopyWithImpl<
   $Res,
-  $Val extends PracticeDecisionModel
+  $Val extends ActivityDecisionModel
 >
-    implements $PracticeDecisionModelCopyWith<$Res> {
-  _$PracticeDecisionModelCopyWithImpl(this._value, this._then);
+    implements $ActivityDecisionModelCopyWith<$Res> {
+  _$ActivityDecisionModelCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of PracticeDecisionModel
+  /// Create a copy of ActivityDecisionModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = null,
+    Object? circleId = null,
     Object? decidedBy = null,
     Object? decidedAt = null,
-    Object? practiceDate = null,
+    Object? activityDate = null,
     Object? dateKey = null,
     Object? availableMembers = null,
     Object? status = null,
     Object? responses = null,
     Object? memo = freezed,
     Object? actualParticipants = null,
-    Object? circleId = freezed,
   }) {
     return _then(
       _value.copyWith(
             id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            circleId: null == circleId
+                ? _value.circleId
+                : circleId // ignore: cast_nullable_to_non_nullable
                       as String,
             decidedBy: null == decidedBy
                 ? _value.decidedBy
@@ -114,9 +117,9 @@ class _$PracticeDecisionModelCopyWithImpl<
                 ? _value.decidedAt
                 : decidedAt // ignore: cast_nullable_to_non_nullable
                       as DateTime,
-            practiceDate: null == practiceDate
-                ? _value.practiceDate
-                : practiceDate // ignore: cast_nullable_to_non_nullable
+            activityDate: null == activityDate
+                ? _value.activityDate
+                : activityDate // ignore: cast_nullable_to_non_nullable
                       as DateTime,
             dateKey: null == dateKey
                 ? _value.dateKey
@@ -142,10 +145,6 @@ class _$PracticeDecisionModelCopyWithImpl<
                 ? _value.actualParticipants
                 : actualParticipants // ignore: cast_nullable_to_non_nullable
                       as List<String>,
-            circleId: freezed == circleId
-                ? _value.circleId
-                : circleId // ignore: cast_nullable_to_non_nullable
-                      as String?,
           )
           as $Val,
     );
@@ -153,61 +152,65 @@ class _$PracticeDecisionModelCopyWithImpl<
 }
 
 /// @nodoc
-abstract class _$$PracticeDecisionModelImplCopyWith<$Res>
-    implements $PracticeDecisionModelCopyWith<$Res> {
-  factory _$$PracticeDecisionModelImplCopyWith(
-    _$PracticeDecisionModelImpl value,
-    $Res Function(_$PracticeDecisionModelImpl) then,
-  ) = __$$PracticeDecisionModelImplCopyWithImpl<$Res>;
+abstract class _$$ActivityDecisionModelImplCopyWith<$Res>
+    implements $ActivityDecisionModelCopyWith<$Res> {
+  factory _$$ActivityDecisionModelImplCopyWith(
+    _$ActivityDecisionModelImpl value,
+    $Res Function(_$ActivityDecisionModelImpl) then,
+  ) = __$$ActivityDecisionModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
     String id,
+    String circleId,
     String decidedBy,
     DateTime decidedAt,
-    DateTime practiceDate,
+    DateTime activityDate,
     String dateKey,
     List<String> availableMembers,
     String status,
     Map<String, String> responses,
     String? memo,
     List<String> actualParticipants,
-    String? circleId,
   });
 }
 
 /// @nodoc
-class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
+class __$$ActivityDecisionModelImplCopyWithImpl<$Res>
     extends
-        _$PracticeDecisionModelCopyWithImpl<$Res, _$PracticeDecisionModelImpl>
-    implements _$$PracticeDecisionModelImplCopyWith<$Res> {
-  __$$PracticeDecisionModelImplCopyWithImpl(
-    _$PracticeDecisionModelImpl _value,
-    $Res Function(_$PracticeDecisionModelImpl) _then,
+        _$ActivityDecisionModelCopyWithImpl<$Res, _$ActivityDecisionModelImpl>
+    implements _$$ActivityDecisionModelImplCopyWith<$Res> {
+  __$$ActivityDecisionModelImplCopyWithImpl(
+    _$ActivityDecisionModelImpl _value,
+    $Res Function(_$ActivityDecisionModelImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of PracticeDecisionModel
+  /// Create a copy of ActivityDecisionModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = null,
+    Object? circleId = null,
     Object? decidedBy = null,
     Object? decidedAt = null,
-    Object? practiceDate = null,
+    Object? activityDate = null,
     Object? dateKey = null,
     Object? availableMembers = null,
     Object? status = null,
     Object? responses = null,
     Object? memo = freezed,
     Object? actualParticipants = null,
-    Object? circleId = freezed,
   }) {
     return _then(
-      _$PracticeDecisionModelImpl(
+      _$ActivityDecisionModelImpl(
         id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        circleId: null == circleId
+            ? _value.circleId
+            : circleId // ignore: cast_nullable_to_non_nullable
                   as String,
         decidedBy: null == decidedBy
             ? _value.decidedBy
@@ -217,9 +220,9 @@ class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
             ? _value.decidedAt
             : decidedAt // ignore: cast_nullable_to_non_nullable
                   as DateTime,
-        practiceDate: null == practiceDate
-            ? _value.practiceDate
-            : practiceDate // ignore: cast_nullable_to_non_nullable
+        activityDate: null == activityDate
+            ? _value.activityDate
+            : activityDate // ignore: cast_nullable_to_non_nullable
                   as DateTime,
         dateKey: null == dateKey
             ? _value.dateKey
@@ -245,10 +248,6 @@ class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
             ? _value._actualParticipants
             : actualParticipants // ignore: cast_nullable_to_non_nullable
                   as List<String>,
-        circleId: freezed == circleId
-            ? _value.circleId
-            : circleId // ignore: cast_nullable_to_non_nullable
-                  as String?,
       ),
     );
   }
@@ -256,34 +255,38 @@ class __$$PracticeDecisionModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
-  const _$PracticeDecisionModelImpl({
+class _$ActivityDecisionModelImpl implements _ActivityDecisionModel {
+  const _$ActivityDecisionModelImpl({
     required this.id,
+    required this.circleId,
     required this.decidedBy,
     required this.decidedAt,
-    required this.practiceDate,
+    required this.activityDate,
     required this.dateKey,
     required final List<String> availableMembers,
     this.status = 'pending',
     final Map<String, String> responses = const <String, String>{},
     this.memo,
     final List<String> actualParticipants = const <String>[],
-    this.circleId,
   }) : _availableMembers = availableMembers,
        _responses = responses,
        _actualParticipants = actualParticipants;
 
-  factory _$PracticeDecisionModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PracticeDecisionModelImplFromJson(json);
+  factory _$ActivityDecisionModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActivityDecisionModelImplFromJson(json);
 
   @override
   final String id;
+  @override
+  final String circleId;
+  // 新規追加: サークルID
   @override
   final String decidedBy;
   @override
   final DateTime decidedAt;
   @override
-  final DateTime practiceDate;
+  final DateTime activityDate;
+  // practiceDate から変更
   @override
   final String dateKey;
   final List<String> _availableMembers;
@@ -311,9 +314,9 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
 
   @override
   final String? memo;
-  // アクティビティに関するメモ（履歴で使用）
+  // 活動に関するメモ
   final List<String> _actualParticipants;
-  // アクティビティに関するメモ（履歴で使用）
+  // 活動に関するメモ
   @override
   @JsonKey()
   List<String> get actualParticipants {
@@ -323,27 +326,25 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
     return EqualUnmodifiableListView(_actualParticipants);
   }
 
-  // 実際に参加した人のリスト
-  @override
-  final String? circleId;
-
   @override
   String toString() {
-    return 'PracticeDecisionModel(id: $id, decidedBy: $decidedBy, decidedAt: $decidedAt, practiceDate: $practiceDate, dateKey: $dateKey, availableMembers: $availableMembers, status: $status, responses: $responses, memo: $memo, actualParticipants: $actualParticipants, circleId: $circleId)';
+    return 'ActivityDecisionModel(id: $id, circleId: $circleId, decidedBy: $decidedBy, decidedAt: $decidedAt, activityDate: $activityDate, dateKey: $dateKey, availableMembers: $availableMembers, status: $status, responses: $responses, memo: $memo, actualParticipants: $actualParticipants)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PracticeDecisionModelImpl &&
+            other is _$ActivityDecisionModelImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.circleId, circleId) ||
+                other.circleId == circleId) &&
             (identical(other.decidedBy, decidedBy) ||
                 other.decidedBy == decidedBy) &&
             (identical(other.decidedAt, decidedAt) ||
                 other.decidedAt == decidedAt) &&
-            (identical(other.practiceDate, practiceDate) ||
-                other.practiceDate == practiceDate) &&
+            (identical(other.activityDate, activityDate) ||
+                other.activityDate == activityDate) &&
             (identical(other.dateKey, dateKey) || other.dateKey == dateKey) &&
             const DeepCollectionEquality().equals(
               other._availableMembers,
@@ -358,9 +359,7 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
             const DeepCollectionEquality().equals(
               other._actualParticipants,
               _actualParticipants,
-            ) &&
-            (identical(other.circleId, circleId) ||
-                other.circleId == circleId));
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -368,62 +367,64 @@ class _$PracticeDecisionModelImpl implements _PracticeDecisionModel {
   int get hashCode => Object.hash(
     runtimeType,
     id,
+    circleId,
     decidedBy,
     decidedAt,
-    practiceDate,
+    activityDate,
     dateKey,
     const DeepCollectionEquality().hash(_availableMembers),
     status,
     const DeepCollectionEquality().hash(_responses),
     memo,
     const DeepCollectionEquality().hash(_actualParticipants),
-    circleId,
   );
 
-  /// Create a copy of PracticeDecisionModel
+  /// Create a copy of ActivityDecisionModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PracticeDecisionModelImplCopyWith<_$PracticeDecisionModelImpl>
+  _$$ActivityDecisionModelImplCopyWith<_$ActivityDecisionModelImpl>
   get copyWith =>
-      __$$PracticeDecisionModelImplCopyWithImpl<_$PracticeDecisionModelImpl>(
+      __$$ActivityDecisionModelImplCopyWithImpl<_$ActivityDecisionModelImpl>(
         this,
         _$identity,
       );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PracticeDecisionModelImplToJson(this);
+    return _$$ActivityDecisionModelImplToJson(this);
   }
 }
 
-abstract class _PracticeDecisionModel implements PracticeDecisionModel {
-  const factory _PracticeDecisionModel({
+abstract class _ActivityDecisionModel implements ActivityDecisionModel {
+  const factory _ActivityDecisionModel({
     required final String id,
+    required final String circleId,
     required final String decidedBy,
     required final DateTime decidedAt,
-    required final DateTime practiceDate,
+    required final DateTime activityDate,
     required final String dateKey,
     required final List<String> availableMembers,
     final String status,
     final Map<String, String> responses,
     final String? memo,
     final List<String> actualParticipants,
-    final String? circleId,
-  }) = _$PracticeDecisionModelImpl;
+  }) = _$ActivityDecisionModelImpl;
 
-  factory _PracticeDecisionModel.fromJson(Map<String, dynamic> json) =
-      _$PracticeDecisionModelImpl.fromJson;
+  factory _ActivityDecisionModel.fromJson(Map<String, dynamic> json) =
+      _$ActivityDecisionModelImpl.fromJson;
 
   @override
   String get id;
+  @override
+  String get circleId; // 新規追加: サークルID
   @override
   String get decidedBy;
   @override
   DateTime get decidedAt;
   @override
-  DateTime get practiceDate;
+  DateTime get activityDate; // practiceDate から変更
   @override
   String get dateKey;
   @override
@@ -433,16 +434,14 @@ abstract class _PracticeDecisionModel implements PracticeDecisionModel {
   @override
   Map<String, String> get responses;
   @override
-  String? get memo; // アクティビティに関するメモ（履歴で使用）
+  String? get memo; // 活動に関するメモ
   @override
-  List<String> get actualParticipants; // 実際に参加した人のリスト
-  @override
-  String? get circleId;
+  List<String> get actualParticipants;
 
-  /// Create a copy of PracticeDecisionModel
+  /// Create a copy of ActivityDecisionModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PracticeDecisionModelImplCopyWith<_$PracticeDecisionModelImpl>
+  _$$ActivityDecisionModelImplCopyWith<_$ActivityDecisionModelImpl>
   get copyWith => throw _privateConstructorUsedError;
 }

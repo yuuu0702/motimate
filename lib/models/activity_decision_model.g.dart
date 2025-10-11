@@ -1,18 +1,19 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'practice_decision_model.dart';
+part of 'activity_decision_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PracticeDecisionModelImpl _$$PracticeDecisionModelImplFromJson(
+_$ActivityDecisionModelImpl _$$ActivityDecisionModelImplFromJson(
   Map<String, dynamic> json,
-) => _$PracticeDecisionModelImpl(
+) => _$ActivityDecisionModelImpl(
   id: json['id'] as String,
+  circleId: json['circleId'] as String,
   decidedBy: json['decidedBy'] as String,
   decidedAt: DateTime.parse(json['decidedAt'] as String),
-  practiceDate: DateTime.parse(json['practiceDate'] as String),
+  activityDate: DateTime.parse(json['activityDate'] as String),
   dateKey: json['dateKey'] as String,
   availableMembers: (json['availableMembers'] as List<dynamic>)
       .map((e) => e as String)
@@ -29,21 +30,20 @@ _$PracticeDecisionModelImpl _$$PracticeDecisionModelImplFromJson(
           ?.map((e) => e as String)
           .toList() ??
       const <String>[],
-  circleId: json['circleId'] as String?,
 );
 
-Map<String, dynamic> _$$PracticeDecisionModelImplToJson(
-  _$PracticeDecisionModelImpl instance,
+Map<String, dynamic> _$$ActivityDecisionModelImplToJson(
+  _$ActivityDecisionModelImpl instance,
 ) => <String, dynamic>{
   'id': instance.id,
+  'circleId': instance.circleId,
   'decidedBy': instance.decidedBy,
   'decidedAt': instance.decidedAt.toIso8601String(),
-  'practiceDate': instance.practiceDate.toIso8601String(),
+  'activityDate': instance.activityDate.toIso8601String(),
   'dateKey': instance.dateKey,
   'availableMembers': instance.availableMembers,
   'status': instance.status,
   'responses': instance.responses,
   'memo': instance.memo,
   'actualParticipants': instance.actualParticipants,
-  'circleId': instance.circleId,
 };

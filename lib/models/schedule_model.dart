@@ -12,6 +12,7 @@ class ScheduleModel with _$ScheduleModel {
     required List<String> members,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? circleId, // マルチサークル対応
   }) = _ScheduleModel;
 
   factory ScheduleModel.fromJson(Map<String, dynamic> json) =>
@@ -29,6 +30,7 @@ class ScheduleModel with _$ScheduleModel {
       updatedAt: data['updatedAt'] != null
           ? (data['updatedAt'] as Timestamp).toDate()
           : null,
+      circleId: data['circleId'],
     );
   }
 }
@@ -39,6 +41,7 @@ extension ScheduleModelX on ScheduleModel {
       'members': members,
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+      'circleId': circleId,
     };
   }
 

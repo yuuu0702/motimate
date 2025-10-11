@@ -6,29 +6,38 @@ part of 'user_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
-    _$UserModelImpl(
-      uid: json['uid'] as String,
-      username: json['username'] as String,
-      displayName: json['displayName'] as String,
-      department: json['department'] as String,
-      group: json['group'] as String,
-      profileSetup: json['profileSetup'] as bool? ?? false,
-      latestMotivationLevel:
-          (json['latestMotivationLevel'] as num?)?.toInt() ?? 3,
-      latestMotivationTimestamp: json['latestMotivationTimestamp'] == null
-          ? null
-          : DateTime.parse(json['latestMotivationTimestamp'] as String),
-      latestMotivationComment: json['latestMotivationComment'] as String?,
-      nextPlayDates: (json['nextPlayDates'] as List<dynamic>?)
-          ?.map((e) => DateTime.parse(e as String))
-          .toList(),
-      lastLogin: json['lastLogin'] == null
-          ? null
-          : DateTime.parse(json['lastLogin'] as String),
-      fcmToken: json['fcmToken'] as String?,
-      notificationsEnabled: json['notificationsEnabled'] as bool? ?? false,
-    );
+_$UserModelImpl _$$UserModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$UserModelImpl(
+  uid: json['uid'] as String,
+  username: json['username'] as String,
+  displayName: json['displayName'] as String,
+  department: json['department'] as String,
+  group: json['group'] as String,
+  profileSetup: json['profileSetup'] as bool? ?? false,
+  latestMotivationLevel: (json['latestMotivationLevel'] as num?)?.toInt() ?? 3,
+  latestMotivationTimestamp: json['latestMotivationTimestamp'] == null
+      ? null
+      : DateTime.parse(json['latestMotivationTimestamp'] as String),
+  latestMotivationComment: json['latestMotivationComment'] as String?,
+  nextPlayDates: (json['nextPlayDates'] as List<dynamic>?)
+      ?.map((e) => DateTime.parse(e as String))
+      .toList(),
+  lastLogin: json['lastLogin'] == null
+      ? null
+      : DateTime.parse(json['lastLogin'] as String),
+  fcmToken: json['fcmToken'] as String?,
+  notificationsEnabled: json['notificationsEnabled'] as bool? ?? false,
+  circleIds:
+      (json['circleIds'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const <String>[],
+  currentCircleId: json['currentCircleId'] as String?,
+  lastAccessByCircle:
+      (json['lastAccessByCircle'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, DateTime.parse(e as String)),
+      ) ??
+      const <String, DateTime>{},
+);
 
 Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
     <String, dynamic>{
@@ -48,4 +57,9 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'lastLogin': instance.lastLogin?.toIso8601String(),
       'fcmToken': instance.fcmToken,
       'notificationsEnabled': instance.notificationsEnabled,
+      'circleIds': instance.circleIds,
+      'currentCircleId': instance.currentCircleId,
+      'lastAccessByCircle': instance.lastAccessByCircle.map(
+        (k, e) => MapEntry(k, e.toIso8601String()),
+      ),
     };

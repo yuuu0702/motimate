@@ -511,7 +511,7 @@ class UserSettingsScreen extends HookConsumerWidget {
                                       onChanged: (value) async {
                                         await ref.read(themeControllerProvider.notifier).toggleTheme();
                                       },
-                                      activeColor: AppTheme.accentColor,
+                                      activeThumbColor: AppTheme.accentColor,
                                     ),
                                   ],
                                 ),
@@ -598,7 +598,7 @@ class UserSettingsScreen extends HookConsumerWidget {
                                     Switch(
                                       value: notificationsEnabled.value,
                                       onChanged: toggleNotifications,
-                                      activeColor: AppTheme.accentColor,
+                                      activeThumbColor: AppTheme.accentColor,
                                     ),
                                   ],
                                 ),

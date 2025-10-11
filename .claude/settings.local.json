@@ -20,6 +20,10 @@
       "Bash(flutter run:*)",
       "Bash(flutter clean:*)",
       "Bash(flutter build:*)",
+      "Edit",
+      "Bash(dart format:*)",
+      "Bash(flutter:*)",
+      "Bash(git checkout:*)",
       "Bash(git merge:*)"
     ],
     "deny": []

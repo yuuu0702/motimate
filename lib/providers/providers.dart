@@ -12,6 +12,12 @@ import '../services/cached_motivation_service.dart';
 import '../services/cached_notification_service.dart';
 import '../services/optimized_schedule_service.dart';
 import '../services/image_cache_service.dart';
+// マルチサークル対応サービス
+import '../services/permission_service.dart';
+import '../services/circle_service.dart';
+import '../services/circle_member_service.dart';
+import '../services/activity_service.dart';
+import '../services/circle_switcher_service.dart';
 import '../core/cache/cache_manager.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -19,6 +25,8 @@ import '../viewmodels/notification_viewmodel.dart';
 import '../core/theme/theme_controller.dart';
 import '../core/error/error_handler.dart';
 import '../core/cache/cache_invalidation_controller.dart';
+import '../models/circle_model.dart';
+import '../models/user_model.dart';
 
 // Firebase instances
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
@@ -50,6 +58,46 @@ final scheduleServiceProvider = Provider<ScheduleService>((ref) {
 
 final practiceServiceProvider = Provider<PracticeService>((ref) {
   return PracticeService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+  );
+});
+
+// マルチサークル対応サービス
+final permissionServiceProvider = Provider<PermissionService>((ref) {
+  return PermissionService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+  );
+});
+
+final circleServiceProvider = Provider<CircleService>((ref) {
+  return CircleService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+    permissionService: ref.watch(permissionServiceProvider),
+  );
+});
+
+final circleMemberServiceProvider = Provider<CircleMemberService>((ref) {
+  return CircleMemberService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+    permissionService: ref.watch(permissionServiceProvider),
+    circleService: ref.watch(circleServiceProvider),
+  );
+});
+
+final activityServiceProvider = Provider<ActivityService>((ref) {
+  return ActivityService(
+    auth: ref.watch(firebaseAuthProvider),
+    firestore: ref.watch(firestoreProvider),
+    permissionService: ref.watch(permissionServiceProvider),
+  );
+});
+
+final circleSwitcherServiceProvider = Provider<CircleSwitcherService>((ref) {
+  return CircleSwitcherService(
     auth: ref.watch(firebaseAuthProvider),
     firestore: ref.watch(firestoreProvider),
   );
@@ -152,4 +200,55 @@ final cacheLifecycleProvider = Provider<void>((ref) {
 final themeProvider = Provider<bool>((ref) {
   final theme = ref.watch(themeControllerProvider);
   return theme == ThemeMode.dark;
+});
+
+// マルチサークル関連プロバイダー
+// 現在のユーザー情報を監視
+final currentUserProvider = StreamProvider<UserModel?>((ref) {
+  final user = ref.watch(authStateProvider).value;
+  if (user == null) return Stream.value(null);
+
+  return ref.watch(firestoreProvider)
+    .collection('users')
+    .doc(user.uid)
+    .snapshots()
+    .map((doc) => doc.exists ? UserModel.fromFirestore(doc) : null);
+});
+
+// 現在のサークル情報を監視
+final currentCircleProvider = StreamProvider<CircleModel?>((ref) {
+  final user = ref.watch(currentUserProvider).value;
+  if (user?.currentCircleId == null) return Stream.value(null);
+
+  return ref.watch(firestoreProvider)
+    .collection('circles')
+    .doc(user!.currentCircleId!)
+    .snapshots()
+    .map((doc) => doc.exists ? CircleModel.fromFirestore(doc) : null);
+});
+
+// ユーザーが参加しているサークル一覧を監視
+final userCirclesProvider = StreamProvider<List<CircleModel>>((ref) async* {
+  final user = ref.watch(currentUserProvider).value;
+  if (user == null || user.circleIds.isEmpty) {
+    yield <CircleModel>[];
+    return;
+  }
+
+  final firestore = ref.watch(firestoreProvider);
+  final circles = <CircleModel>[];
+
+  for (final circleId in user.circleIds) {
+    try {
+      final doc = await firestore.collection('circles').doc(circleId).get();
+      if (doc.exists) {
+        circles.add(CircleModel.fromFirestore(doc));
+      }
+    } catch (e) {
+      // エラーが発生したサークルはスキップ
+      continue;
+    }
+  }
+
+  yield circles;
 });

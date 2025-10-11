@@ -18,7 +18,7 @@ class ImageCacheService {
     double? size,
   }) async {
     final colorHex = color != null ? '${(color.r * 255).round()}_${(color.g * 255).round()}_${(color.b * 255).round()}' : 'null';
-    final cacheKey = _iconCachePrefix + iconData.codePoint.toString() + '_' + colorHex + '_' + size.toString();
+    final cacheKey = '$_iconCachePrefix${iconData.codePoint}_${colorHex}_$size';
     
     // キャッシュから取得を試行
     final cachedIcon = cacheManager.get<Icon>(cacheKey);

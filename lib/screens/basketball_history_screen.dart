@@ -209,7 +209,7 @@ class BasketballHistoryScreen extends HookConsumerWidget {
         Expanded(
           child: _buildStatCard(
             '平均参加者',
-            '${averageParticipants}人',
+            '$averageParticipants人',
             Icons.people,
             const Color(0xFF10B981),
             isDarkMode,

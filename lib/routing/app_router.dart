@@ -11,6 +11,11 @@ import '../screens/notifications_screen.dart';
 import '../screens/user_settings_screen.dart';
 import '../screens/basketball_history_screen.dart';
 import '../screens/splash_screen.dart';
+import '../screens/circle_selection_screen.dart';
+import '../screens/circle_creation_screen.dart';
+import '../screens/circle_join_screen.dart';
+import '../screens/circle_settings_screen.dart';
+import '../screens/member_management_screen.dart';
 import '../app.dart';
 import '../core/auth/auth_state_provider.dart';
 import '../core/auth/auth_refresh_notifier.dart';
@@ -27,6 +32,11 @@ abstract class AppRoutes {
   static const String notifications = '/notifications';
   static const String settings = '/settings';
   static const String basketballHistory = '/basketball-history';
+  static const String circleSelection = '/circle-selection';
+  static const String circleCreation = '/circle-creation';
+  static const String circleJoin = '/circle-join';
+  static const String circleSettings = '/circle-settings';
+  static const String memberManagement = '/member-management';
 }
 
 /// Router provider
@@ -117,6 +127,31 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.basketballHistory,
             name: 'basketballHistory',
             builder: (context, state) => const BasketballHistoryScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.circleSelection,
+            name: 'circleSelection',
+            builder: (context, state) => const CircleSelectionScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.circleCreation,
+            name: 'circleCreation',
+            builder: (context, state) => const CircleCreationScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.circleJoin,
+            name: 'circleJoin',
+            builder: (context, state) => const CircleJoinScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.circleSettings,
+            name: 'circleSettings',
+            builder: (context, state) => const CircleSettingsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.memberManagement,
+            name: 'memberManagement',
+            builder: (context, state) => const MemberManagementScreen(),
           ),
         ],
       ),
