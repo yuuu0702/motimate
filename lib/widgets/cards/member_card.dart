@@ -53,43 +53,42 @@ class MemberCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Name and department row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              displayName,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.primaryText(isDarkMode),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (department?.isNotEmpty == true || group?.isNotEmpty == true)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppTheme.accentColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                [department, group]
-                                    .where((s) => s?.isNotEmpty == true)
-                                    .join(' / '),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: AppTheme.accentColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                        ],
+                      // Name
+                      Text(
+                        displayName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryText(isDarkMode),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      
+
+                      // Department and group
+                      if (department?.isNotEmpty == true || group?.isNotEmpty == true) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            [department, group]
+                                .where((s) => s?.isNotEmpty == true)
+                                .join(' / '),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.accentColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+
                       const SizedBox(height: 8),
-                      
+
                       // Motivation section with progress bar
                       if (motivationLevel != null) ...[
                         Row(
@@ -151,7 +150,7 @@ class MemberCard extends StatelessWidget {
                           ],
                         ),
                       ],
-                      
+
                       // Bio preview (if available)
                       if (bio?.isNotEmpty == true) ...[
                         const SizedBox(height: 8),

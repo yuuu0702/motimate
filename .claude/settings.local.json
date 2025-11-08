@@ -19,7 +19,10 @@
       "Bash(flutter analyze:*)",
       "Bash(flutter run:*)",
       "Bash(flutter clean:*)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Bash(claude mcp list)",
+      "Bash(claude mcp add:*)",
+      "Bash(dart --help:*)"
     ],
     "deny": []
   }
