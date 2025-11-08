@@ -4,9 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import '../models/notification_model.dart';
 import '../themes/app_theme.dart';
 import '../providers/providers.dart';
+import '../routing/app_router.dart';
 
 class NotificationsScreen extends HookConsumerWidget {
   const NotificationsScreen({super.key});
@@ -140,10 +142,10 @@ class NotificationsScreen extends HookConsumerWidget {
         children: [
           Semantics(
             label: '戻るボタン',
-            hint: 'タップして前の画面に戻る',
+            hint: 'タップしてホーム画面に戻る',
             button: true,
             child: IconButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.go(AppRoutes.home),
               icon: const Icon(Icons.arrow_back_ios),
               style: IconButton.styleFrom(
                 backgroundColor: AppTheme.cardBackground(isDarkMode),

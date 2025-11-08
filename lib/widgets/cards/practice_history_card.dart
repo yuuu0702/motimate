@@ -166,16 +166,7 @@ class PracticeHistoryCard extends ConsumerWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            '実際の参加: ${practice.actualParticipants.length}人',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.secondaryText(isDarkMode),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            '回答参加: ${practice.joinCount}人',
+            '${practice.actualParticipants.length}人',
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.secondaryText(isDarkMode),

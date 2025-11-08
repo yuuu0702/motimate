@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/providers.dart';
 import '../themes/app_theme.dart';
 import '../widgets/cards/practice_history_card.dart';
+import '../routing/app_router.dart';
 
 /// バスケ履歴画面
 /// 
@@ -133,10 +135,10 @@ class BasketballHistoryScreen extends HookConsumerWidget {
             children: [
               Semantics(
                 label: '戻るボタン',
-                hint: 'タップして前の画面に戻る',
+                hint: 'タップしてホーム画面に戻る',
                 button: true,
                 child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => context.go(AppRoutes.home),
                   icon: const Icon(Icons.arrow_back_ios),
                   style: IconButton.styleFrom(
                     backgroundColor: AppTheme.cardBackground(isDarkMode),
